@@ -22,7 +22,7 @@ ADMINS = [OWNER_ID]
 
 # Force Subscribe Configuration
 INITIAL_FSUB = [-1003884048084, -1003376668245, -1003569023885]
-CHANNEL_ID = int(os.environ.get("CHANNEL_ID", "-1003444768506")) # Your db channel Id
+CHANNEL_ID = int(os.environ.get("CHANNEL_ID", "-1002170811388")) # Your db channel Id
 
 # UI / Design Configuration
 BOT_NAME = "⚡𝗛𝗘𝗠𝗔𝗡𝗧𝗛⚡"

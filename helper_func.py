@@ -20,11 +20,11 @@ CACHE_TIME = 300 # 5 minutes
 # Don't Remove Credit @ALONEKINGSTAR77, @ALONEKINGSTAR77
 # Ask Doubt on telegram @ALONEKINGSTAR77Support
 #
-# Copyright (C) 2025 by @ALONEKINGSTAR77-Bots@Github, < https://github.com/@ALONEKINGSTAR77-Bots >.
+# Copyright (C) 2025 by @ALONEKINGSTAR77@Github, < https://github.com/@ALONEKINGSTAR77 >.
 #
-# This file is part of < https://github.com/@ALONEKINGSTAR77-Bots/FileStore > project,
+# This file is part of < https://github.com/@ALONEKINGSTAR77/FileStore > project,
 # and is released under the MIT License.
-# Please see < https://github.com/@ALONEKINGSTAR77-Bots/FileStore/blob/master/LICENSE >
+# Please see < https://github.com/@ALONEKINGSTAR77/FileStore/blob/master/LICENSE >
 #
 # All rights reserved.
 #
@@ -42,11 +42,11 @@ async def check_admin(filter, client, update):
 # Don't Remove Credit @ALONEKINGSTAR77, @ALONEKINGSTAR77
 # Ask Doubt on telegram @ALONEKINGSTAR77Support
 #
-# Copyright (C) 2025 by @ALONEKINGSTAR77-Bots@Github, < https://github.com/@ALONEKINGSTAR77-Bots >.
+# Copyright (C) 2025 by @ALONEKINGSTAR77@Github, < https://github.com/@ALONEKINGSTAR77 >.
 #
-# This file is part of < https://github.com/@ALONEKINGSTAR77-Bots/FileStore > project,
+# This file is part of < https://github.com/@ALONEKINGSTAR77/FileStore > project,
 # and is released under the MIT License.
-# Please see < https://github.com/@ALONEKINGSTAR77-Bots/FileStore/blob/master/LICENSE >
+# Please see < https://github.com/@ALONEKINGSTAR77/FileStore/blob/master/LICENSE >
 #
 # All rights reserved.
 #
@@ -76,11 +76,11 @@ async def is_subscribed(client, user_id):
 # Don't Remove Credit @ALONEKINGSTAR77, @ALONEKINGSTAR77
 # Ask Doubt on telegram @ALONEKINGSTAR77Support
 #
-# Copyright (C) 2025 by @ALONEKINGSTAR77-Bots@Github, < https://github.com/@ALONEKINGSTAR77-Bots >.
+# Copyright (C) 2025 by @ALONEKINGSTAR77@Github, < https://github.com/@ALONEKINGSTAR77 >.
 #
-# This file is part of < https://github.com/@ALONEKINGSTAR77-Bots/FileStore > project,
+# This file is part of < https://github.com/@ALONEKINGSTAR77/FileStore > project,
 # and is released under the MIT License.
-# Please see < https://github.com/@ALONEKINGSTAR77-Bots/FileStore/blob/master/LICENSE >
+# Please see < https://github.com/@ALONEKINGSTAR77/FileStore/blob/master/LICENSE >
 #
 # All rights reserved.
 #
@@ -123,11 +123,11 @@ async def is_sub(client, user_id, channel_id):
 # Don't Remove Credit @ALONEKINGSTAR77, @ALONEKINGSTAR77
 # Ask Doubt on telegram @ALONEKINGSTAR77Support
 #
-# Copyright (C) 2025 by @ALONEKINGSTAR77-Bots@Github, < https://github.com/@ALONEKINGSTAR77-Bots >.
+# Copyright (C) 2025 by @ALONEKINGSTAR77@Github, < https://github.com/@ALONEKINGSTAR77 >.
 #
-# This file is part of < https://github.com/@ALONEKINGSTAR77-Bots/FileStore > project,
+# This file is part of < https://github.com/@ALONEKINGSTAR77/FileStore > project,
 # and is released under the MIT License.
-# Please see < https://github.com/@ALONEKINGSTAR77-Bots/FileStore/blob/master/LICENSE >
+# Please see < https://github.com/@ALONEKINGSTAR77/FileStore/blob/master/LICENSE >
 #
 # All rights reserved.
 #
@@ -227,11 +227,11 @@ def get_exp_time(seconds):
 # Don't Remove Credit @ALONEKINGSTAR77, @ALONEKINGSTAR77
 # Ask Doubt on telegram @ALONEKINGSTAR77Support
 #
-# Copyright (C) 2025 by @ALONEKINGSTAR77-Bots@Github, < https://github.com/@ALONEKINGSTAR77-Bots >.
+# Copyright (C) 2025 by @ALONEKINGSTAR77@Github, < https://github.com/@ALONEKINGSTAR77 >.
 #
-# This file is part of < https://github.com/@ALONEKINGSTAR77-Bots/FileStore > project,
+# This file is part of < https://github.com/@ALONEKINGSTAR77/FileStore > project,
 # and is released under the MIT License.
-# Please see < https://github.com/@ALONEKINGSTAR77-Bots/FileStore/blob/master/LICENSE >
+# Please see < https://github.com/@ALONEKINGSTAR77/FileStore/blob/master/LICENSE >
 #
 # All rights reserved.
 #
@@ -251,11 +251,11 @@ admin = filters.create(check_admin)
 # Don't Remove Credit @ALONEKINGSTAR77, @ALONEKINGSTAR77
 # Ask Doubt on telegram @ALONEKINGSTAR77Support
 #
-# Copyright (C) 2025 by @ALONEKINGSTAR77-Bots@Github, < https://github.com/@ALONEKINGSTAR77-Bots >.
+# Copyright (C) 2025 by @ALONEKINGSTAR77@Github, < https://github.com/@ALONEKINGSTAR77 >.
 #
-# This file is part of < https://github.com/@ALONEKINGSTAR77-Bots/FileStore > project,
+# This file is part of < https://github.com/@ALONEKINGSTAR77/FileStore > project,
 # and is released under the MIT License.
-# Please see < https://github.com/@ALONEKINGSTAR77-Bots/FileStore/blob/master/LICENSE >
+# Please see < https://github.com/@ALONEKINGSTAR77/FileStore/blob/master/LICENSE >
 #
 # All rights reserved.
 #
