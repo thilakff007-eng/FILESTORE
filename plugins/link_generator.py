@@ -5,7 +5,7 @@ from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
 from bot import Bot
 from pyrogram.types import ReplyKeyboardMarkup, ReplyKeyboardRemove
 from asyncio import TimeoutError
-from helper_func import encode, get_message_id, admin
+from helper_func import encode, get_message_id, admin, check_admin
 
 @Bot.on_message(filters.private & admin & filters.command('batch'))
 async def batch(client: Client, message: Message):
@@ -102,3 +102,26 @@ async def custom_batch(client: Client, message: Message):
 
     reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton("🔁 Share URL", url=f'https://telegram.me/share/url?url={link}')]])
     await message.reply(f"<b>Here is your custom batch link:</b>\n\n{link}", reply_markup=reply_markup)
+
+
+@Bot.on_message(filters.private & filters.command('dlink'))
+async def dlink_generator(client: Client, message: Message):
+    if not await check_admin(None, client, message):
+        return await message.reply("<b>❌ Access Denied! Only admins can use this command.</b>")
+
+    while True:
+        try:
+            channel_message = await client.ask(text = "Forward Message from the DB Channel (with Quotes)..\nor Send the DB Channel Post link", chat_id = message.from_user.id, filters=(filters.forwarded | (filters.text & ~filters.forwarded)), timeout=60)
+        except:
+            return
+        msg_id = await get_message_id(client, channel_message)
+        if msg_id:
+            break
+        else:
+            await channel_message.reply("❌ Error\n\nthis Forwarded Post is not from my DB Channel or this Link is not taken from DB Channel", quote = True)
+            continue
+
+    base64_string = await encode(f"get-{msg_id * abs(client.db_channel.id)}")
+    link = f"https://t.me/{client.username}?start=direct_{base64_string}"
+    reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton("🔁 Share URL", url=f'https://telegram.me/share/url?url={link}')]])
+    await channel_message.reply_text(f"<b>Here is your direct link (skips shortener)</b>\n\n{link}", quote=True, reply_markup=reply_markup)

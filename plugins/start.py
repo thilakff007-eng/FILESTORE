@@ -96,12 +96,17 @@ async def start_command(client: Client, message: Message):
     if len(text) > 7:
         try:
             basic = text.split(" ", 1)[1]
-            if basic.startswith("yu3elk"):
+            if basic.startswith("direct_"):
+                base64_string = basic[7:]
+                is_direct = True
+            elif basic.startswith("yu3elk"):
                 base64_string = basic[6:-1]
+                is_direct = True
             else:
                 base64_string = basic
+                is_direct = False
 
-            if not is_premium and user_id != OWNER_ID and not basic.startswith("yu3elk"):
+            if not is_premium and user_id != OWNER_ID and not is_direct:
                 await short_url(client, message, base64_string)
                 return
 
