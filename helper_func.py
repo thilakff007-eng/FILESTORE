@@ -102,7 +102,8 @@ async def is_sub(client, user_id, channel_id):
             ChatMemberStatus.ADMINISTRATOR,
             ChatMemberStatus.MEMBER
         }
-        SUB_CACHE[(user_id, channel_id)] = (res, now)
+        if res:
+            SUB_CACHE[(user_id, channel_id)] = (True, now)
         return res
 
     except UserNotParticipant:
@@ -110,10 +111,10 @@ async def is_sub(client, user_id, channel_id):
         if mode == "on":
             exists = await db.req_user_exist(channel_id, user_id)
             #print(f"[REQ] User {user_id} join request for {channel_id}: {exists}")
-            SUB_CACHE[(user_id, channel_id)] = (exists, now)
+            if exists:
+                SUB_CACHE[(user_id, channel_id)] = (True, now)
             return exists
         #print(f"[NOT SUB] User {user_id} not in {channel_id} and mode != on")
-        SUB_CACHE[(user_id, channel_id)] = (False, now)
         return False
 
     except Exception as e:
