@@ -140,7 +140,7 @@ async def start_command(client: Client, message: Message):
 
         fsub_msgs = []
 
-        async def fast_copy(msg):
+        for msg in messages:
             original_caption = msg.caption.html if msg.caption else ""
             caption = f"{original_caption}\n\n{CUSTOM_CAPTION}" if CUSTOM_CAPTION else original_caption
             reply_markup = msg.reply_markup if DISABLE_CHANNEL_BUTTON else None
@@ -152,23 +152,19 @@ async def start_command(client: Client, message: Message):
                     reply_markup=reply_markup,
                     protect_content=PROTECT_CONTENT
                 )
-                return snt_msg
+                fsub_msgs.append(snt_msg)
             except FloodWait as e:
                 await asyncio.sleep(e.x)
-                return await msg.copy(
+                snt_msg = await msg.copy(
                     chat_id=message.from_user.id,
                     caption=caption,
                     parse_mode=ParseMode.HTML,
                     reply_markup=reply_markup,
                     protect_content=PROTECT_CONTENT
                 )
+                fsub_msgs.append(snt_msg)
             except Exception:
-                return None
-
-        # Delivery at Max Speed using gather
-        tasks = [fast_copy(msg) for msg in messages]
-        copied_messages = await asyncio.gather(*tasks)
-        fsub_msgs = [m for m in copied_messages if m is not None]
+                pass
 
         if FILE_AUTO_DELETE > 0:
             notification_msg = await message.reply(
