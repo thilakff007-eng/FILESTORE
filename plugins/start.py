@@ -1,11 +1,11 @@
-# Don't Remove Credit @CodeFlix_Bots, @rohit_1888
-# Ask Doubt on telegram @CodeflixSupport
+# Don't Remove Credit @ALONEKINGSTAR77, @ALONEKINGSTAR77
+# Ask Doubt on telegram @ALONEKINGSTAR77Support
 #
-# Copyright (C) 2025 by Codeflix-Bots@Github, < https://github.com/Codeflix-Bots >.
+# Copyright (C) 2025 by @ALONEKINGSTAR77-Bots@Github, < https://github.com/@ALONEKINGSTAR77-Bots >.
 #
-# This file is part of < https://github.com/Codeflix-Bots/FileStore > project,
+# This file is part of < https://github.com/@ALONEKINGSTAR77-Bots/FileStore > project,
 # and is released under the MIT License.
-# Please see < https://github.com/Codeflix-Bots/FileStore/blob/master/LICENSE >
+# Please see < https://github.com/@ALONEKINGSTAR77-Bots/FileStore/blob/master/LICENSE >
 #
 # All rights reserved.
 #
@@ -15,8 +15,7 @@ import os
 import random
 import sys
 import re
-import string 
-import string as rohit
+import string
 import time
 from datetime import datetime, timedelta
 from pyrogram import Client, filters, __version__
@@ -50,7 +49,7 @@ async def short_url(client: Client, message: Message, base64_string):
         ]
 
         await message.reply_photo(
-            photo=SHORTENER_PIC,
+            photo=random.choice(PICS),
             caption=SHORT_MSG.format(
             ),
             reply_markup=InlineKeyboardMarkup(buttons),
@@ -139,7 +138,7 @@ async def start_command(client: Client, message: Message):
         finally:
             await temp_msg.delete()
 
-        codeflix_msgs = []
+        fsub_msgs = []
 
         for msg in messages:
             original_caption = msg.caption.html if msg.caption else ""
@@ -155,7 +154,7 @@ async def start_command(client: Client, message: Message):
                     protect_content=PROTECT_CONTENT
                 )
                 await asyncio.sleep(0.5)
-                codeflix_msgs.append(snt_msg)
+                fsub_msgs.append(snt_msg)
             except FloodWait as e:
                 await asyncio.sleep(e.x)
                 copied_msg = await msg.copy(
@@ -165,7 +164,7 @@ async def start_command(client: Client, message: Message):
                     reply_markup=reply_markup,
                     protect_content=PROTECT_CONTENT
                 )
-                codeflix_msgs.append(copied_msg)
+                fsub_msgs.append(copied_msg)
             except:
                 pass
 
@@ -176,7 +175,7 @@ async def start_command(client: Client, message: Message):
 
             await asyncio.sleep(FILE_AUTO_DELETE)
 
-            for snt_msg in codeflix_msgs:    
+            for snt_msg in fsub_msgs:
                 if snt_msg:
                     try:    
                         await snt_msg.delete()  
@@ -202,23 +201,21 @@ async def start_command(client: Client, message: Message):
     else:
         reply_markup = InlineKeyboardMarkup(
             [
-                    [InlineKeyboardButton("• ᴍᴏʀᴇ ᴄʜᴀɴɴᴇʟs •", url="https://t.me/Nova_Flix/50")],
-
-    [
-                    InlineKeyboardButton("• ᴀʙᴏᴜᴛ", callback_data = "about"),
-                    InlineKeyboardButton('ʜᴇʟᴘ •', callback_data = "help")
-
-    ]
+                [
+                    InlineKeyboardButton("🏯 Community", url=MAIN_LINK),
+                    InlineKeyboardButton("⚡ Updates", url="https://t.me/ALONEKINGSTAR77")
+                ],
+                [
+                    InlineKeyboardButton("🌸 About", callback_data="about"),
+                    InlineKeyboardButton("⭐ Help", callback_data="help")
+                ]
             ]
         )
         await message.reply_photo(
-            photo=START_PIC,
+            photo=random.choice(PICS),
             caption=START_MSG.format(
-                first=message.from_user.first_name,
-                last=message.from_user.last_name,
-                username=None if not message.from_user.username else '@' + message.from_user.username,
                 mention=message.from_user.mention,
-                id=message.from_user.id
+                bot_name=BOT_NAME
             ),
             reply_markup=reply_markup,
             message_effect_id=5104841245755180586)  # 🔥
@@ -228,8 +225,8 @@ async def start_command(client: Client, message: Message):
 
 
 #=====================================================================================##
-# Don't Remove Credit @CodeFlix_Bots, @rohit_1888
-# Ask Doubt on telegram @CodeflixSupport
+# Don't Remove Credit @ALONEKINGSTAR77, @ALONEKINGSTAR77
+# Ask Doubt on telegram @ALONEKINGSTAR77Support
 
 
 
@@ -286,7 +283,7 @@ async def not_joined(client: Client, message: Message):
                 except Exception as e:
                     print(f"Error with chat {chat_id}: {e}")
                     return await temp.edit(
-                        f"<b><i>! Eʀʀᴏʀ, Cᴏɴᴛᴀᴄᴛ ᴅᴇᴠᴇʟᴏᴘᴇʀ ᴛᴏ sᴏʟᴠᴇ ᴛʜᴇ ɪssᴜᴇs @rohit_1888</i></b>\n"
+                        f"<b><i>! Eʀʀᴏʀ, Cᴏɴᴛᴀᴄᴛ ᴅᴇᴠᴇʟᴏᴘᴇʀ ᴛᴏ sᴏʟᴠᴇ ᴛʜᴇ ɪssᴜᴇs @ALONEKINGSTAR77</i></b>\n"
                         f"<blockquote expandable><b>Rᴇᴀsᴏɴ:</b> {e}</blockquote>"
                     )
 
@@ -302,13 +299,9 @@ async def not_joined(client: Client, message: Message):
             pass
 
         await message.reply_photo(
-            photo=FORCE_PIC,
+            photo=random.choice(PICS),
             caption=FORCE_MSG.format(
-                first=message.from_user.first_name,
-                last=message.from_user.last_name,
-                username=None if not message.from_user.username else '@' + message.from_user.username,
-                mention=message.from_user.mention,
-                id=message.from_user.id
+                mention=message.from_user.mention
             ),
             reply_markup=InlineKeyboardMarkup(buttons),
         )
@@ -316,7 +309,7 @@ async def not_joined(client: Client, message: Message):
     except Exception as e:
         print(f"Final Error: {e}")
         await temp.edit(
-            f"<b><i>! Eʀʀᴏʀ, Cᴏɴᴛᴀᴄᴛ ᴅᴇᴠᴇʟᴏᴘᴇʀ ᴛᴏ sᴏʟᴠᴇ ᴛʜᴇ ɪssᴜᴇs @rohit_1888</i></b>\n"
+            f"<b><i>! Eʀʀᴏʀ, Cᴏɴᴛᴀᴄᴛ ᴅᴇᴠᴇʟᴏᴘᴇʀ ᴛᴏ sᴏʟᴠᴇ ᴛʜᴇ ɪssᴜᴇs @ALONEKINGSTAR77</i></b>\n"
             f"<blockquote expandable><b>Rᴇᴀsᴏɴ:</b> {e}</blockquote>"
         )
 

@@ -1,11 +1,11 @@
-# Don't Remove Credit @CodeFlix_Bots, @rohit_1888
-# Ask Doubt on telegram @CodeflixSupport
+# Don't Remove Credit @ALONEKINGSTAR77, @ALONEKINGSTAR77
+# Ask Doubt on telegram @ALONEKINGSTAR77Support
 #
-# Copyright (C) 2025 by Codeflix-Bots@Github, < https://github.com/Codeflix-Bots >.
+# Copyright (C) 2025 by @ALONEKINGSTAR77-Bots@Github, < https://github.com/@ALONEKINGSTAR77-Bots >.
 #
-# This file is part of < https://github.com/Codeflix-Bots/FileStore > project,
+# This file is part of < https://github.com/@ALONEKINGSTAR77-Bots/FileStore > project,
 # and is released under the MIT License.
-# Please see < https://github.com/Codeflix-Bots/FileStore/blob/master/LICENSE >
+# Please see < https://github.com/@ALONEKINGSTAR77-Bots/FileStore/blob/master/LICENSE >
 #
 # All rights reserved.
 #

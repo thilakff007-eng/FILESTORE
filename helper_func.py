@@ -1,5 +1,5 @@
-#(©)CodeFlix_Bots
-#rohit_1888 on Tg #Dont remove this line
+#(©)@ALONEKINGSTAR77
+#@ALONEKINGSTAR77 on Tg #Dont remove this line
 
 import base64
 import re
@@ -13,16 +13,18 @@ from shortzy import Shortzy
 from pyrogram.errors import FloodWait
 from database.database import *
 
+# Subscription Cache: (user_id, channel_id) -> (bool, timestamp)
+SUB_CACHE = {}
+CACHE_TIME = 300 # 5 minutes
 
-
-# Don't Remove Credit @CodeFlix_Bots, @rohit_1888
-# Ask Doubt on telegram @CodeflixSupport
+# Don't Remove Credit @ALONEKINGSTAR77, @ALONEKINGSTAR77
+# Ask Doubt on telegram @ALONEKINGSTAR77Support
 #
-# Copyright (C) 2025 by Codeflix-Bots@Github, < https://github.com/Codeflix-Bots >.
+# Copyright (C) 2025 by @ALONEKINGSTAR77-Bots@Github, < https://github.com/@ALONEKINGSTAR77-Bots >.
 #
-# This file is part of < https://github.com/Codeflix-Bots/FileStore > project,
+# This file is part of < https://github.com/@ALONEKINGSTAR77-Bots/FileStore > project,
 # and is released under the MIT License.
-# Please see < https://github.com/Codeflix-Bots/FileStore/blob/master/LICENSE >
+# Please see < https://github.com/@ALONEKINGSTAR77-Bots/FileStore/blob/master/LICENSE >
 #
 # All rights reserved.
 #
@@ -37,14 +39,14 @@ async def check_admin(filter, client, update):
         return False
 
 
-# Don't Remove Credit @CodeFlix_Bots, @rohit_1888
-# Ask Doubt on telegram @CodeflixSupport
+# Don't Remove Credit @ALONEKINGSTAR77, @ALONEKINGSTAR77
+# Ask Doubt on telegram @ALONEKINGSTAR77Support
 #
-# Copyright (C) 2025 by Codeflix-Bots@Github, < https://github.com/Codeflix-Bots >.
+# Copyright (C) 2025 by @ALONEKINGSTAR77-Bots@Github, < https://github.com/@ALONEKINGSTAR77-Bots >.
 #
-# This file is part of < https://github.com/Codeflix-Bots/FileStore > project,
+# This file is part of < https://github.com/@ALONEKINGSTAR77-Bots/FileStore > project,
 # and is released under the MIT License.
-# Please see < https://github.com/Codeflix-Bots/FileStore/blob/master/LICENSE >
+# Please see < https://github.com/@ALONEKINGSTAR77-Bots/FileStore/blob/master/LICENSE >
 #
 # All rights reserved.
 #
@@ -71,50 +73,61 @@ async def is_subscribed(client, user_id):
     return True
 
 
-# Don't Remove Credit @CodeFlix_Bots, @rohit_1888
-# Ask Doubt on telegram @CodeflixSupport
+# Don't Remove Credit @ALONEKINGSTAR77, @ALONEKINGSTAR77
+# Ask Doubt on telegram @ALONEKINGSTAR77Support
 #
-# Copyright (C) 2025 by Codeflix-Bots@Github, < https://github.com/Codeflix-Bots >.
+# Copyright (C) 2025 by @ALONEKINGSTAR77-Bots@Github, < https://github.com/@ALONEKINGSTAR77-Bots >.
 #
-# This file is part of < https://github.com/Codeflix-Bots/FileStore > project,
+# This file is part of < https://github.com/@ALONEKINGSTAR77-Bots/FileStore > project,
 # and is released under the MIT License.
-# Please see < https://github.com/Codeflix-Bots/FileStore/blob/master/LICENSE >
+# Please see < https://github.com/@ALONEKINGSTAR77-Bots/FileStore/blob/master/LICENSE >
 #
 # All rights reserved.
 #
 
 async def is_sub(client, user_id, channel_id):
+    # Check Cache
+    now = time.time()
+    if (user_id, channel_id) in SUB_CACHE:
+        val, ts = SUB_CACHE[(user_id, channel_id)]
+        if now - ts < CACHE_TIME:
+            return val
+
     try:
         member = await client.get_chat_member(channel_id, user_id)
         status = member.status
         #print(f"[SUB] User {user_id} in {channel_id} with status {status}")
-        return status in {
+        res = status in {
             ChatMemberStatus.OWNER,
             ChatMemberStatus.ADMINISTRATOR,
             ChatMemberStatus.MEMBER
         }
+        SUB_CACHE[(user_id, channel_id)] = (res, now)
+        return res
 
     except UserNotParticipant:
         mode = await db.get_channel_mode(channel_id)
         if mode == "on":
             exists = await db.req_user_exist(channel_id, user_id)
             #print(f"[REQ] User {user_id} join request for {channel_id}: {exists}")
+            SUB_CACHE[(user_id, channel_id)] = (exists, now)
             return exists
         #print(f"[NOT SUB] User {user_id} not in {channel_id} and mode != on")
+        SUB_CACHE[(user_id, channel_id)] = (False, now)
         return False
 
     except Exception as e:
         print(f"[!] Error in is_sub(): {e}")
         return False
 
-# Don't Remove Credit @CodeFlix_Bots, @rohit_1888
-# Ask Doubt on telegram @CodeflixSupport
+# Don't Remove Credit @ALONEKINGSTAR77, @ALONEKINGSTAR77
+# Ask Doubt on telegram @ALONEKINGSTAR77Support
 #
-# Copyright (C) 2025 by Codeflix-Bots@Github, < https://github.com/Codeflix-Bots >.
+# Copyright (C) 2025 by @ALONEKINGSTAR77-Bots@Github, < https://github.com/@ALONEKINGSTAR77-Bots >.
 #
-# This file is part of < https://github.com/Codeflix-Bots/FileStore > project,
+# This file is part of < https://github.com/@ALONEKINGSTAR77-Bots/FileStore > project,
 # and is released under the MIT License.
-# Please see < https://github.com/Codeflix-Bots/FileStore/blob/master/LICENSE >
+# Please see < https://github.com/@ALONEKINGSTAR77-Bots/FileStore/blob/master/LICENSE >
 #
 # All rights reserved.
 #
@@ -164,7 +177,7 @@ async def get_message_id(client, message):
     elif message.forward_sender_name:
         return 0
     elif message.text:
-        pattern = "https://t.me/(?:c/)?(.*)/(\d+)"
+        pattern = r"https://t.me/(?:c/)?(.*)/(\d+)"
         matches = re.match(pattern,message.text)
         if not matches:
             return 0
@@ -211,14 +224,14 @@ def get_exp_time(seconds):
             result += f'{int(period_value)} {period_name}'
     return result
 
-# Don't Remove Credit @CodeFlix_Bots, @rohit_1888
-# Ask Doubt on telegram @CodeflixSupport
+# Don't Remove Credit @ALONEKINGSTAR77, @ALONEKINGSTAR77
+# Ask Doubt on telegram @ALONEKINGSTAR77Support
 #
-# Copyright (C) 2025 by Codeflix-Bots@Github, < https://github.com/Codeflix-Bots >.
+# Copyright (C) 2025 by @ALONEKINGSTAR77-Bots@Github, < https://github.com/@ALONEKINGSTAR77-Bots >.
 #
-# This file is part of < https://github.com/Codeflix-Bots/FileStore > project,
+# This file is part of < https://github.com/@ALONEKINGSTAR77-Bots/FileStore > project,
 # and is released under the MIT License.
-# Please see < https://github.com/Codeflix-Bots/FileStore/blob/master/LICENSE >
+# Please see < https://github.com/@ALONEKINGSTAR77-Bots/FileStore/blob/master/LICENSE >
 #
 # All rights reserved.
 #
@@ -233,16 +246,16 @@ async def get_shortlink(url, api, link):
 subscribed = filters.create(is_subscribed)
 admin = filters.create(check_admin)
 
-#rohit_1888 on Tg :
+#@ALONEKINGSTAR77 on Tg :
 
-# Don't Remove Credit @CodeFlix_Bots, @rohit_1888
-# Ask Doubt on telegram @CodeflixSupport
+# Don't Remove Credit @ALONEKINGSTAR77, @ALONEKINGSTAR77
+# Ask Doubt on telegram @ALONEKINGSTAR77Support
 #
-# Copyright (C) 2025 by Codeflix-Bots@Github, < https://github.com/Codeflix-Bots >.
+# Copyright (C) 2025 by @ALONEKINGSTAR77-Bots@Github, < https://github.com/@ALONEKINGSTAR77-Bots >.
 #
-# This file is part of < https://github.com/Codeflix-Bots/FileStore > project,
+# This file is part of < https://github.com/@ALONEKINGSTAR77-Bots/FileStore > project,
 # and is released under the MIT License.
-# Please see < https://github.com/Codeflix-Bots/FileStore/blob/master/LICENSE >
+# Please see < https://github.com/@ALONEKINGSTAR77-Bots/FileStore/blob/master/LICENSE >
 #
 # All rights reserved.
 #

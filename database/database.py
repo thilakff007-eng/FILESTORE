@@ -1,5 +1,5 @@
-#Codeflix_Botz
-#rohit_1888 on Tg
+#@ALONEKINGSTAR77_Botz
+#@ALONEKINGSTAR77 on Tg
 
 import motor, asyncio
 import motor.motor_asyncio
@@ -32,7 +32,7 @@ def new_user(id):
         }
     }
 
-class Rohit:
+class Database:
 
     def __init__(self, DB_URI, DB_NAME):
         self.dbclient = motor.motor_asyncio.AsyncIOMotorClient(DB_URI)
@@ -142,6 +142,9 @@ class Rohit:
         if await self.channel_exist(channel_id):
             await self.fsub_data.delete_one({'_id': channel_id})
             return
+
+    async def del_channel(self, channel_id: int):
+        return await self.rem_channel(channel_id)
 
     async def show_channels(self):
         channel_docs = await self.fsub_data.find().to_list(length=None)
@@ -262,4 +265,4 @@ class Rohit:
         return result[0]["total"] if result else 0
 
 
-db = Rohit(DB_URI, DB_NAME)
+db = Database(DB_URI, DB_NAME)

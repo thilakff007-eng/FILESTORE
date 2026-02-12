@@ -1,12 +1,13 @@
 #
-# Copyright (C) 2025 by Codeflix-Bots@Github, < https://github.com/Codeflix-Bots >.
+# Copyright (C) 2025 by @ALONEKINGSTAR77-Bots@Github, < https://github.com/@ALONEKINGSTAR77-Bots >.
 #
-# This file is part of < https://github.com/Codeflix-Bots/FileStore > project,
+# This file is part of < https://github.com/@ALONEKINGSTAR77-Bots/FileStore > project,
 # and is released under the MIT License.
-# Please see < https://github.com/Codeflix-Bots/FileStore/blob/master/LICENSE >
+# Please see < https://github.com/@ALONEKINGSTAR77-Bots/FileStore/blob/master/LICENSE >
 #
 # All rights reserved.
 
+import random
 from pyrogram import Client 
 from bot import Bot
 from config import *
@@ -18,8 +19,13 @@ async def cb_handler(client: Bot, query: CallbackQuery):
     data = query.data
 
     if data == "help":
+        await query.answer()
         await query.message.edit_text(
-            text=HELP_TXT.format(first=query.from_user.first_name),
+            text=HELP_TXT.format(
+                mention=query.from_user.mention,
+                bot_name=BOT_NAME,
+                main_link=MAIN_LINK
+            ),
             disable_web_page_preview=True,
             reply_markup=InlineKeyboardMarkup([
                 [InlineKeyboardButton('ʜᴏᴍᴇ', callback_data='start'),
@@ -28,8 +34,14 @@ async def cb_handler(client: Bot, query: CallbackQuery):
         )
 
     elif data == "about":
+        await query.answer()
         await query.message.edit_text(
-            text=ABOUT_TXT.format(first=query.from_user.first_name),
+            text=ABOUT_TXT.format(
+                bot_name=BOT_NAME,
+                owner_name=OWNER,
+                bot_username=client.username,
+                main_link=MAIN_LINK
+            ),
             disable_web_page_preview=True,
             reply_markup=InlineKeyboardMarkup([
                 [InlineKeyboardButton('ʜᴏᴍᴇ', callback_data='start'),
@@ -38,34 +50,47 @@ async def cb_handler(client: Bot, query: CallbackQuery):
         )
 
     elif data == "start":
+        await query.answer()
         await query.message.edit_text(
-            text=START_MSG.format(first=query.from_user.first_name),
+            text=START_MSG.format(
+                mention=query.from_user.mention,
+                bot_name=BOT_NAME
+            ),
             disable_web_page_preview=True,
-            reply_markup=InlineKeyboardMarkup([
-                [InlineKeyboardButton("ʜᴇʟᴘ", callback_data='help'),
-                 InlineKeyboardButton("ᴀʙᴏᴜᴛ", callback_data='about')]
-            ])
+            reply_markup=InlineKeyboardMarkup(
+                [
+                    [
+                        InlineKeyboardButton("🏯 Community", url=MAIN_LINK),
+                        InlineKeyboardButton("⚡ Updates", url="https://t.me/ALONEKINGSTAR77")
+                    ],
+                    [
+                        InlineKeyboardButton("🌸 About", callback_data="about"),
+                        InlineKeyboardButton("⭐ Help", callback_data="help")
+                    ]
+                ]
+            )
         )
 
 
-# Don't Remove Credit @CodeFlix_Bots, @rohit_1888
-# Ask Doubt on telegram @CodeflixSupport
+# Don't Remove Credit @ALONEKINGSTAR77, @ALONEKINGSTAR77
+# Ask Doubt on telegram @ALONEKINGSTAR77Support
 #
-# Copyright (C) 2025 by Codeflix-Bots@Github, < https://github.com/Codeflix-Bots >.
+# Copyright (C) 2025 by @ALONEKINGSTAR77-Bots@Github, < https://github.com/@ALONEKINGSTAR77-Bots >.
 #
-# This file is part of < https://github.com/Codeflix-Bots/FileStore > project,
+# This file is part of < https://github.com/@ALONEKINGSTAR77-Bots/FileStore > project,
 # and is released under the MIT License.
-# Please see < https://github.com/Codeflix-Bots/FileStore/blob/master/LICENSE >
+# Please see < https://github.com/@ALONEKINGSTAR77-Bots/FileStore/blob/master/LICENSE >
 #
 # All rights reserved.
 #
 
 
     elif data == "premium":
+        await query.answer()
         await query.message.delete()
         await client.send_photo(
             chat_id=query.message.chat.id,
-            photo=QR_PIC,
+            photo=random.choice(PICS),
             caption=(
                 f"👋 {query.from_user.username}\n\n"
                 f"🎖️ Available Plans :\n\n"
@@ -93,6 +118,7 @@ async def cb_handler(client: Bot, query: CallbackQuery):
 
 
     elif data == "close":
+        await query.answer()
         await query.message.delete()
         try:
             await query.message.reply_to_message.delete()
@@ -100,6 +126,7 @@ async def cb_handler(client: Bot, query: CallbackQuery):
             pass
 
     elif data.startswith("rfs_ch_"):
+        await query.answer()
         cid = int(data.split("_")[2])
         try:
             chat = await client.get_chat(cid)
@@ -139,6 +166,7 @@ async def cb_handler(client: Bot, query: CallbackQuery):
         )
 
     elif data == "fsub_back":
+        await query.answer()
         channels = await db.show_channels()
         buttons = []
         for cid in channels:
@@ -156,14 +184,14 @@ async def cb_handler(client: Bot, query: CallbackQuery):
         )
 
 
-# Don't Remove Credit @CodeFlix_Bots, @rohit_1888
-# Ask Doubt on telegram @CodeflixSupport
+# Don't Remove Credit @ALONEKINGSTAR77, @ALONEKINGSTAR77
+# Ask Doubt on telegram @ALONEKINGSTAR77Support
 #
-# Copyright (C) 2025 by Codeflix-Bots@Github, < https://github.com/Codeflix-Bots >.
+# Copyright (C) 2025 by @ALONEKINGSTAR77-Bots@Github, < https://github.com/@ALONEKINGSTAR77-Bots >.
 #
-# This file is part of < https://github.com/Codeflix-Bots/FileStore > project,
+# This file is part of < https://github.com/@ALONEKINGSTAR77-Bots/FileStore > project,
 # and is released under the MIT License.
-# Please see < https://github.com/Codeflix-Bots/FileStore/blob/master/LICENSE >
+# Please see < https://github.com/@ALONEKINGSTAR77-Bots/FileStore/blob/master/LICENSE >
 #
 # All rights reserved.
 #
