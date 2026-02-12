@@ -107,11 +107,12 @@ class Bot(Client):
         self.username = usr_bot_me.username
         self.LOGGER(__name__).info(f"Bot Running..! Made by @ALONEKINGSTAR77")
 
-        # Initial FSUB Setup
+        # Initial FSUB Setup (Request Mode)
         for ch_id in INITIAL_FSUB:
             if not await db.channel_exist(ch_id):
                 await db.add_channel(ch_id)
-                self.LOGGER(__name__).info(f"Added initial FSUB channel: {ch_id}")
+            await db.set_channel_mode(ch_id, "on")
+            self.LOGGER(__name__).info(f"Ensured initial FSUB channel {ch_id} is in Request Mode.")
 
         # Start Web Server
         app = web.AppRunner(await web_server())
