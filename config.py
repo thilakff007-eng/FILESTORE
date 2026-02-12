@@ -63,8 +63,8 @@ PROTECT_CONTENT = os.environ.get('PROTECT_CONTENT', "False").lower() == "true"
 DISABLE_CHANNEL_BUTTON = os.environ.get("DISABLE_CHANNEL_BUTTON", "False").lower() == "true"
 
 # Shortlink Settings
-SHORTLINK_URL = os.environ.get("SHORTLINK_URL", "linkshortify.com")
-SHORTLINK_API = os.environ.get("SHORTLINK_API", "")
+SHORTLINK_URL = os.environ.get("SHORTLINK_URL", "arolinks.com")
+SHORTLINK_API = os.environ.get("SHORTLINK_API", "e49643875c2fa34dd6087254e58283d65ffc7748")
 TUT_VID = os.environ.get("TUT_VID","https://t.me/otakustartelugu")
 SHORT_MSG = "<b>⚡ Here is Your Download Link, Senpai! Must Watch Tutorial Before Clicking...</b>"
 
@@ -73,6 +73,16 @@ HELP_TXT = "<b>⚡ ʜᴇʟʟᴏ {mention}, I am {bot_name}!\n\nI can store files
 ABOUT_TXT = "<b><blockquote>⚡ ʙᴏᴛ ɴᴀᴍᴇ: {bot_name}\n🏯 ᴄʀᴇᴀᴛᴏʀ: {owner_name}\n⭐ ᴜsᴇʀɴᴀᴍᴇ: @{bot_username}\n🌸 ᴄᴏᴍᴍᴜɴɪᴛʏ: {main_link}\n💎 ᴅᴇᴠᴇʟᴏᴘᴇʀ: @ALONEKINGSTAR77</blockquote></b>"
 START_MSG = "<b>⚡ Kon'nichiwa {mention}!\n\n<blockquote>I am {bot_name}, a powerful File Store Bot. 🏯\n\nI can store files in a private channel and users can access them via special links. Fast and Secure! ⭐</blockquote>\n\n🌸 Join @ALONEKINGSTAR77 for more updates!</b>"
 FORCE_MSG = "<b>⚡ Kon'nichiwa {mention}!\n\n<blockquote>You must join our channels to access the requested file. 🏯</blockquote>\n\n🌸 Join the channels below and click on 'Reload' button. ⭐</b>"
+
+# Premium Settings
+PRICE1 = os.environ.get("PRICE1", "0 rs")
+PRICE2 = os.environ.get("PRICE2", "60 rs")
+PRICE3 = os.environ.get("PRICE3", "150 rs")
+PRICE4 = os.environ.get("PRICE4", "280 rs")
+PRICE5 = os.environ.get("PRICE5", "550 rs")
+UPI_ID = os.environ.get("UPI_ID", "ALONEKINGSTAR77@upi")
+SCREENSHOT_URL = os.environ.get("SCREENSHOT_URL", "https://t.me/ALONEKINGSTAR77")
+QR_PIC = os.environ.get("QR_PIC", "https://freeimage.host/i/q94kIvp")
 
 # Admin Texts
 CMD_TXT = """<b>⚡ ᴀᴅᴍɪɴ ᴄᴏᴍᴍᴀɴᴅs:</b>
@@ -90,8 +100,10 @@ CMD_TXT = """<b>⚡ ᴀᴅᴍɪɴ ᴄᴏᴍᴍᴀɴᴅs:</b>
 <b>›› /myplan :</b> ᴄʜᴇᴄᴋ sᴛᴀᴛᴜs
 """
 
-CUSTOM_CAPTION = os.environ.get("CUSTOM_CAPTION", "<b>⚡ ʙʏ {main_link}</b>")
+CUSTOM_CAPTION = os.environ.get("CUSTOM_CAPTION", f"<b>⚡ ʙʏ {MAIN_LINK}</b>")
 BAN_SUPPORT = "https://t.me/otakustartelugu"
+BOT_STATS_TEXT = "<b>⚡ BOT UPTIME</b>\n{uptime}"
+USER_REPLY_TEXT = "⚡ Kon'nichiwa! You are not my Senpai!"
 
 # Logging Configuration
 LOG_FILE_NAME = "bot.log"

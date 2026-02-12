@@ -92,7 +92,7 @@ async def cb_handler(client: Bot, query: CallbackQuery):
             chat_id=query.message.chat.id,
             photo=random.choice(PICS),
             caption=(
-                f"👋 {query.from_user.username}\n\n"
+                f"👋 {query.from_user.mention}\n\n"
                 f"🎖️ Available Plans :\n\n"
                 f"● {PRICE1}  For 0 Days Prime Membership\n\n"
                 f"● {PRICE2}  For 1 Month Prime Membership\n\n"
