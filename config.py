@@ -58,7 +58,7 @@ FORCE_PIC = PICS[1]
 # Bot Settings
 PORT = os.environ.get("PORT", "8080")
 FSUB_LINK_EXPIRY = int(os.getenv("FSUB_LINK_EXPIRY", "10"))
-TG_BOT_WORKERS = int(os.environ.get("TG_BOT_WORKERS", "200"))
+TG_BOT_WORKERS = int(os.environ.get("TG_BOT_WORKERS", "500"))
 PROTECT_CONTENT = os.environ.get('PROTECT_CONTENT', "False").lower() == "true"
 DISABLE_CHANNEL_BUTTON = os.environ.get("DISABLE_CHANNEL_BUTTON", "False").lower() == "true"
 
