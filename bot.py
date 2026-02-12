@@ -54,11 +54,6 @@ name ="""
  BY @ALONEKINGSTAR77 BOTS
 """
 
-def get_indian_time():
-    """Returns the current time in IST."""
-    ist = pytz.timezone("Asia/Kolkata")
-    return datetime.now(ist)
-
 class Bot(Client):
     def __init__(self):
         super().__init__(
@@ -107,12 +102,12 @@ class Bot(Client):
         self.username = usr_bot_me.username
         self.LOGGER(__name__).info(f"Bot Running..! Made by @ALONEKINGSTAR77")
 
-        # Initial FSUB Setup (Request Mode)
+        # Initial FSUB Setup (Normal Mode)
         for ch_id in INITIAL_FSUB:
             if not await db.channel_exist(ch_id):
                 await db.add_channel(ch_id)
-            await db.set_channel_mode(ch_id, "on")
-            self.LOGGER(__name__).info(f"Ensured initial FSUB channel {ch_id} is in Request Mode.")
+            await db.set_channel_mode(ch_id, "off")
+            self.LOGGER(__name__).info(f"Ensured initial FSUB channel {ch_id} is in Normal Mode.")
 
         # Start Web Server
         app = web.AppRunner(await web_server())
