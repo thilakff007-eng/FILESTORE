@@ -100,7 +100,10 @@ CMD_TXT = """<b>⚡ ᴀᴅᴍɪɴ ᴄᴏᴍᴍᴀɴᴅs:</b>
 <b>›› /myplan :</b> ᴄʜᴇᴄᴋ sᴛᴀᴛᴜs
 """
 
-CUSTOM_CAPTION = os.environ.get("CUSTOM_CAPTION", "<b>⚡ ʙʏ {main_link}</b>").format(main_link=MAIN_LINK)
+CUSTOM_CAPTION = os.environ.get("CUSTOM_CAPTION", "<b>⚡ ʙʏ {main_link}</b>")
+if "{main_link}" in CUSTOM_CAPTION:
+    CUSTOM_CAPTION = CUSTOM_CAPTION.format(main_link=MAIN_LINK)
+
 BAN_SUPPORT = "https://t.me/otakustartelugu"
 BOT_STATS_TEXT = "<b>⚡ BOT UPTIME</b>\n{uptime}"
 USER_REPLY_TEXT = "⚡ Kon'nichiwa! You are not my Senpai!"
