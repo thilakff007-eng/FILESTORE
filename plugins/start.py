@@ -146,6 +146,8 @@ async def start_command(client: Client, message: Message):
         fsub_msgs = []
 
         for msg in messages:
+            if not msg or msg.empty:
+                continue
             original_caption = msg.caption.html if msg.caption else ""
             caption = f"{original_caption}\n\n{CUSTOM_CAPTION}" if CUSTOM_CAPTION else original_caption
             reply_markup = msg.reply_markup if DISABLE_CHANNEL_BUTTON else None

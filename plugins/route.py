@@ -95,19 +95,113 @@ async def root_route_handler(request):
 @routes.get("/get/{id}")
 async def get_route_handler(request):
     file_id = request.match_info.get('id')
-    from config import BOT_NAME, BOT_USERNAME
-    # Redirect to the bot with the start parameter
-    # We use a simple HTML redirect to ensure it works well with mobile browsers
-    html_redirect = f"""
-    <html>
+    from config import BOT_NAME, BOT_USERNAME, PICS
+    anime_pic = random.choice(PICS)
+
+    html_content = f"""
+    <!DOCTYPE html>
+    <html lang="en">
     <head>
-        <title>Redirecting...</title>
-        <meta http-equiv="refresh" content="0; url=https://t.me/{BOT_USERNAME}?start={file_id}">
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Verification - {BOT_NAME}</title>
+        <style>
+            body {{
+                margin: 0;
+                padding: 0;
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+                color: white;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                height: 100vh;
+                text-align: center;
+            }}
+            .container {{
+                background: rgba(255, 255, 255, 0.05);
+                padding: 40px;
+                border-radius: 20px;
+                box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8);
+                backdrop-filter: blur(10px);
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                max-width: 500px;
+                width: 90%;
+            }}
+            img {{
+                width: 120px;
+                height: 120px;
+                border-radius: 50%;
+                margin-bottom: 20px;
+                border: 4px solid #e94560;
+                object-fit: cover;
+            }}
+            h2 {{
+                color: #e94560;
+                margin-bottom: 10px;
+            }}
+            .status {{
+                font-size: 1.1em;
+                margin-bottom: 20px;
+                color: #00d2ff;
+            }}
+            .btn {{
+                display: none;
+                padding: 15px 40px;
+                background-color: #e94560;
+                color: white;
+                text-decoration: none;
+                border-radius: 30px;
+                font-weight: bold;
+                transition: transform 0.3s ease, background-color 0.3s ease;
+                border: none;
+                cursor: pointer;
+                font-size: 1em;
+            }}
+            .btn:hover {{
+                background-color: #ff4d6d;
+                transform: scale(1.05);
+            }}
+            #timer {{
+                font-weight: bold;
+                color: #e94560;
+            }}
+            footer {{
+                margin-top: 30px;
+                font-size: 0.9em;
+                opacity: 0.5;
+            }}
+        </style>
     </head>
     <body>
-        <p>Redirecting to Telegram... if not redirected <a href="https://t.me/{BOT_USERNAME}?start={file_id}">click here</a>.</p>
-        <script>window.location.href = "https://t.me/{BOT_USERNAME}?start={file_id}";</script>
+        <div class="container">
+            <img src="{anime_pic}" alt="Bot Logo">
+            <h2>Verify You're Human</h2>
+            <p class="status" id="status_text">Please wait <span id="timer">5</span> seconds...</p>
+            <a href="https://t.me/{BOT_USERNAME}?start={file_id}" class="btn" id="verify_btn">Verify & Open Telegram</a>
+        </div>
+        <script>
+            let timeLeft = 5;
+            const timerElement = document.getElementById('timer');
+            const btnElement = document.getElementById('verify_btn');
+            const statusText = document.getElementById('status_text');
+
+            const countdown = setInterval(() => {{
+                timeLeft--;
+                timerElement.innerText = timeLeft;
+                if (timeLeft <= 0) {{
+                    clearInterval(countdown);
+                    statusText.innerText = "Verification Ready!";
+                    timerElement.style.display = 'none';
+                    btnElement.style.display = 'inline-block';
+                }}
+            }}, 1000);
+        </script>
+        <footer>
+            &copy; 2025 {BOT_NAME} | Secure Verification
+        </footer>
     </body>
     </html>
     """
-    return web.Response(text=html_redirect, content_type='text/html')
+    return web.Response(text=html_content, content_type='text/html')

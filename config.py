@@ -4,7 +4,10 @@
 
 import os
 import logging
+from dotenv import load_dotenv
 from logging.handlers import RotatingFileHandler
+
+load_dotenv()
 
 # Telegram API Configuration
 TG_BOT_TOKEN = os.environ.get("TG_BOT_TOKEN", "8448505270:AAEwd0kQdkYmFbR9hMQQajTLwGj3M1gmIXQ")
