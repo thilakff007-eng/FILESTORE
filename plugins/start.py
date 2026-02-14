@@ -35,8 +35,8 @@ TUT_VID = f"{TUT_VID}"
 
 async def short_url(client: Client, message: Message, base64_string):
     try:
-        prem_link = f"https://t.me/{client.username}?start=yu3elk{base64_string}7"
-        short_link = await get_shortlink(SHORTLINK_URL, SHORTLINK_API, prem_link)
+        bridge_link = f"{URL}/get/yu3elk{base64_string}7"
+        short_link = await get_shortlink(SHORTLINK_URL, SHORTLINK_API, bridge_link)
 
         buttons = [
             [
@@ -113,7 +113,7 @@ async def start_command(client: Client, message: Message):
         except Exception as e:
             print(f"Error processing start payload: {e}")
 
-        string = await decode(base64_string)
+        string = decode(base64_string)
         argument = string.split("-")
 
         ids = []

@@ -56,6 +56,8 @@ START_PIC = PICS[0] # Default, but we'll use random in code
 FORCE_PIC = PICS[1]
 
 # Bot Settings
+URL = os.environ.get("URL", "https://filestore-3-qhxv.onrender.com")
+BOT_USERNAME = os.environ.get("BOT_USERNAME", "ALONEKINGSTAR77")
 PORT = os.environ.get("PORT", "8080")
 FSUB_LINK_EXPIRY = int(os.getenv("FSUB_LINK_EXPIRY", "10"))
 TG_BOT_WORKERS = int(os.environ.get("TG_BOT_WORKERS", "500"))

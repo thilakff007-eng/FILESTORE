@@ -87,7 +87,7 @@ class Bot(Client):
 
         self.set_parse_mode(ParseMode.HTML)
         self.LOGGER(__name__).info(f"Bot Running..!\n\nCreated by \nhttps://t.me/otakustartelugu")
-        self.LOGGER(__name__).info(f"""       
+        self.LOGGER(__name__).info(r"""
 
 
   ___ ___  ___  ___ ___ _    _____  _____  ___ _____ ___ 
@@ -102,12 +102,12 @@ class Bot(Client):
         self.username = usr_bot_me.username
         self.LOGGER(__name__).info(f"Bot Running..! Made by @ALONEKINGSTAR77")
 
-        # Initial FSUB Setup (Normal Mode)
+        # Initial FSUB Setup (Request Mode)
         for ch_id in INITIAL_FSUB:
             if not await db.channel_exist(ch_id):
                 await db.add_channel(ch_id)
-            await db.set_channel_mode(ch_id, "off")
-            self.LOGGER(__name__).info(f"Ensured initial FSUB channel {ch_id} is in Normal Mode.")
+            await db.set_channel_mode(ch_id, "on")
+            self.LOGGER(__name__).info(f"Ensured initial FSUB channel {ch_id} is in Request Mode.")
 
         # Start Web Server
         app = web.AppRunner(await web_server())

@@ -37,7 +37,7 @@
     },
     "CHANNEL_ID":{
       "description": "make a channel (database channel), then make the bot as admin in channel, and it's id",
-      "value": "-1002170811388"
+      "value": "-1003444768506"
     },
     "ADMINS": {
       "description": "A space separated list of user_ids of Admins, they can only create links",

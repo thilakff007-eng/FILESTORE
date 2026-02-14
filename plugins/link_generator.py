@@ -1,4 +1,4 @@
-#(©)Codexbotz
+#(©)⚡𝗛𝗘𝗠𝗔𝗡𝗧𝗛⚡
 
 from pyrogram import Client, filters
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
@@ -35,7 +35,7 @@ async def batch(client: Client, message: Message):
 
 
     string = f"get-{f_msg_id * abs(client.db_channel.id)}-{s_msg_id * abs(client.db_channel.id)}"
-    base64_string = await encode(string)
+    base64_string = encode(string)
     link = f"https://t.me/{client.username}?start={base64_string}"
     reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton("🔁 Share URL", url=f'https://telegram.me/share/url?url={link}')]])
     await second_message.reply_text(f"<b>Here is your link</b>\n\n{link}", quote=True, reply_markup=reply_markup)
@@ -55,7 +55,7 @@ async def link_generator(client: Client, message: Message):
             await channel_message.reply("❌ Error\n\nthis Forwarded Post is not from my DB Channel or this Link is not taken from DB Channel", quote = True)
             continue
 
-    base64_string = await encode(f"get-{msg_id * abs(client.db_channel.id)}")
+    base64_string = encode(f"get-{msg_id * abs(client.db_channel.id)}")
     link = f"https://t.me/{client.username}?start={base64_string}"
     reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton("🔁 Share URL", url=f'https://telegram.me/share/url?url={link}')]])
     await channel_message.reply_text(f"<b>Here is your link</b>\n\n{link}", quote=True, reply_markup=reply_markup)
@@ -97,7 +97,7 @@ async def custom_batch(client: Client, message: Message):
     start_id = collected[0] * abs(client.db_channel.id)
     end_id = collected[-1] * abs(client.db_channel.id)
     string = f"get-{start_id}-{end_id}"
-    base64_string = await encode(string)
+    base64_string = encode(string)
     link = f"https://t.me/{client.username}?start={base64_string}"
 
     reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton("🔁 Share URL", url=f'https://telegram.me/share/url?url={link}')]])
@@ -121,7 +121,7 @@ async def dlink_generator(client: Client, message: Message):
             await channel_message.reply("❌ Error\n\nthis Forwarded Post is not from my DB Channel or this Link is not taken from DB Channel", quote = True)
             continue
 
-    base64_string = await encode(f"get-{msg_id * abs(client.db_channel.id)}")
+    base64_string = encode(f"get-{msg_id * abs(client.db_channel.id)}")
     link = f"https://t.me/{client.username}?start=direct_{base64_string}"
     reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton("🔁 Share URL", url=f'https://telegram.me/share/url?url={link}')]])
     await channel_message.reply_text(f"<b>Here is your direct link (skips shortener)</b>\n\n{link}", quote=True, reply_markup=reply_markup)
