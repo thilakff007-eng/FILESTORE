@@ -4,10 +4,12 @@ from config import BOT_NAME, PICS, MAIN_LINK
 
 routes = web.RouteTableDef()
 
+def get_random_pic():
+    return random.choice(PICS)
+
 @routes.get("/", allow_head=True)
 async def root_route_handler(request):
-    bot = request.app['bot']
-    anime_pic = random.choice(PICS)
+    anime_pic = get_random_pic()
     html_content = f"""
     <!DOCTYPE html>
     <html lang="en">
@@ -20,8 +22,7 @@ async def root_route_handler(request):
                 margin: 0;
                 padding: 0;
                 font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-                background: linear-gradient(rgba(26, 26, 46, 0.8), rgba(26, 26, 46, 0.8)), url('{anime_pic}') no-repeat center center fixed;
-                background-size: cover;
+                background: #1a1a2e;
                 color: white;
                 display: flex;
                 flex-direction: column;
@@ -29,6 +30,14 @@ async def root_route_handler(request):
                 justify-content: center;
                 height: 100vh;
                 text-align: center;
+                overflow: hidden;
+            }}
+            .background {{
+                position: fixed;
+                top: 0; left: 0; width: 100%; height: 100%;
+                background: linear-gradient(rgba(26, 26, 46, 0.8), rgba(26, 26, 46, 0.8)), url('{anime_pic}') no-repeat center center;
+                background-size: cover;
+                z-index: -1;
             }}
             .container {{
                 background: rgba(255, 255, 255, 0.05);
@@ -40,9 +49,9 @@ async def root_route_handler(request):
                 max-width: 500px;
                 width: 90%;
             }}
-            img, video {{
-                width: 150px;
-                height: 150px;
+            .logo {{
+                width: 120px;
+                height: 120px;
                 border-radius: 50%;
                 margin-bottom: 20px;
                 border: 4px solid #e94560;
@@ -80,7 +89,9 @@ async def root_route_handler(request):
         </style>
     </head>
     <body>
+        <div class="background"></div>
         <div class="container">
+            <img src="{anime_pic}" alt="Logo" class="logo">
             <h1>{BOT_NAME}</h1>
             <p>Welcome to the official File Store Bot. Store and retrieve your files securely and at maximum speed.</p>
             <a href="{MAIN_LINK}" class="btn">Join Our Community</a>
@@ -98,13 +109,12 @@ async def redirect_handler(request):
     file_id = request.match_info.get('id')
     from helper_func import get_shortlink
     from config import URL, SHORTLINK_URL, SHORTLINK_API, BOT_NAME, PICS
-    import random
 
     bridge_link = f"{URL}/get/{file_id}"
     try:
         short_link = await get_shortlink(SHORTLINK_URL, SHORTLINK_API, bridge_link)
-
         anime_pic = random.choice(PICS)
+
         html_content = f"""
         <!DOCTYPE html>
         <html lang="en">
@@ -117,16 +127,26 @@ async def redirect_handler(request):
                     margin: 0; padding: 0;
                     height: 100%; width: 100%;
                     overflow: hidden;
-                    background: linear-gradient(rgba(26, 26, 46, 0.8), rgba(26, 26, 46, 0.8)), url('{anime_pic}') no-repeat center center fixed;
-                    background-size: cover;
+                    background: #1a1a2e;
                     color: white;
-                    display: flex; flex-direction: column;
-                    align-items: center; justify-content: center;
                     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
                 }}
-                .container {{
-                    text-align: center;
-                    z-index: 10;
+                .background {{
+                    position: fixed;
+                    top: 0; left: 0; width: 100%; height: 100%;
+                    background: linear-gradient(rgba(26, 26, 46, 0.8), rgba(26, 26, 46, 0.8)), url('{anime_pic}') no-repeat center center;
+                    background-size: cover;
+                    z-index: -1;
+                }}
+                .overlay {{
+                    position: absolute;
+                    top: 0; left: 0;
+                    width: 100%; height: 100%;
+                    background: rgba(26, 26, 46, 0.9);
+                    display: flex; flex-direction: column;
+                    align-items: center; justify-content: center;
+                    z-index: 5;
+                    transition: opacity 0.5s ease;
                 }}
                 .loader {{
                     width: 50px; height: 50px;
@@ -134,7 +154,7 @@ async def redirect_handler(request):
                     border-top: 5px solid #e94560;
                     border-radius: 50%;
                     animation: spin 1s linear infinite;
-                    margin: 0 auto 20px;
+                    margin-bottom: 20px;
                 }}
                 @keyframes spin {{ 0% {{ transform: rotate(0deg); }} 100% {{ transform: rotate(360deg); }} }}
                 h2 {{ color: #e94560; margin: 0; }}
@@ -145,40 +165,27 @@ async def redirect_handler(request):
                     width: 100%; height: 100%;
                     border: none;
                     z-index: 1;
-                    background: transparent;
-                }}
-                .overlay {{
-                    position: absolute;
-                    top: 0; left: 0;
-                    width: 100%; height: 100%;
-                    background: linear-gradient(rgba(26, 26, 46, 0.8), rgba(26, 26, 46, 0.8)), url('{anime_pic}') no-repeat center center fixed;
-                    background-size: cover;
-                    display: flex; flex-direction: column;
-                    align-items: center; justify-content: center;
-                    z-index: 5;
-                    transition: opacity 0.5s ease;
                 }}
             </style>
         </head>
         <body>
+            <div class="background"></div>
             <div class="overlay" id="overlay">
                 <div class="loader"></div>
                 <h2>Securing Your Link...</h2>
-                <p>Redirecting in a millisecond</p>
+                <p>Redirecting to your destination</p>
             </div>
 
             <iframe src="{short_link}" id="content_frame" onload="document.getElementById('overlay').style.opacity='0'; setTimeout(()=>{{document.getElementById('overlay').style.display='none'}}, 500);"></iframe>
 
             <script>
-                // Fast redirect fallback (500ms) to ensure user gets to destination even if iframe is blocked
                 setTimeout(() => {{
                     const overlay = document.getElementById('overlay');
                     if (overlay && overlay.style.display !== 'none') {{
                         window.location.replace("{short_link}");
                     }}
-                }}, 800);
+                }}, 2000);
 
-                // Immediate redirect if user clicks (failsafe)
                 document.body.onclick = function() {{
                     window.location.replace("{short_link}");
                 }};
@@ -188,7 +195,7 @@ async def redirect_handler(request):
         """
         return web.Response(text=html_content, content_type='text/html')
     except Exception as e:
-        print(f"Error generating shortlink in redirector: {e}")
+        print(f"Error in redirector: {e}")
         return web.HTTPFound(location=bridge_link)
 
 @routes.get("/get/{id}")
@@ -210,8 +217,7 @@ async def get_route_handler(request):
                 margin: 0;
                 padding: 0;
                 font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-                background: linear-gradient(rgba(26, 26, 46, 0.8), rgba(26, 26, 46, 0.8)), url('{anime_pic}') no-repeat center center fixed;
-                background-size: cover;
+                background: #1a1a2e;
                 color: white;
                 display: flex;
                 flex-direction: column;
@@ -219,6 +225,13 @@ async def get_route_handler(request):
                 justify-content: center;
                 height: 100vh;
                 text-align: center;
+            }}
+            .background {{
+                position: fixed;
+                top: 0; left: 0; width: 100%; height: 100%;
+                background: linear-gradient(rgba(26, 26, 46, 0.8), rgba(26, 26, 46, 0.8)), url('{anime_pic}') no-repeat center center;
+                background-size: cover;
+                z-index: -1;
             }}
             .container {{
                 background: rgba(255, 255, 255, 0.05);
@@ -230,9 +243,9 @@ async def get_route_handler(request):
                 max-width: 500px;
                 width: 90%;
             }}
-            img, video {{
-                width: 120px;
-                height: 120px;
+            .logo {{
+                width: 100px;
+                height: 100px;
                 border-radius: 50%;
                 margin-bottom: 20px;
                 border: 4px solid #e94560;
@@ -276,7 +289,9 @@ async def get_route_handler(request):
         </style>
     </head>
     <body>
+        <div class="background"></div>
         <div class="container">
+            <img src="{anime_pic}" alt="Logo" class="logo">
             <h2>Verify You're Human</h2>
             <p class="status" id="status_text">Please wait <span id="timer">5</span> seconds...</p>
             <a href="https://t.me/{bot.username}?start={file_id}" class="btn" id="verify_btn">Verify & Open Telegram</a>
@@ -296,7 +311,6 @@ async def get_route_handler(request):
                     timerElement.style.display = 'none';
                     btnElement.style.display = 'inline-block';
 
-                    // Auto redirect attempt
                     setTimeout(() => {{
                         window.location.href = "tg://resolve?domain={bot.username}&start={file_id}";
                     }}, 500);

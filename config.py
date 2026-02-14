@@ -119,7 +119,7 @@ PRICE4 = os.environ.get("PRICE4", "280 rs")
 PRICE5 = os.environ.get("PRICE5", "550 rs")
 UPI_ID = os.environ.get("UPI_ID", "ALONEKINGSTAR77@upi")
 SCREENSHOT_URL = os.environ.get("SCREENSHOT_URL", "https://t.me/ALONEKINGSTAR77")
-QR_PIC = os.environ.get("QR_PIC", "https://freeimage.host/i/q94kIvp")
+QR_PIC = os.environ.get("QR_PIC", "https://iili.io/q94kIvp.png")
 
 # Admin Texts
 CMD_TXT = """<b>⚡ ᴀᴅᴍɪɴ ᴄᴏᴍᴍᴀɴᴅs:</b>
