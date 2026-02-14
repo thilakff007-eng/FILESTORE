@@ -6,6 +6,7 @@ routes = web.RouteTableDef()
 
 @routes.get("/", allow_head=True)
 async def root_route_handler(request):
+    bot = request.app['bot']
     anime_pic = random.choice(PICS)
     html_content = f"""
     <!DOCTYPE html>
@@ -94,8 +95,9 @@ async def root_route_handler(request):
 
 @routes.get("/get/{id}")
 async def get_route_handler(request):
+    bot = request.app['bot']
     file_id = request.match_info.get('id')
-    from config import BOT_NAME, BOT_USERNAME, PICS
+    from config import BOT_NAME, PICS
     anime_pic = random.choice(PICS)
 
     html_content = f"""
@@ -179,7 +181,7 @@ async def get_route_handler(request):
             <img src="{anime_pic}" alt="Bot Logo">
             <h2>Verify You're Human</h2>
             <p class="status" id="status_text">Please wait <span id="timer">5</span> seconds...</p>
-            <a href="https://t.me/{BOT_USERNAME}?start={file_id}" class="btn" id="verify_btn">Verify & Open Telegram</a>
+            <a href="https://t.me/{bot.username}?start={file_id}" class="btn" id="verify_btn">Verify & Open Telegram</a>
         </div>
         <script>
             let timeLeft = 5;
@@ -195,6 +197,11 @@ async def get_route_handler(request):
                     statusText.innerText = "Verification Ready!";
                     timerElement.style.display = 'none';
                     btnElement.style.display = 'inline-block';
+
+                    // Auto redirect attempt
+                    setTimeout(() => {{
+                        window.location.href = "tg://resolve?domain={bot.username}&start={file_id}";
+                    }}, 500);
                 }}
             }}, 1000);
         </script>

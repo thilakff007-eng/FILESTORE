@@ -32,26 +32,26 @@ BOT_NAME = "⚡𝗛𝗘𝗠𝗔𝗡𝗧𝗛⚡"
 MAIN_LINK = "https://t.me/otakustartelugu"
 
 PICS = [
-    "https://freeimage.host/i/q94kIvp",
-    "https://freeimage.host/i/q94kfZF",
-    "https://freeimage.host/i/q94kn6J",
-    "https://freeimage.host/i/q94kCGa",
-    "https://freeimage.host/i/q94kTyN",
-    "https://freeimage.host/i/q94kVuS",
-    "https://freeimage.host/i/q94kRjt",
-    "https://freeimage.host/i/q94kXt9",
-    "https://freeimage.host/i/q94kwMu",
-    "https://freeimage.host/i/q94kWw7",
-    "https://freeimage.host/i/q94kN6b",
-    "https://freeimage.host/i/q94kgwP",
-    "https://freeimage.host/i/q94kv8Q",
-    "https://freeimage.host/i/q94krt1",
-    "https://freeimage.host/i/q94k6oF",
-    "https://freeimage.host/i/q94kLKJ",
-    "https://freeimage.host/i/q94kQcv",
-    "https://freeimage.host/i/q94kD9p",
-    "https://freeimage.host/i/q94kptt",
-    "https://freeimage.host/i/q94kmNI"
+    "https://iili.io/q94kIvp.png",
+    "https://iili.io/q94kfZF.png",
+    "https://iili.io/q94kn6J.png",
+    "https://iili.io/q94kCGa.png",
+    "https://iili.io/q94kTyN.png",
+    "https://iili.io/q94kVuS.png",
+    "https://iili.io/q94kRjt.png",
+    "https://iili.io/q94kXt9.png",
+    "https://iili.io/q94kwMu.png",
+    "https://iili.io/q94kWw7.png",
+    "https://iili.io/q94kN6b.png",
+    "https://iili.io/q94kgwP.png",
+    "https://iili.io/q94kv8Q.png",
+    "https://iili.io/q94krt1.png",
+    "https://iili.io/q94k6oF.png",
+    "https://iili.io/q94kLKJ.png",
+    "https://iili.io/q94kQcv.png",
+    "https://iili.io/q94kD9p.png",
+    "https://iili.io/q94kptt.png",
+    "https://iili.io/q94kmNI.png"
 ]
 
 # Random UI Images

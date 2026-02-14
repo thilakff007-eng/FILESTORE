@@ -110,7 +110,7 @@ class Bot(Client):
             self.LOGGER(__name__).info(f"Ensured initial FSUB channel {ch_id} is in Request Mode.")
 
         # Start Web Server
-        app = web.AppRunner(await web_server())
+        app = web.AppRunner(await web_server(self))
         await app.setup()
         await web.TCPSite(app, "0.0.0.0", PORT).start()
 

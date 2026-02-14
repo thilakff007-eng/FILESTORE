@@ -3,7 +3,7 @@
 </h1>
 
 <p align="center">
-  <img src="https://freeimage.host/i/q94kIvp" alt="Banner">
+  <img src="https://iili.io/q94kIvp.png" alt="Banner">
 </p>
 
 <p align="center">
