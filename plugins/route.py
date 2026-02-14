@@ -93,6 +93,21 @@ async def root_route_handler(request):
     """
     return web.Response(text=html_content, content_type='text/html')
 
+@routes.get("/v/{id}")
+async def redirect_handler(request):
+    file_id = request.match_info.get('id')
+    from helper_func import get_shortlink
+    from config import URL, SHORTLINK_URL, SHORTLINK_API
+
+    bridge_link = f"{URL}/get/{file_id}"
+    try:
+        short_link = await get_shortlink(SHORTLINK_URL, SHORTLINK_API, bridge_link)
+        return web.HTTPFound(location=short_link)
+    except Exception as e:
+        print(f"Error generating shortlink in redirector: {e}")
+        # Fallback to bridge link if shortener fails
+        return web.HTTPFound(location=bridge_link)
+
 @routes.get("/get/{id}")
 async def get_route_handler(request):
     bot = request.app['bot']

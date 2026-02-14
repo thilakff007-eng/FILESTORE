@@ -35,12 +35,12 @@ TUT_VID = f"{TUT_VID}"
 
 async def short_url(client: Client, message: Message, base64_string):
     try:
-        bridge_link = f"{URL}/get/yu3elk{base64_string}7"
-        short_link = await get_shortlink(SHORTLINK_URL, SHORTLINK_API, bridge_link)
+        # Hide shortlink using our own redirector domain
+        hidden_link = f"{URL}/v/yu3elk{base64_string}7"
 
         buttons = [
             [
-                InlineKeyboardButton(text="ᴅᴏᴡɴʟᴏᴀᴅ", url=short_link),
+                InlineKeyboardButton(text="ᴅᴏᴡɴʟᴏᴀᴅ", url=hidden_link),
                 InlineKeyboardButton(text="ᴛᴜᴛᴏʀɪᴀʟ", url=TUT_VID)
             ],
             [
