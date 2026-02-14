@@ -32,12 +32,31 @@ BOT_NAME = "⚡𝗛𝗘𝗠𝗔𝗡𝗧𝗛⚡"
 MAIN_LINK = "https://t.me/otakustartelugu"
 
 PICS = [
-    "https://files.catbox.moe/icjyxg.mp4"
+    "https://iili.io/q94kIvp.png",
+    "https://iili.io/q94kfZF.png",
+    "https://iili.io/q94kn6J.png",
+    "https://iili.io/q94kCGa.png",
+    "https://iili.io/q94kTyN.png",
+    "https://iili.io/q94kVuS.png",
+    "https://iili.io/q94kRjt.png",
+    "https://iili.io/q94kXt9.png",
+    "https://iili.io/q94kwMu.png",
+    "https://iili.io/q94kWw7.png",
+    "https://iili.io/q94kN6b.png",
+    "https://iili.io/q94kgwP.png",
+    "https://iili.io/q94kv8Q.png",
+    "https://iili.io/q94krt1.png",
+    "https://iili.io/q94k6oF.png",
+    "https://iili.io/q94kLKJ.png",
+    "https://iili.io/q94kQcv.png",
+    "https://iili.io/q94kD9p.png",
+    "https://iili.io/q94kptt.png",
+    "https://iili.io/q94kmNI.png"
 ]
 
 # Random UI Images
-START_PIC = "https://files.catbox.moe/icjyxg.mp4"
-FORCE_PIC = "https://files.catbox.moe/icjyxg.mp4"
+START_PIC = PICS[0]
+FORCE_PIC = PICS[1]
 
 # Bot Settings
 URL = os.environ.get("URL", "https://filestore-3-qhxv.onrender.com")
