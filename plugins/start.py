@@ -48,11 +48,11 @@ async def short_url(client: Client, message: Message, base64_string):
             ]
         ]
 
-        await message.reply_photo(
-            photo=random.choice(PICS),
-            caption=SHORT_MSG.format(
-            ),
-            reply_markup=InlineKeyboardMarkup(buttons),
+        await send_media(
+            message=message,
+            media=random.choice(PICS),
+            caption=SHORT_MSG.format(),
+            reply_markup=InlineKeyboardMarkup(buttons)
         )
 
     except IndexError:
@@ -216,13 +216,15 @@ async def start_command(client: Client, message: Message):
                 ]
             ]
         )
-        await message.reply_photo(
-            photo=random.choice(PICS),
+        await send_media(
+            message=message,
+            media=random.choice(PICS),
             caption=START_MSG.format(
                 mention=message.from_user.mention,
                 bot_name=BOT_NAME
             ),
-            reply_markup=reply_markup)
+            reply_markup=reply_markup
+        )
         
         return
 
@@ -302,12 +304,13 @@ async def not_joined(client: Client, message: Message):
         except IndexError:
             pass
 
-        await message.reply_photo(
-            photo=random.choice(PICS),
+        await send_media(
+            message=message,
+            media=random.choice(PICS),
             caption=FORCE_MSG.format(
                 mention=message.from_user.mention
             ),
-            reply_markup=InlineKeyboardMarkup(buttons),
+            reply_markup=InlineKeyboardMarkup(buttons)
         )
 
     except Exception as e:

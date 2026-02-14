@@ -243,6 +243,26 @@ async def get_shortlink(url, api, link):
     link = await shortzy.convert(link)
     return link
 
+async def send_media(message, media, caption, reply_markup=None):
+    if media.endswith(('.mp4', '.mkv', '.webm')):
+        try:
+            return await message.reply_video(
+                video=media,
+                caption=caption,
+                reply_markup=reply_markup
+            )
+        except Exception:
+            return await message.reply_animation(
+                animation=media,
+                caption=caption,
+                reply_markup=reply_markup
+            )
+    else:
+        return await message.reply_photo(
+            photo=media,
+            caption=caption,
+            reply_markup=reply_markup
+        )
 
 subscribed = filters.create(is_subscribed)
 admin = filters.create(check_admin)

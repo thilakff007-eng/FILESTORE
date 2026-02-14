@@ -88,10 +88,8 @@ async def cb_handler(client: Bot, query: CallbackQuery):
     elif data == "premium":
         await query.answer()
         await query.message.delete()
-        await client.send_photo(
-            chat_id=query.message.chat.id,
-            photo=random.choice(PICS),
-            caption=(
+        media = random.choice(PICS)
+        caption = (
                 f"👋 {query.from_user.mention}\n\n"
                 f"🎖️ Available Plans :\n\n"
                 f"● {PRICE1}  For 0 Days Prime Membership\n\n"
@@ -102,18 +100,32 @@ async def cb_handler(client: Bot, query: CallbackQuery):
                 f"💵 ASK UPI ID TO ADMIN AND PAY THERE -  <code>{UPI_ID}</code>\n\n\n"
                 f"♻️ After Payment You Will Get Instant Membership \n\n\n"
                 f"‼️ Must Send Screenshot after payment & If anyone want custom time membrship then ask admin"
-            ),
-            reply_markup=InlineKeyboardMarkup(
-                [
-                    [
-                        InlineKeyboardButton(
-                            "ADMIN 24/7", url=(SCREENSHOT_URL)
-                        )
-                    ],
-                    [InlineKeyboardButton("🔒 Close", callback_data="close")],
-                ]
             )
+        reply_markup = InlineKeyboardMarkup(
+            [
+                [
+                    InlineKeyboardButton(
+                        "ADMIN 24/7", url=(SCREENSHOT_URL)
+                    )
+                ],
+                [InlineKeyboardButton("🔒 Close", callback_data="close")],
+            ]
         )
+
+        if media.endswith(('.mp4', '.mkv', '.webm')):
+            await client.send_video(
+                chat_id=query.message.chat.id,
+                video=media,
+                caption=caption,
+                reply_markup=reply_markup
+            )
+        else:
+            await client.send_photo(
+                chat_id=query.message.chat.id,
+                photo=media,
+                caption=caption,
+                reply_markup=reply_markup
+            )
 
 
 

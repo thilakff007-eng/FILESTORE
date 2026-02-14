@@ -39,7 +39,7 @@ async def root_route_handler(request):
                 max-width: 500px;
                 width: 90%;
             }}
-            img {{
+            img, video {{
                 width: 150px;
                 height: 150px;
                 border-radius: 50%;
@@ -80,7 +80,7 @@ async def root_route_handler(request):
     </head>
     <body>
         <div class="container">
-            <img src="{anime_pic}" alt="Bot Logo">
+            {'<video autoplay muted loop playsinline><source src="' + anime_pic + '" type="video/mp4"></video>' if anime_pic.endswith('.mp4') else '<img src="' + anime_pic + '" alt="Bot Logo">'}
             <h1>{BOT_NAME}</h1>
             <p>Welcome to the official File Store Bot. Store and retrieve your files securely and at maximum speed.</p>
             <a href="{MAIN_LINK}" class="btn">Join Our Community</a>
@@ -131,7 +131,7 @@ async def get_route_handler(request):
                 max-width: 500px;
                 width: 90%;
             }}
-            img {{
+            img, video {{
                 width: 120px;
                 height: 120px;
                 border-radius: 50%;
@@ -178,7 +178,7 @@ async def get_route_handler(request):
     </head>
     <body>
         <div class="container">
-            <img src="{anime_pic}" alt="Bot Logo">
+            {'<video autoplay muted loop playsinline><source src="' + anime_pic + '" type="video/mp4"></video>' if anime_pic.endswith('.mp4') else '<img src="' + anime_pic + '" alt="Bot Logo">'}
             <h2>Verify You're Human</h2>
             <p class="status" id="status_text">Please wait <span id="timer">5</span> seconds...</p>
             <a href="https://t.me/{bot.username}?start={file_id}" class="btn" id="verify_btn">Verify & Open Telegram</a>
