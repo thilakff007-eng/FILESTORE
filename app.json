@@ -48,6 +48,11 @@
       "description": "Protect contents from getting forwarded",
       "value": "False",
       "required": false
+    },
+    "FILE_AUTO_DELETE": {
+      "description": "File Auto Delete time in seconds (0 to disable)",
+      "value": "0",
+      "required": false
     }
   },
   "buildpacks": [

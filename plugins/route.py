@@ -7,6 +7,31 @@ routes = web.RouteTableDef()
 def get_random_pic():
     return random.choice(PICS)
 
+WATERMARK_STYLE = """
+            .watermark {
+                position: fixed;
+                bottom: 10px;
+                left: 10px;
+                font-size: 18px;
+                font-weight: bold;
+                z-index: 999;
+                opacity: 0.8;
+                background: linear-gradient(to right, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #8f00ff);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                animation: rainbow_animation 3s linear infinite;
+                background-size: 200% auto;
+                pointer-events: none;
+                text-shadow: 0 0 5px rgba(0,0,0,0.5);
+            }
+            @keyframes rainbow_animation {
+                0% { background-position: 0% 50%; }
+                100% { background-position: 200% 50%; }
+            }
+"""
+
+WATERMARK_DIV = '<div class="watermark">OTAKUSTARTELUGU</div>'
+
 @routes.get("/", allow_head=True)
 async def root_route_handler(request):
     anime_pic = get_random_pic()
@@ -86,10 +111,12 @@ async def root_route_handler(request):
                 font-size: 0.9em;
                 opacity: 0.5;
             }}
+            {WATERMARK_STYLE}
         </style>
     </head>
     <body>
         <div class="background"></div>
+        {WATERMARK_DIV}
         <div class="container">
             <img src="{anime_pic}" alt="Logo" class="logo">
             <h1>{BOT_NAME}</h1>
@@ -166,10 +193,12 @@ async def redirect_handler(request):
                     border: none;
                     z-index: 1;
                 }}
+                {WATERMARK_STYLE}
             </style>
         </head>
         <body>
             <div class="background"></div>
+            {WATERMARK_DIV}
             <div class="overlay" id="overlay">
                 <div class="loader"></div>
                 <h2>Securing Your Link...</h2>
@@ -286,10 +315,12 @@ async def get_route_handler(request):
                 font-size: 0.9em;
                 opacity: 0.5;
             }}
+            {WATERMARK_STYLE}
         </style>
     </head>
     <body>
         <div class="background"></div>
+        {WATERMARK_DIV}
         <div class="container">
             <img src="{anime_pic}" alt="Logo" class="logo">
             <h2>Verify You're Human</h2>
