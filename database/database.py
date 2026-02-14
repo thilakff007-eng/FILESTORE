@@ -1,16 +1,13 @@
 #@ALONEKINGSTAR77_Botz
 #@ALONEKINGSTAR77 on Tg
 
-import motor, asyncio
+import asyncio
 import motor.motor_asyncio
 import time
-import pymongo, os
+import os
 from config import DB_URI, DB_NAME
 import logging
 from datetime import datetime, timedelta
-
-dbclient = pymongo.MongoClient(DB_URI)
-database = dbclient[DB_NAME]
 
 logging.basicConfig(level=logging.INFO)
 

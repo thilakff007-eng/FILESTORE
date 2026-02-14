@@ -20,7 +20,8 @@ async def root_route_handler(request):
                 margin: 0;
                 padding: 0;
                 font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-                background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+                background: linear-gradient(rgba(26, 26, 46, 0.8), rgba(26, 26, 46, 0.8)), url('{anime_pic}') no-repeat center center fixed;
+                background-size: cover;
                 color: white;
                 display: flex;
                 flex-direction: column;
@@ -80,7 +81,6 @@ async def root_route_handler(request):
     </head>
     <body>
         <div class="container">
-            {'<video autoplay muted loop playsinline><source src="' + anime_pic + '" type="video/mp4"></video>' if anime_pic.endswith('.mp4') else '<img src="' + anime_pic + '" alt="Bot Logo">'}
             <h1>{BOT_NAME}</h1>
             <p>Welcome to the official File Store Bot. Store and retrieve your files securely and at maximum speed.</p>
             <a href="{MAIN_LINK}" class="btn">Join Our Community</a>
@@ -117,7 +117,8 @@ async def redirect_handler(request):
                     margin: 0; padding: 0;
                     height: 100%; width: 100%;
                     overflow: hidden;
-                    background-color: #1a1a2e;
+                    background: linear-gradient(rgba(26, 26, 46, 0.8), rgba(26, 26, 46, 0.8)), url('{anime_pic}') no-repeat center center fixed;
+                    background-size: cover;
                     color: white;
                     display: flex; flex-direction: column;
                     align-items: center; justify-content: center;
@@ -144,13 +145,14 @@ async def redirect_handler(request):
                     width: 100%; height: 100%;
                     border: none;
                     z-index: 1;
-                    background: white;
+                    background: transparent;
                 }}
                 .overlay {{
                     position: absolute;
                     top: 0; left: 0;
                     width: 100%; height: 100%;
-                    background: #1a1a2e;
+                    background: linear-gradient(rgba(26, 26, 46, 0.8), rgba(26, 26, 46, 0.8)), url('{anime_pic}') no-repeat center center fixed;
+                    background-size: cover;
                     display: flex; flex-direction: column;
                     align-items: center; justify-content: center;
                     z-index: 5;
@@ -208,7 +210,8 @@ async def get_route_handler(request):
                 margin: 0;
                 padding: 0;
                 font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-                background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+                background: linear-gradient(rgba(26, 26, 46, 0.8), rgba(26, 26, 46, 0.8)), url('{anime_pic}') no-repeat center center fixed;
+                background-size: cover;
                 color: white;
                 display: flex;
                 flex-direction: column;
@@ -274,7 +277,6 @@ async def get_route_handler(request):
     </head>
     <body>
         <div class="container">
-            {'<video autoplay muted loop playsinline><source src="' + anime_pic + '" type="video/mp4"></video>' if anime_pic.endswith('.mp4') else '<img src="' + anime_pic + '" alt="Bot Logo">'}
             <h2>Verify You're Human</h2>
             <p class="status" id="status_text">Please wait <span id="timer">5</span> seconds...</p>
             <a href="https://t.me/{bot.username}?start={file_id}" class="btn" id="verify_btn">Verify & Open Telegram</a>
