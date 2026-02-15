@@ -20,8 +20,8 @@ from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, 
 from pyrogram.errors.exceptions.bad_request_400 import UserNotParticipant, InviteHashEmpty, ChatAdminRequired, PeerIdInvalid, UserIsBlocked, InputUserDeactivated, UserNotParticipant
 from bot import Bot
 from config import *
-from helper_func import *
-from database.database import *
+from helper_func import admin
+from database.database import db
 
 # Don't Remove Credit @ALONEKINGSTAR77, @ALONEKINGSTAR77
 # Ask Doubt on telegram @ALONEKINGSTAR77Support

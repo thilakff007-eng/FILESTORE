@@ -22,8 +22,8 @@ import pytz
 from datetime import datetime
 #@ALONEKINGSTAR77 on Tg
 from config import *
-from database.db_premium import *
-from database.database import *
+from database.db_premium import remove_expired_users
+from database.database import db
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 import logging
 
