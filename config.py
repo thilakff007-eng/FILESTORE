@@ -92,7 +92,7 @@ FORCE_PIC = PICS[1]
 
 # Bot Settings
 FILE_AUTO_DELETE = int(os.environ.get("FILE_AUTO_DELETE", "0"))
-URL = os.environ.get("URL", "https://filestore-3-qhxv.onrender.com")
+URL = os.environ.get("URL", "worker-production-408e.up.railway.app")
 BOT_USERNAME = os.environ.get("BOT_USERNAME", "ALONEKINGSTAR77")
 PORT = os.environ.get("PORT", "8080")
 FSUB_LINK_EXPIRY = int(os.getenv("FSUB_LINK_EXPIRY", "10"))
