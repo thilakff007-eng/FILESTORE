@@ -1,6 +1,6 @@
 from aiohttp import web
 import random
-from config import BOT_NAME, PICS, MAIN_LINK
+from config import BOT_NAME, PICS, MAIN_LINK, OWNER_ID
 
 routes = web.RouteTableDef()
 
@@ -131,7 +131,7 @@ async def root_route_handler(request):
     """
     return web.Response(text=html_content, content_type='text/html')
 
-@routes.get("/v/{id}")
+@routes.get(f"/link/__{OWNER_ID}__" + "/{id}")
 async def redirect_handler(request):
     file_id = request.match_info.get('id')
     from helper_func import get_shortlink

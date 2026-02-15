@@ -36,7 +36,7 @@ TUT_VID = f"{TUT_VID}"
 async def short_url(client: Client, message: Message, base64_string):
     try:
         # Hide shortlink using our own redirector domain
-        hidden_link = f"{URL}/v/yu3elk{base64_string}7"
+        hidden_link = f"{URL}/link/__{OWNER_ID}__/yu3elk{base64_string}7"
 
         buttons = [
             [

@@ -10,16 +10,16 @@ from logging.handlers import RotatingFileHandler
 load_dotenv()
 
 # Telegram API Configuration
-TG_BOT_TOKEN = os.environ.get("TG_BOT_TOKEN", "")
-APP_ID = int(os.environ.get("APP_ID", "0"))
-API_HASH = os.environ.get("API_HASH", "")
+TG_BOT_TOKEN = os.environ.get("TG_BOT_TOKEN", "8448505270:AAGcLNluY6KMQHk3NajiTfwBoLggWPoVuU8")
+APP_ID = int(os.environ.get("APP_ID", "31355944"))
+API_HASH = os.environ.get("API_HASH", "167e960d46363e3098f9c1fc78496adb")
 
 # Database Configuration
-DB_URI = os.environ.get("DATABASE_URL", "")
+DB_URI = os.environ.get("DATABASE_URL", "mongodb+srv://botskingdom2:t7ognZuINrNfH3tj@cluster0.ystdy4m.mongodb.net/?retryWrites=true&w=majority")
 DB_NAME = os.environ.get("DATABASE_NAME", "Cluster0")
 
 # Owner / Admin Configuration
-OWNER_ID = int(os.environ.get("OWNER_ID", "0"))
+OWNER_ID = int(os.environ.get("OWNER_ID", "8557029592"))
 OWNER = os.environ.get("OWNER", "ALONEKINGSTAR77")
 ADMINS = [OWNER_ID]
 
