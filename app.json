@@ -53,6 +53,11 @@
       "description": "File Auto Delete time in seconds (0 to disable)",
       "value": "0",
       "required": false
+    },
+    "URL": {
+      "description": "The Domain URL (without https://)",
+      "value": "worker-production-408e.up.railway.app",
+      "required": false
     }
   },
   "buildpacks": [

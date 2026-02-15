@@ -33,10 +33,25 @@ from database.db_premium import *
 BAN_SUPPORT = f"{BAN_SUPPORT}"
 TUT_VID = f"{TUT_VID}"
 
+async def report_to_owner(client: Client, user_id, username, reason):
+    try:
+        report_msg = (
+            f"<b>✧─── [ ⚠️ ᴀɴᴛɪ-ʙᴏᴛ ᴛʀɪɢɢᴇʀ ⚠️ ] ───✧</b>\n\n"
+            f"<b>👤 ᴜsᴇʀ ID:</b> <code>{user_id}</code>\n"
+            f"<b>🔗 ᴜsᴇʀɴᴀᴍᴇ:</b> @{username}\n"
+            f"<b>⏰ ᴛɪᴍᴇ:</b> <code>{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}</code>\n"
+            f"<b>🚫 ʀᴇᴀsᴏɴ:</b> <code>{reason}</code>\n\n"
+            f"<b>✨ ᴜsᴇʀ ʜᴀs ʙᴇᴇɴ ᴀᴜᴛᴏᴍᴀᴛɪᴄᴀʟʟʏ ʙᴀɴɴᴇᴅ. ✧</b>"
+        )
+        await client.send_message(OWNER_ID, report_msg)
+    except Exception as e:
+        print(f"Error reporting to owner: {e}")
+
 async def short_url(client: Client, message: Message, base64_string):
     try:
         # Hide shortlink using our own redirector domain
-        hidden_link = f"{URL}/link/__{OWNER_ID}__/yu3elk{base64_string}7"
+        base_url = f"https://{URL}" if not URL.startswith("http") else URL
+        hidden_link = f"{base_url}/link/__{OWNER_ID}__/yu3elk{base64_string}7"
 
         buttons = [
             [
@@ -62,8 +77,8 @@ async def short_url(client: Client, message: Message, base64_string):
 @Bot.on_message(filters.command('start') & filters.private)
 async def start_command(client: Client, message: Message):
     user_id = message.from_user.id
-    id = message.from_user.id
-    is_premium = await is_premium_user(id)
+    username = message.from_user.username or "N/A"
+    is_premium = await is_premium_user(user_id)
 
     # Add user if not already present
     if not await db.present_user(user_id):
@@ -72,20 +87,20 @@ async def start_command(client: Client, message: Message):
         except:
             pass
 
+    # Check if user is banned (Early exit)
+    if await db.ban_user_exist(user_id):
+        return await message.reply_text(
+            "<b>✧─── [ 🚫 ᴀᴄᴄᴇss ᴅᴇɴɪᴇᴅ 🚫 ] ───✧</b>\n\n"
+            "<b><blockquote>⛔️ You are Bᴀɴɴᴇᴅ from using this bot.</blockquote></b>\n\n"
+            "<i>✨ Contact support if you think this is a mistake. ✧</i>",
+            reply_markup=InlineKeyboardMarkup(
+                [[InlineKeyboardButton("💎 Contact Support", url=BAN_SUPPORT)]]
+            )
+        )
+
     # ✅ Check Force Subscription
     if not await is_subscribed(client, user_id):
         return await not_joined(client, message)
-
-    # Check if user is banned
-    banned_users = await db.get_ban_users()
-    if user_id in banned_users:
-        return await message.reply_text(
-            "<b>⛔️ You are Bᴀɴɴᴇᴅ from using this bot.</b>\n\n"
-            "<i>Contact support if you think this is a mistake.</i>",
-            reply_markup=InlineKeyboardMarkup(
-                [[InlineKeyboardButton("Contact Support", url=BAN_SUPPORT)]]
-            )
-        )
 
     # File auto-delete time in seconds
     FILE_AUTO_DELETE = await db.get_del_timer()
@@ -94,6 +109,18 @@ async def start_command(client: Client, message: Message):
     text = message.text
 
     if len(text) > 7:
+        # Anti-Bot Protection System
+        antibot_data = await db.get_antibot_data(user_id)
+        now = time.time()
+        last_delivered = antibot_data.get('last_delivered_ts', 0)
+
+        # Check for fast retry (Automation Abuse)
+        if last_delivered > 0 and (now - last_delivered) < ANTIBOT_LIMIT:
+            await db.add_ban_user(user_id)
+            await db.log_antibot_ban(user_id, username, "Anti-bot trigger: Fast retry / Automation detected")
+            await report_to_owner(client, user_id, username, "Fast retry / Automation detected")
+            return await message.reply_text("<b>✧─── [ ⚠️ ʙᴏᴛ ᴅᴇᴛᴇᴄᴛᴇᴅ ⚠️ ] ───✧</b>\n\n<b>🚫 ᴀᴜᴛᴏᴍᴀᴛɪᴏɴ ᴀʙᴜsᴇ ᴅᴇᴛᴇᴄᴛᴇᴅ! ʏᴏᴜ ʜᴀᴠᴇ ʙᴇᴇɴ ᴀᴜᴛᴏᴍᴀᴛɪᴄᴀʟʟʏ ʙᴀɴɴᴇᴅ. ✧</b>")
+
         try:
             basic = text.split(" ", 1)[1]
             if basic.startswith("direct_"):
@@ -107,8 +134,20 @@ async def start_command(client: Client, message: Message):
                 is_direct = False
 
             if not is_premium and user_id != OWNER_ID and not is_direct:
+                # User must solve shortlink within 2 minutes logic
+                # We update the link sent time here
+                antibot_data['last_link_sent_ts'] = now
+                await db.update_antibot_data(user_id, antibot_data)
+
                 await short_url(client, message, base64_string)
                 return
+
+            # If they reached here, they either bypassed (direct/premium) or solved it
+            # Check solve time if not premium/direct
+            if not is_premium and user_id != OWNER_ID and not is_direct:
+                last_link_sent = antibot_data.get('last_link_sent_ts', 0)
+                if last_link_sent > 0 and (now - last_link_sent) > ANTIBOT_SOLVE_TIME:
+                    return await message.reply_text("<b>✧─── [ ⏰ ᴛɪᴍᴇ ᴇxᴘɪʀᴇᴅ ⏰ ] ───✧</b>\n\n<b><blockquote>⚠️ ʏᴏᴜ ᴛᴏᴏᴋ ᴛᴏᴏ ʟᴏɴɢ ᴛᴏ sᴏʟᴠᴇ ᴛʜᴇ sʜᴏʀᴛʟɪɴᴋ. ᴘʟᴇᴀsᴇ ᴛʀʏ ᴀɢᴀɪɴ ᴡɪᴛʜɪɴ 2 ᴍɪɴᴜᴛᴇs. ✧</blockquote></b>")
 
         except Exception as e:
             print(f"Error processing start payload: {e}")
@@ -176,6 +215,12 @@ async def start_command(client: Client, message: Message):
         snt_msgs = await asyncio.gather(*tasks)
         fsub_msgs = [m for m in snt_msgs if m]
 
+        # Record successful delivery for anti-bot check
+        if fsub_msgs:
+            antibot_data = await db.get_antibot_data(user_id)
+            antibot_data['last_delivered_ts'] = time.time()
+            await db.update_antibot_data(user_id, antibot_data)
+
         if FILE_AUTO_DELETE > 0:
             notification_msg = await message.reply(
                 f"<b>Tʜɪs Fɪʟᴇ ᴡɪʟʟ ʙᴇ Dᴇʟᴇᴛᴇᴅ ɪɴ  {get_exp_time(FILE_AUTO_DELETE)}. Pʟᴇᴀsᴇ sᴀᴠᴇ ᴏʀ ғᴏʀᴡᴀʀᴅ ɪᴛ ᴛᴏ ʏᴏᴜʀ sᴀᴠᴇᴅ ᴍᴇssᴀɢᴇs ʙᴇғᴏʀᴇ ɪᴛ ɢᴇᴛs Dᴇʟᴇᴛᴇᴅ.</b>"
@@ -201,7 +246,9 @@ async def start_command(client: Client, message: Message):
                 ) if reload_url else None
 
                 await notification_msg.edit(
-                    "<b>ʏᴏᴜʀ ᴠɪᴅᴇᴏ / ꜰɪʟᴇ ɪꜱ ꜱᴜᴄᴄᴇꜱꜱꜰᴜʟʟʏ ᴅᴇʟᴇᴛᴇᴅ !!\n\nᴄʟɪᴄᴋ ʙᴇʟᴏᴡ ʙᴜᴛᴛᴏɴ ᴛᴏ ɢᴇᴛ ʏᴏᴜʀ ᴅᴇʟᴇᴛᴇᴅ ᴠɪᴅᴇᴏ / ꜰɪʟᴇ 👇</b>",
+                    "<b>✧─── [ 🗑️ ғɪʟᴇ ᴅᴇʟᴇᴛᴇᴅ 🗑️ ] ───✧</b>\n\n"
+                    "<b><blockquote>ʏᴏᴜʀ ᴠɪᴅᴇᴏ / ꜰɪʟᴇ ɪꜱ ꜱᴜᴄᴄᴇꜱꜱꜰᴜʟʟʏ ᴅᴇʟᴇᴛᴇᴅ !!</blockquote></b>\n\n"
+                    "<b>✨ ᴄʟɪᴄᴋ ʙᴇʟᴏᴡ ʙᴜᴛᴛᴏɴ ᴛᴏ ɢᴇᴛ ɪᴛ ᴀɢᴀɪɴ 👇 ✧</b>",
                     reply_markup=keyboard
                 )
             except Exception as e:

@@ -45,13 +45,18 @@ class Database:
         self.fsub_data = self.database['fsub']   
         self.rqst_fsub_data = self.database['request_forcesub']
         self.rqst_fsub_Channel_data = self.database['request_forcesub_channel']
-        
+        self.antibot_logs = self.database['antibot_logs']
+
         # Cache for del_timer
         self.del_timer_cache = None
         self.del_timer_cache_ts = 0
 
         # Cache for present users
         self.users_cache = set()
+
+        # Cache for banned users
+        self.banned_cache = {}
+        self.banned_cache_time = 60
 
 
     # USER DATA
@@ -101,10 +106,19 @@ class Database:
 
     # BAN USER DATA
     async def ban_user_exist(self, user_id: int):
+        now = time.time()
+        if user_id in self.banned_cache:
+            val, ts = self.banned_cache[user_id]
+            if now - ts < self.banned_cache_time:
+                return val
+
         found = await self.banned_user_data.find_one({'_id': user_id})
-        return bool(found)
+        res = bool(found)
+        self.banned_cache[user_id] = (res, now)
+        return res
 
     async def add_ban_user(self, user_id: int):
+        self.banned_cache[user_id] = (True, time.time())
         if not await self.ban_user_exist(user_id):
             await self.banned_user_data.insert_one({'_id': user_id})
             return
@@ -281,6 +295,25 @@ class Database:
         ]
         result = await self.sex_data.aggregate(pipeline).to_list(length=1)
         return result[0]["total"] if result else 0
+
+    # ANTI-BOT DATA
+    async def get_antibot_data(self, user_id: int):
+        user = await self.user_data.find_one({'_id': user_id})
+        if user:
+            return user.get('antibot', {})
+        return {}
+
+    async def update_antibot_data(self, user_id: int, data: dict):
+        await self.user_data.update_one({'_id': user_id}, {'$set': {'antibot': data}}, upsert=True)
+
+    async def log_antibot_ban(self, user_id: int, username: str, reason: str):
+        log_entry = {
+            'user_id': user_id,
+            'username': username,
+            'reason': reason,
+            'timestamp': datetime.now()
+        }
+        await self.antibot_logs.insert_one(log_entry)
 
 
 db = Database(DB_URI, DB_NAME)

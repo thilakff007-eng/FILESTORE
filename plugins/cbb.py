@@ -19,7 +19,7 @@ async def cb_handler(client: Bot, query: CallbackQuery):
     data = query.data
 
     if data == "help":
-        await query.answer()
+        await query.answer("✨ Opening Help Menu... ✧", show_alert=False)
         await query.message.edit_text(
             text=HELP_TXT.format(
                 mention=query.from_user.mention,
@@ -28,13 +28,13 @@ async def cb_handler(client: Bot, query: CallbackQuery):
             ),
             disable_web_page_preview=True,
             reply_markup=InlineKeyboardMarkup([
-                [InlineKeyboardButton('ʜᴏᴍᴇ', callback_data='start'),
-                 InlineKeyboardButton("ᴄʟᴏꜱᴇ", callback_data='close')]
+                [InlineKeyboardButton('✨ ʜᴏᴍᴇ', callback_data='start'),
+                 InlineKeyboardButton("🌸 ᴄʟᴏꜱᴇ", callback_data='close')]
             ])
         )
 
     elif data == "about":
-        await query.answer()
+        await query.answer("🌸 Opening About Menu... ✧", show_alert=False)
         await query.message.edit_text(
             text=ABOUT_TXT.format(
                 bot_name=BOT_NAME,
@@ -44,13 +44,13 @@ async def cb_handler(client: Bot, query: CallbackQuery):
             ),
             disable_web_page_preview=True,
             reply_markup=InlineKeyboardMarkup([
-                [InlineKeyboardButton('ʜᴏᴍᴇ', callback_data='start'),
-                 InlineKeyboardButton('ᴄʟᴏꜱᴇ', callback_data='close')]
+                [InlineKeyboardButton('✨ ʜᴏᴍᴇ', callback_data='start'),
+                 InlineKeyboardButton('🌸 ᴄʟᴏꜱᴇ', callback_data='close')]
             ])
         )
 
     elif data == "start":
-        await query.answer()
+        await query.answer("⚡ Welcome Back! ✧", show_alert=False)
         await query.message.edit_text(
             text=START_MSG.format(
                 mention=query.from_user.mention,
@@ -60,12 +60,15 @@ async def cb_handler(client: Bot, query: CallbackQuery):
             reply_markup=InlineKeyboardMarkup(
                 [
                     [
-                        InlineKeyboardButton("🏯 Community", url=MAIN_LINK),
-                        InlineKeyboardButton("⚡ Updates", url="https://t.me/ALONEKINGSTAR77")
+                        InlineKeyboardButton("🏯 ᴄᴏᴍᴍᴜɴɪᴛʏ", url=MAIN_LINK),
+                        InlineKeyboardButton("⚡ ᴜᴘᴅᴀᴛᴇs", url="https://t.me/ALONEKINGSTAR77")
                     ],
                     [
-                        InlineKeyboardButton("🌸 About", callback_data="about"),
-                        InlineKeyboardButton("⭐ Help", callback_data="help")
+                        InlineKeyboardButton("🌸 ᴀʙᴏᴜᴛ", callback_data="about"),
+                        InlineKeyboardButton("⭐ ʜᴇʟᴘ", callback_data="help")
+                    ],
+                    [
+                        InlineKeyboardButton("💎 ᴘʀᴇᴍɪᴜᴍ ᴀᴄᴄᴇss 💎", callback_data="premium")
                     ]
                 ]
             )
@@ -86,29 +89,30 @@ async def cb_handler(client: Bot, query: CallbackQuery):
 
 
     elif data == "premium":
-        await query.answer()
+        await query.answer("💎 Unlock Premium Features! ✧", show_alert=False)
         await query.message.delete()
         media = random.choice(PICS)
         caption = (
-                f"👋 {query.from_user.mention}\n\n"
-                f"🎖️ Available Plans :\n\n"
-                f"● {PRICE1}  For 0 Days Prime Membership\n\n"
-                f"● {PRICE2}  For 1 Month Prime Membership\n\n"
-                f"● {PRICE3}  For 3 Months Prime Membership\n\n"
-                f"● {PRICE4}  For 6 Months Prime Membership\n\n"
-                f"● {PRICE5}  For 1 Year Prime Membership\n\n\n"
-                f"💵 ASK UPI ID TO ADMIN AND PAY THERE -  <code>{UPI_ID}</code>\n\n\n"
-                f"♻️ After Payment You Will Get Instant Membership \n\n\n"
-                f"‼️ Must Send Screenshot after payment & If anyone want custom time membrship then ask admin"
+                f"✧─── [ 💎 ᴘʀᴇᴍɪᴜᴍ ᴘʟᴀɴs 💎 ] ───✧\n\n"
+                f"👋 ʜᴇʟʟᴏ {query.from_user.mention}!\n"
+                f"🎖️ ᴀᴠᴀɪʟᴀʙʟᴇ ᴇxᴄʟᴜsɪᴠᴇ ᴘʟᴀɴs:\n\n"
+                f"● ✨ {PRICE1} - 0 ᴅᴀʏs ᴛʀɪᴀʟ\n"
+                f"● ✨ {PRICE2} - 1 ᴍᴏɴᴛʜ ᴘʀɪᴍᴇ\n"
+                f"● ✨ {PRICE3} - 3 ᴍᴏɴᴛʜs ᴘʀɪᴍᴇ\n"
+                f"● ✨ {PRICE4} - 6 ᴍᴏɴᴛʜs ᴘʀɪᴍᴇ\n"
+                f"● ✨ {PRICE5} - 1 ʏᴇᴀʀ ᴘʀɪᴍᴇ\n\n"
+                f"<b>💵 ᴘᴀʏ ᴠɪᴀ ᴜᴘɪ ɪᴅ:</b> <code>{UPI_ID}</code>\n\n"
+                f"<b>♻️ ɪɴsᴛᴀɴᴛ ᴀᴄᴛɪᴠᴀᴛɪᴏɴ ᴀғᴛᴇʀ ᴘᴀʏᴍᴇɴᴛ.</b>\n"
+                f"‼️ sᴇɴᴅ sᴄʀᴇᴇɴsʜᴏᴛ ᴛᴏ ᴀᴅᴍɪɴ ғᴏʀ ᴠᴇʀɪғɪᴄᴀᴛɪᴏɴ. ✧"
             )
         reply_markup = InlineKeyboardMarkup(
             [
                 [
                     InlineKeyboardButton(
-                        "ADMIN 24/7", url=(SCREENSHOT_URL)
+                        "👨‍💻 ᴄᴏɴᴛᴀᴄᴛ ᴀᴅᴍɪɴ", url=(SCREENSHOT_URL)
                     )
                 ],
-                [InlineKeyboardButton("🔒 Close", callback_data="close")],
+                [InlineKeyboardButton("🌸 ᴄʟᴏsᴇ", callback_data="close")],
             ]
         )
 

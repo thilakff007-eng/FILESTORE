@@ -10,27 +10,30 @@ def get_random_pic():
 WATERMARK_STYLE = """
             .watermark {
                 position: fixed;
-                bottom: 10px;
-                left: 10px;
-                font-size: 18px;
-                font-weight: bold;
+                bottom: 15px;
+                left: 15px;
+                font-size: 22px;
+                font-weight: 900;
                 z-index: 999;
-                opacity: 0.8;
-                background: linear-gradient(to right, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #8f00ff);
+                opacity: 0.9;
+                background: linear-gradient(45deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #8f00ff);
                 -webkit-background-clip: text;
                 -webkit-text-fill-color: transparent;
-                animation: rainbow_animation 3s linear infinite;
-                background-size: 200% auto;
+                animation: rainbow_animation 2s linear infinite;
+                background-size: 400% 400%;
                 pointer-events: none;
-                text-shadow: 0 0 5px rgba(0,0,0,0.5);
+                text-shadow: 0 0 10px rgba(255,255,255,0.3);
+                font-family: 'Arial Black', sans-serif;
+                letter-spacing: 2px;
             }
             @keyframes rainbow_animation {
                 0% { background-position: 0% 50%; }
-                100% { background-position: 200% 50%; }
+                50% { background-position: 100% 50%; }
+                100% { background-position: 0% 50%; }
             }
 """
 
-WATERMARK_DIV = '<div class="watermark">OTAKUSTARTELUGU</div>'
+WATERMARK_DIV = '<div class="watermark">⚡ OTAKUSTARTELUGU ⚡</div>'
 
 @routes.get("/", allow_head=True)
 async def root_route_handler(request):
@@ -41,13 +44,13 @@ async def root_route_handler(request):
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>{BOT_NAME} - File Store</title>
+        <title>{BOT_NAME} - Advanced File Store</title>
         <style>
             body {{
                 margin: 0;
                 padding: 0;
-                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-                background: #1a1a2e;
+                font-family: 'Poppins', sans-serif;
+                background: radial-gradient(circle, #1a1a2e, #16213e, #0f3460);
                 color: white;
                 display: flex;
                 flex-direction: column;
@@ -60,56 +63,81 @@ async def root_route_handler(request):
             .background {{
                 position: fixed;
                 top: 0; left: 0; width: 100%; height: 100%;
-                background: linear-gradient(rgba(26, 26, 46, 0.8), rgba(26, 26, 46, 0.8)), url('{anime_pic}') no-repeat center center;
+                background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('{anime_pic}') no-repeat center center;
                 background-size: cover;
                 z-index: -1;
+                filter: blur(8px);
+                transform: scale(1.1);
             }}
             .container {{
                 background: rgba(255, 255, 255, 0.05);
-                padding: 40px;
-                border-radius: 20px;
-                box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8);
-                backdrop-filter: blur(10px);
+                padding: 50px;
+                border-radius: 30px;
+                box-shadow: 0 0 30px rgba(233, 69, 96, 0.4), 0 0 60px rgba(233, 69, 96, 0.1);
+                backdrop-filter: blur(20px);
                 border: 1px solid rgba(255, 255, 255, 0.1);
-                max-width: 500px;
+                max-width: 550px;
                 width: 90%;
+                animation: float 6s ease-in-out infinite;
+            }}
+            @keyframes float {{
+                0% {{ transform: translateY(0px); box-shadow: 0 0 30px rgba(233, 69, 96, 0.4); }}
+                50% {{ transform: translateY(-20px); box-shadow: 0 0 50px rgba(233, 69, 96, 0.6); }}
+                100% {{ transform: translateY(0px); box-shadow: 0 0 30px rgba(233, 69, 96, 0.4); }}
             }}
             .logo {{
-                width: 120px;
-                height: 120px;
+                width: 140px;
+                height: 140px;
                 border-radius: 50%;
-                margin-bottom: 20px;
+                margin-bottom: 25px;
                 border: 4px solid #e94560;
                 object-fit: cover;
+                box-shadow: 0 0 20px #e94560;
+                transition: transform 0.5s;
+            }}
+            .logo:hover {{
+                transform: rotate(360deg) scale(1.1);
             }}
             h1 {{
                 margin: 10px 0;
-                font-size: 2.5em;
-                color: #e94560;
+                font-size: 3em;
+                color: #fff;
+                text-shadow: 0 0 10px #e94560, 0 0 20px #e94560, 0 0 30px #e94560;
+                font-weight: 800;
             }}
             p {{
-                font-size: 1.1em;
-                opacity: 0.8;
-                margin-bottom: 30px;
+                font-size: 1.2em;
+                opacity: 0.9;
+                margin-bottom: 35px;
+                color: #e0e0e0;
+                line-height: 1.6;
             }}
             .btn {{
                 display: inline-block;
-                padding: 12px 30px;
-                background-color: #e94560;
+                padding: 15px 40px;
+                background: linear-gradient(45deg, #e94560, #ff4d6d);
                 color: white;
                 text-decoration: none;
-                border-radius: 30px;
-                font-weight: bold;
-                transition: transform 0.3s ease, background-color 0.3s ease;
+                border-radius: 50px;
+                font-weight: 700;
+                transition: all 0.4s ease;
+                box-shadow: 0 0 20px rgba(233, 69, 96, 0.6);
+                text-transform: uppercase;
+                letter-spacing: 2px;
             }}
             .btn:hover {{
-                background-color: #ff4d6d;
-                transform: scale(1.05);
+                background: linear-gradient(45deg, #ff4d6d, #e94560);
+                transform: scale(1.15);
+                box-shadow: 0 0 40px #e94560;
+                letter-spacing: 4px;
             }}
             footer {{
-                margin-top: 30px;
-                font-size: 0.9em;
-                opacity: 0.5;
+                margin-top: 40px;
+                font-size: 1em;
+                opacity: 0.8;
+                color: #e94560;
+                font-weight: bold;
+                text-shadow: 0 0 5px rgba(0,0,0,0.5);
             }}
             {WATERMARK_STYLE}
         </style>
@@ -120,11 +148,11 @@ async def root_route_handler(request):
         <div class="container">
             <img src="{anime_pic}" alt="Logo" class="logo">
             <h1>{BOT_NAME}</h1>
-            <p>Welcome to the official File Store Bot. Store and retrieve your files securely and at maximum speed.</p>
-            <a href="{MAIN_LINK}" class="btn">Join Our Community</a>
+            <p>Experience the future of file storage. Secure, encrypted, and lightning fast. Your files are safe with us.</p>
+            <a href="{MAIN_LINK}" class="btn">🚀 Join Community</a>
         </div>
         <footer>
-            &copy; 2025 {BOT_NAME} | Powered by Render
+            &copy; 2025 {BOT_NAME} | Premium Experience
         </footer>
     </body>
     </html>
@@ -137,10 +165,10 @@ async def redirect_handler(request):
     from helper_func import get_shortlink
     from config import URL, SHORTLINK_URL, SHORTLINK_API
 
-    bridge_link = f"{URL}/get/{file_id}"
+    base_url = f"https://{URL}" if not URL.startswith("http") else URL
+    bridge_link = f"{base_url}/get/{file_id}"
     try:
         short_link = await get_shortlink(SHORTLINK_URL, SHORTLINK_API, bridge_link)
-        # Direct redirect for maximum reliability and speed
         return web.HTTPFound(location=short_link)
     except Exception as e:
         print(f"Error in redirector: {e}")
@@ -164,8 +192,8 @@ async def get_route_handler(request):
             body {{
                 margin: 0;
                 padding: 0;
-                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-                background: #1a1a2e;
+                font-family: 'Poppins', sans-serif;
+                background: radial-gradient(circle, #0f2027, #203a43, #2c5364);
                 color: white;
                 display: flex;
                 flex-direction: column;
@@ -177,62 +205,80 @@ async def get_route_handler(request):
             .background {{
                 position: fixed;
                 top: 0; left: 0; width: 100%; height: 100%;
-                background: linear-gradient(rgba(26, 26, 46, 0.8), rgba(26, 26, 46, 0.8)), url('{anime_pic}') no-repeat center center;
+                background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('{anime_pic}') no-repeat center center;
                 background-size: cover;
                 z-index: -1;
+                filter: grayscale(50%) blur(5px);
             }}
             .container {{
-                background: rgba(255, 255, 255, 0.05);
-                padding: 40px;
-                border-radius: 20px;
-                box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8);
-                backdrop-filter: blur(10px);
-                border: 1px solid rgba(255, 255, 255, 0.1);
+                background: rgba(0, 0, 0, 0.6);
+                padding: 50px;
+                border-radius: 30px;
+                box-shadow: 0 0 30px rgba(0, 210, 255, 0.5);
+                backdrop-filter: blur(25px);
+                border: 1px solid rgba(0, 210, 255, 0.3);
                 max-width: 500px;
                 width: 90%;
+                animation: pulse 4s infinite;
+            }}
+            @keyframes pulse {{
+                0% {{ box-shadow: 0 0 20px rgba(0, 210, 255, 0.4); }}
+                50% {{ box-shadow: 0 0 50px rgba(0, 210, 255, 0.7); }}
+                100% {{ box-shadow: 0 0 20px rgba(0, 210, 255, 0.4); }}
             }}
             .logo {{
-                width: 100px;
-                height: 100px;
+                width: 120px;
+                height: 120px;
                 border-radius: 50%;
-                margin-bottom: 20px;
-                border: 4px solid #e94560;
+                margin-bottom: 25px;
+                border: 4px solid #00d2ff;
                 object-fit: cover;
+                box-shadow: 0 0 20px #00d2ff;
             }}
             h2 {{
-                color: #e94560;
-                margin-bottom: 10px;
+                color: #00d2ff;
+                margin-bottom: 20px;
+                text-shadow: 0 0 15px #00d2ff;
+                font-size: 2.5em;
+                font-weight: 800;
             }}
             .status {{
-                font-size: 1.1em;
-                margin-bottom: 20px;
-                color: #00d2ff;
+                font-size: 1.3em;
+                margin-bottom: 30px;
+                color: #fff;
+                font-weight: 500;
             }}
             .btn {{
                 display: none;
-                padding: 15px 40px;
-                background-color: #e94560;
+                padding: 18px 45px;
+                background: linear-gradient(45deg, #00d2ff, #3a7bd5);
                 color: white;
                 text-decoration: none;
-                border-radius: 30px;
-                font-weight: bold;
-                transition: transform 0.3s ease, background-color 0.3s ease;
+                border-radius: 50px;
+                font-weight: 700;
+                transition: all 0.4s ease;
                 border: none;
                 cursor: pointer;
-                font-size: 1em;
+                font-size: 1.2em;
+                box-shadow: 0 0 20px rgba(0, 210, 255, 0.6);
+                text-transform: uppercase;
+                letter-spacing: 1px;
             }}
             .btn:hover {{
-                background-color: #ff4d6d;
-                transform: scale(1.05);
+                transform: scale(1.1);
+                box-shadow: 0 0 40px #00d2ff;
             }}
             #timer {{
-                font-weight: bold;
-                color: #e94560;
+                font-weight: 800;
+                color: #00d2ff;
+                font-size: 1.5em;
+                text-shadow: 0 0 10px #00d2ff;
             }}
             footer {{
-                margin-top: 30px;
-                font-size: 0.9em;
-                opacity: 0.5;
+                margin-top: 40px;
+                font-size: 1em;
+                opacity: 0.8;
+                color: #00d2ff;
             }}
             {WATERMARK_STYLE}
         </style>
@@ -242,9 +288,9 @@ async def get_route_handler(request):
         {WATERMARK_DIV}
         <div class="container">
             <img src="{anime_pic}" alt="Logo" class="logo">
-            <h2>Verify You're Human</h2>
-            <p class="status" id="status_text">Please wait <span id="timer">5</span> seconds...</p>
-            <a href="https://t.me/{bot.username}?start={file_id}" class="btn" id="verify_btn">Verify & Open Telegram</a>
+            <h2>Human Verification</h2>
+            <p class="status" id="status_text">✨ Please wait <span id="timer">5</span> seconds... ✧</p>
+            <a href="https://t.me/{bot.username}?start={file_id}" class="btn" id="verify_btn">💎 Unlock Now ✧</a>
         </div>
         <script>
             let timeLeft = 5;
@@ -257,7 +303,7 @@ async def get_route_handler(request):
                 timerElement.innerText = timeLeft;
                 if (timeLeft <= 0) {{
                     clearInterval(countdown);
-                    statusText.innerText = "Verification Ready!";
+                    statusText.innerText = "✨ Verification Ready! ✧";
                     timerElement.style.display = 'none';
                     btnElement.style.display = 'inline-block';
 

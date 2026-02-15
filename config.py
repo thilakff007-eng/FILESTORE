@@ -104,13 +104,51 @@ DISABLE_CHANNEL_BUTTON = os.environ.get("DISABLE_CHANNEL_BUTTON", "False").lower
 SHORTLINK_URL = os.environ.get("SHORTLINK_URL", "arolinks.com")
 SHORTLINK_API = os.environ.get("SHORTLINK_API", "e49643875c2fa34dd6087254e58283d65ffc7748")
 TUT_VID = os.environ.get("TUT_VID","https://t.me/otakustartelugu")
-SHORT_MSG = "<b>⚡ Here is Your Download Link, Senpai! Must Watch Tutorial Before Clicking...</b>"
+SHORT_MSG = "<b>✧─── [ 💎 ᴅᴏᴡɴʟᴏᴀᴅ ʀᴇᴀᴅʏ 💎 ] ───✧</b>\n\n<b>⚡ ʜᴇʀᴇ ɪs ʏᴏᴜʀ ᴅᴏᴡɴʟᴏᴀᴅ ʟɪɴᴋ, sᴇɴᴘᴀɪ! ✨\n<blockquote>ᴍᴜsᴛ ᴡᴀᴛᴄʜ ᴛᴜᴛᴏʀɪᴀʟ ʙᴇғᴏʀᴇ ᴄʟɪᴄᴋɪɴɢ... 🏯</blockquote></b>"
+
+# Anti-Bot Settings
+ANTIBOT_LIMIT = int(os.environ.get("ANTIBOT_LIMIT", 60)) # seconds for fast retry
+ANTIBOT_SOLVE_TIME = int(os.environ.get("ANTIBOT_SOLVE_TIME", 120)) # seconds to solve shortlink
 
 # Texts
-HELP_TXT = "<b>⚡ ʜᴇʟʟᴏ {mention}, I am {bot_name}!\n\nI can store files for you and provide links for them. 🏯\n\n<blockquote>◈ ᴄᴏᴍᴍᴀɴᴅs:\n├ /start - ᴄʜᴇᴄᴋ ɪғ ɪ ᴀᴍ ᴀʟɪᴠᴇ\n├ /about - ᴀʙᴏᴜᴛ ᴍᴇ\n└ /help - ᴛʜɪs ᴍᴇssᴀɢᴇ</blockquote>\n\nJoin our community: {main_link} ⭐</b>"
-ABOUT_TXT = "<b><blockquote>⚡ ʙᴏᴛ ɴᴀᴍᴇ: {bot_name}\n🏯 ᴄʀᴇᴀᴛᴏʀ: {owner_name}\n⭐ ᴜsᴇʀɴᴀᴍᴇ: @{bot_username}\n🌸 ᴄᴏᴍᴍᴜɴɪᴛʏ: {main_link}\n💎 ᴅᴇᴠᴇʟᴏᴘᴇʀ: @ALONEKINGSTAR77</blockquote></b>"
-START_MSG = "<b>⚡ Kon'nichiwa {mention}!\n\n<blockquote>I am {bot_name}, a powerful File Store Bot. 🏯\n\nI can store files in a private channel and users can access them via special links. Fast and Secure! ⭐</blockquote>\n\n🌸 Join @ALONEKINGSTAR77 for more updates!</b>"
-FORCE_MSG = "<b>⚡ Kon'nichiwa {mention}!\n\n<blockquote>You must join our channels to access the requested file. 🏯</blockquote>\n\n🌸 Join the channels below and click on 'Reload' button. ⭐</b>"
+HELP_TXT = """<b>✧─── [ ⚡ {bot_name} ⚡ ] ───✧</b>
+
+<b>👋 ʜᴇʟʟᴏ {mention}!</b>
+<b>I am the most advanced File Store Bot with high-speed delivery. 🏯</b>
+
+<b><blockquote>◈ ✨ ᴀᴠᴀɪʟᴀʙʟᴇ ᴄᴏᴍᴍᴀɴᴅs:
+├ 💎 /start - ᴄʜᴇᴄᴋ ɪғ ɪ ᴀᴍ ᴀʟɪᴠᴇ
+├ 🌸 /about - ʟᴇᴀʀɴ ᴍᴏʀᴇ ᴀʙᴏᴜᴛ ᴍᴇ
+└ ⭐ /help - ᴛʜɪs ʜᴇʟᴘ ᴍᴇssᴀɢᴇ</blockquote></b>
+
+<b>✨ Join our community for more updates: {main_link} ✧</b>"""
+
+ABOUT_TXT = """<b>✧─── [ 🌟 ᴀʙᴏᴜᴛ ᴍᴇ 🌟 ] ───✧</b>
+
+<b><blockquote>💎 ʙᴏᴛ ɴᴀᴍᴇ: {bot_name}
+🏯 ᴄʀᴇᴀᴛᴏʀ: {owner_name}
+⭐ ᴜsᴇʀɴᴀᴍᴇ: @{bot_username}
+🌸 ᴄᴏᴍᴍᴜɴɪᴛʏ: {main_link}
+⚡ ᴅᴇᴠᴇʟᴏᴘᴇʀ: @ALONEKINGSTAR77</blockquote></b>
+
+<b>✨ ᴘᴏᴡᴇʀᴇᴅ ʙʏ ᴀᴅᴠᴀɴᴄᴇᴅ ᴀɪ ᴛᴇᴄʜɴᴏʟᴏɢʏ ✧</b>"""
+
+START_MSG = """<b>✧─── [ ⚡ ᴋᴏɴ'ɴɪᴄʜɪᴡᴀ ⚡ ] ───✧</b>
+
+<b>👋 ʜᴇʟʟᴏ {mention}!</b>
+
+<b><blockquote>I am {bot_name}, a powerful and secure File Store Bot. 🏯
+I can deliver files at lightning speed using advanced encrypted links. 💎</blockquote></b>
+
+<b>✨ ᴊᴏɪɴ @ALONEKINGSTAR77 ғᴏʀ ᴘʀᴇᴍɪᴜᴍ ᴜᴘᴅᴀᴛᴇs! ✧</b>"""
+
+FORCE_MSG = """<b>✧─── [ ⚠️ ᴀᴄᴄᴇss ᴅᴇɴɪᴇᴅ ⚠️ ] ───✧</b>
+
+<b>👋 ʜᴇʟʟᴏ {mention}!</b>
+
+<b><blockquote>ʏᴏᴜ ᴍᴜsᴛ ᴊᴏɪɴ ᴏᴜʀ ᴄʜᴀɴɴᴇʟs ᴛᴏ ᴀᴄᴄᴇss ᴛʜᴇ ʀᴇǫᴜᴇsᴛᴇᴅ ғɪʟᴇs. 🏯</blockquote></b>
+
+<b>🌸 ᴊᴏɪɴ ᴛʜᴇ ᴄʜᴀɴɴᴇʟs ʙᴇʟᴏᴡ ᴀɴᴅ ᴄʟɪᴄᴋ 'ʀᴇʟᴏᴀᴅ' ✧</b>"""
 
 # Premium Settings
 PRICE1 = os.environ.get("PRICE1", "0 rs")
@@ -123,20 +161,22 @@ SCREENSHOT_URL = os.environ.get("SCREENSHOT_URL", "https://t.me/ALONEKINGSTAR77"
 QR_PIC = os.environ.get("QR_PIC", "https://iili.io/q94kIvp.png")
 
 # Admin Texts
-CMD_TXT = """<b>⚡ ᴀᴅᴍɪɴ ᴄᴏᴍᴍᴀɴᴅs:</b>
+CMD_TXT = """<b>✧─── [ ⚡ ᴀᴅᴍɪɴ ᴘᴀɴᴇʟ ⚡ ] ───✧</b>
 
-<b>›› /broadcast :</b> ʙʀᴏᴀᴅᴄᴀsᴛ ᴍᴇssᴀɢᴇ
-<b>›› /stats :</b> ᴄʜᴇᴄᴋ ʙᴏᴛ sᴛᴀᴛs
-<b>›› /addfsub :</b> ᴀᴅᴅ ғsᴜʙ ᴄʜᴀɴɴᴇʟ
-<b>›› /removefsub :</b> ʀᴇᴍᴏᴠᴇ ғsᴜʙ ᴄʜᴀɴɴᴇʟ
-<b>›› /fsublist :</b> ʟɪsᴛ ғsᴜʙ ᴄʜᴀɴɴᴇʟs
-<b>›› /ban :</b> ʙᴀɴ ᴀ ᴜsᴇʀ
-<b>›› /unban :</b> ᴜɴʙᴀɴ ᴀ ᴜsᴇʀ
-<b>›› /add_admin :</b> ᴀᴅᴅ ᴀᴅᴍɪɴ
-<b>›› /deladmin :</b> ʀᴇᴍᴏᴠᴇ ᴀᴅᴍɪɴ
-<b>›› /addpremium :</b> ᴀᴅᴅ ᴘʀᴇᴍɪᴜᴍ
-<b>›› /myplan :</b> ᴄʜᴇᴄᴋ sᴛᴀᴛᴜs
-"""
+<b><blockquote>✨ ᴀᴠᴀɪʟᴀʙʟᴇ ᴀᴅᴍɪɴ ᴄᴏᴍᴍᴀɴᴅs:
+├ ✧ /broadcast : ʙʀᴏᴀᴅᴄᴀsᴛ ᴍᴇssᴀɢᴇ
+├ ✧ /stats : ᴄʜᴇᴄᴋ ʙᴏᴛ sᴛᴀᴛs
+├ ✧ /addfsub : ᴀᴅᴅ ғsᴜʙ ᴄʜᴀɴɴᴇʟ
+├ ✧ /removefsub : ʀᴇᴍᴏᴠᴇ ғsᴜʙ ᴄʜᴀɴɴᴇʟ
+├ ✧ /fsublist : ʟɪsᴛ ғsᴜʙ ᴄʜᴀɴɴᴇʟs
+├ ✧ /ban : ʙᴀɴ ᴀ ᴜsᴇʀ
+├ ✧ /unban : ᴜɴʙᴀɴ ᴀ ᴜsᴇʀ
+├ ✧ /add_admin : ᴀᴅᴅ ᴀᴅᴍɪɴ
+├ ✧ /deladmin : ʀᴇᴍᴏᴠᴇ ᴀᴅᴍɪɴ
+├ ✧ /addpremium : ᴀᴅᴅ ᴘʀᴇᴍɪᴜᴍ
+└ ✧ /myplan : ᴄʜᴇᴄᴋ sᴛᴀᴛᴜs</blockquote></b>
+
+<b>🌟 ᴘᴏᴡᴇʀᴇᴅ ʙʏ ⚡𝗛𝗘𝗠𝗔𝗡𝗧𝗛⚡ ✧</b>"""
 
 CUSTOM_CAPTION = os.environ.get("CUSTOM_CAPTION", "<b>⚡ ʙʏ {main_link}</b>")
 if "{main_link}" in CUSTOM_CAPTION:
