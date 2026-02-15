@@ -39,38 +39,41 @@ async def send_pin_text(client: Bot, message: Message):
     if message.reply_to_message:
         query = await db.full_userbase()
         broadcast_msg = message.reply_to_message
-        total = 0
         successful = 0
         blocked = 0
         deleted = 0
         unsuccessful = 0
 
+        sem = asyncio.Semaphore(10)
+
+        async def do_pbroadcast(chat_id):
+            nonlocal successful, blocked, deleted, unsuccessful
+            async with sem:
+                try:
+                    sent_msg = await broadcast_msg.copy(chat_id)
+                    await client.pin_chat_message(chat_id=chat_id, message_id=sent_msg.id, both_sides=True)
+                    successful += 1
+                except FloodWait as e:
+                    await asyncio.sleep(e.x)
+                    sent_msg = await broadcast_msg.copy(chat_id)
+                    await client.pin_chat_message(chat_id=chat_id, message_id=sent_msg.id, both_sides=True)
+                    successful += 1
+                except UserIsBlocked:
+                    await db.del_user(chat_id)
+                    blocked += 1
+                except InputUserDeactivated:
+                    await db.del_user(chat_id)
+                    deleted += 1
+                except Exception:
+                    unsuccessful += 1
+
         pls_wait = await message.reply("<i>ʙʀᴏᴀᴅᴄᴀꜱᴛ ᴘʀᴏᴄᴇꜱꜱɪɴɢ....</i>")
-        for chat_id in query:
-            try:
-                # Send and pin the message
-                sent_msg = await broadcast_msg.copy(chat_id)
-                await client.pin_chat_message(chat_id=chat_id, message_id=sent_msg.id, both_sides=True)
-                successful += 1
-            except FloodWait as e:
-                await asyncio.sleep(e.x)
-                sent_msg = await broadcast_msg.copy(chat_id)
-                await client.pin_chat_message(chat_id=chat_id, message_id=sent_msg.id, both_sides=True)
-                successful += 1
-            except UserIsBlocked:
-                await db.del_user(chat_id)
-                blocked += 1
-            except InputUserDeactivated:
-                await db.del_user(chat_id)
-                deleted += 1
-            except Exception as e:
-                print(f"Failed to send or pin message to {chat_id}: {e}")
-                unsuccessful += 1
-            total += 1
+        tasks = [do_pbroadcast(chat_id) for chat_id in query]
+        await asyncio.gather(*tasks)
 
         status = f"""<b><u>ʙʀᴏᴀᴅᴄᴀꜱᴛ ᴄᴏᴍᴘʟᴇᴛᴇᴅ</u></b>
 
-Total Users: <code>{total}</code>
+Total Users: <code>{len(query)}</code>
 Successful: <code>{successful}</code>
 Blocked Users: <code>{blocked}</code>
 Deleted Accounts: <code>{deleted}</code>
@@ -91,35 +94,40 @@ async def send_text(client: Bot, message: Message):
     if message.reply_to_message:
         query = await db.full_userbase()
         broadcast_msg = message.reply_to_message
-        total = 0
         successful = 0
         blocked = 0
         deleted = 0
         unsuccessful = 0
 
+        sem = asyncio.Semaphore(10) # 10 concurrent broadcasts
+
+        async def do_broadcast(chat_id):
+            nonlocal successful, blocked, deleted, unsuccessful
+            async with sem:
+                try:
+                    await broadcast_msg.copy(chat_id)
+                    successful += 1
+                except FloodWait as e:
+                    await asyncio.sleep(e.x)
+                    await broadcast_msg.copy(chat_id)
+                    successful += 1
+                except UserIsBlocked:
+                    await db.del_user(chat_id)
+                    blocked += 1
+                except InputUserDeactivated:
+                    await db.del_user(chat_id)
+                    deleted += 1
+                except Exception:
+                    unsuccessful += 1
+
         pls_wait = await message.reply("<i>ʙʀᴏᴀᴅᴄᴀꜱᴛ ᴘʀᴏᴄᴇꜱꜱɪɴɢ....</i>")
-        for chat_id in query:
-            try:
-                await broadcast_msg.copy(chat_id)
-                successful += 1
-            except FloodWait as e:
-                await asyncio.sleep(e.x)
-                await broadcast_msg.copy(chat_id)
-                successful += 1
-            except UserIsBlocked:
-                await db.del_user(chat_id)
-                blocked += 1
-            except InputUserDeactivated:
-                await db.del_user(chat_id)
-                deleted += 1
-            except:
-                unsuccessful += 1
-                pass
-            total += 1
 
-        status = f"""<b><u>ʙʀᴏᴀᴅᴄᴀꜱᴛ...</u>
+        tasks = [do_broadcast(chat_id) for chat_id in query]
+        await asyncio.gather(*tasks)
 
-Total Users: <code>{total}</code>
+        status = f"""<b><u>ʙʀᴏᴀᴅᴄᴀꜱᴛ ᴄᴏᴍᴘʟᴇᴛᴇᴅ</u>
+
+Total Users: <code>{len(query)}</code>
 Successful: <code>{successful}</code>
 Blocked Users: <code>{blocked}</code>
 Deleted Accounts: <code>{deleted}</code>
@@ -158,39 +166,53 @@ async def delete_broadcast(client: Bot, message: Message):
 
         query = await db.full_userbase()
         broadcast_msg = message.reply_to_message
-        total = 0
         successful = 0
         blocked = 0
         deleted = 0
         unsuccessful = 0
 
+        sem = asyncio.Semaphore(10)
+
+        async def do_dbroadcast(chat_id):
+            nonlocal successful, blocked, deleted, unsuccessful
+            async with sem:
+                try:
+                    sent_msg = await broadcast_msg.copy(chat_id)
+                    async def auto_delete():
+                        await asyncio.sleep(duration)
+                        try:
+                            await sent_msg.delete()
+                        except:
+                            pass
+                    asyncio.create_task(auto_delete())
+                    successful += 1
+                except FloodWait as e:
+                    await asyncio.sleep(e.x)
+                    sent_msg = await broadcast_msg.copy(chat_id)
+                    async def auto_delete_flood():
+                        await asyncio.sleep(duration)
+                        try:
+                            await sent_msg.delete()
+                        except:
+                            pass
+                    asyncio.create_task(auto_delete_flood())
+                    successful += 1
+                except UserIsBlocked:
+                    await db.del_user(chat_id)
+                    blocked += 1
+                except InputUserDeactivated:
+                    await db.del_user(chat_id)
+                    deleted += 1
+                except Exception:
+                    unsuccessful += 1
+
         pls_wait = await message.reply("<i>Broadcast with auto-delete processing....</i>")
-        for chat_id in query:
-            try:
-                sent_msg = await broadcast_msg.copy(chat_id)
-                await asyncio.sleep(duration)  # Wait for the specified duration
-                await sent_msg.delete()  # Delete the message after the duration
-                successful += 1
-            except FloodWait as e:
-                await asyncio.sleep(e.x)
-                sent_msg = await broadcast_msg.copy(chat_id)
-                await asyncio.sleep(duration)
-                await sent_msg.delete()
-                successful += 1
-            except UserIsBlocked:
-                await db.del_user(chat_id)
-                blocked += 1
-            except InputUserDeactivated:
-                await db.del_user(chat_id)
-                deleted += 1
-            except:
-                unsuccessful += 1
-                pass
-            total += 1
+        tasks = [do_dbroadcast(chat_id) for chat_id in query]
+        await asyncio.gather(*tasks)
 
-        status = f"""<b><u>Bʀᴏᴀᴅᴄᴀsᴛɪɴɢ ᴡɪᴛʜ Aᴜᴛᴏ-Dᴇʟᴇᴛᴇ...</u>
+        status = f"""<b><u>Bʀᴏᴀᴅᴄᴀsᴛɪɴɢ ᴡɪᴛʜ Aᴜᴛᴏ-Dᴇʟᴇᴛᴇ Cᴏᴍᴘʟᴇᴛᴇᴅ</u>
 
-Total Users: <code>{total}</code>
+Total Users: <code>{len(query)}</code>
 Successful: <code>{successful}</code>
 Blocked Users: <code>{blocked}</code>
 Deleted Accounts: <code>{deleted}</code>

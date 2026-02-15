@@ -46,14 +46,25 @@ class Database:
         self.rqst_fsub_data = self.database['request_forcesub']
         self.rqst_fsub_Channel_data = self.database['request_forcesub_channel']
         
+        # Cache for del_timer
+        self.del_timer_cache = None
+        self.del_timer_cache_ts = 0
+
+        # Cache for present users
+        self.users_cache = set()
 
 
     # USER DATA
     async def present_user(self, user_id: int):
+        if user_id in self.users_cache:
+            return True
         found = await self.user_data.find_one({'_id': user_id})
+        if found:
+            self.users_cache.add(user_id)
         return bool(found)
 
     async def add_user(self, user_id: int):
+        self.users_cache.add(user_id)
         await self.user_data.insert_one({'_id': user_id})
         return
 
@@ -111,7 +122,9 @@ class Database:
 
 
     # AUTO DELETE TIMER SETTINGS
-    async def set_del_timer(self, value: int):        
+    async def set_del_timer(self, value: int):
+        self.del_timer_cache = value
+        self.del_timer_cache_ts = time.time()
         existing = await self.del_timer_data.find_one({})
         if existing:
             await self.del_timer_data.update_one({}, {'$set': {'value': value}})
@@ -119,10 +132,18 @@ class Database:
             await self.del_timer_data.insert_one({'value': value})
 
     async def get_del_timer(self):
+        now = time.time()
+        if self.del_timer_cache is not None and now - self.del_timer_cache_ts < 300: # 5 min cache
+            return self.del_timer_cache
+
         data = await self.del_timer_data.find_one({})
+        res = 0
         if data:
-            return data.get('value', 600)
-        return 0
+            res = data.get('value', 600)
+
+        self.del_timer_cache = res
+        self.del_timer_cache_ts = now
+        return res
 
 
     # CHANNEL MANAGEMENT

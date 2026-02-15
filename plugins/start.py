@@ -143,35 +143,38 @@ async def start_command(client: Client, message: Message):
         finally:
             await temp_msg.delete()
 
-        fsub_msgs = []
+        sem = asyncio.Semaphore(5) # Allow 5 concurrent copies
 
-        for msg in messages:
+        async def copy_with_sem(msg):
             if not msg or msg.empty:
-                continue
-            original_caption = msg.caption.html if msg.caption else ""
-            caption = f"{original_caption}\n\n{CUSTOM_CAPTION}" if CUSTOM_CAPTION else original_caption
-            reply_markup = msg.reply_markup if DISABLE_CHANNEL_BUTTON else None
-            try:
-                snt_msg = await msg.copy(
-                    chat_id=message.from_user.id,
-                    caption=caption,
-                    parse_mode=ParseMode.HTML,
-                    reply_markup=reply_markup,
-                    protect_content=PROTECT_CONTENT
-                )
-                fsub_msgs.append(snt_msg)
-            except FloodWait as e:
-                await asyncio.sleep(e.x)
-                snt_msg = await msg.copy(
-                    chat_id=message.from_user.id,
-                    caption=caption,
-                    parse_mode=ParseMode.HTML,
-                    reply_markup=reply_markup,
-                    protect_content=PROTECT_CONTENT
-                )
-                fsub_msgs.append(snt_msg)
-            except Exception:
-                pass
+                return None
+            async with sem:
+                original_caption = msg.caption.html if msg.caption else ""
+                caption = f"{original_caption}\n\n{CUSTOM_CAPTION}" if CUSTOM_CAPTION else original_caption
+                reply_markup = msg.reply_markup if DISABLE_CHANNEL_BUTTON else None
+                try:
+                    return await msg.copy(
+                        chat_id=message.from_user.id,
+                        caption=caption,
+                        parse_mode=ParseMode.HTML,
+                        reply_markup=reply_markup,
+                        protect_content=PROTECT_CONTENT
+                    )
+                except FloodWait as e:
+                    await asyncio.sleep(e.x)
+                    return await msg.copy(
+                        chat_id=message.from_user.id,
+                        caption=caption,
+                        parse_mode=ParseMode.HTML,
+                        reply_markup=reply_markup,
+                        protect_content=PROTECT_CONTENT
+                    )
+                except Exception:
+                    return None
+
+        tasks = [copy_with_sem(msg) for msg in messages]
+        snt_msgs = await asyncio.gather(*tasks)
+        fsub_msgs = [m for m in snt_msgs if m]
 
         if FILE_AUTO_DELETE > 0:
             notification_msg = await message.reply(

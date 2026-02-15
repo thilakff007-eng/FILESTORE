@@ -44,17 +44,17 @@ async def change_force_sub_mode(client: Client, message: Message):
     if not channels:
         return await temp.edit("<b>❌ No force-sub channels found.</b>")
 
-    buttons = []
-    for ch_id in channels:
+    async def get_btn(ch_id):
         try:
             chat = await client.get_chat(ch_id)
             mode = await db.get_channel_mode(ch_id)
             status = "🟢" if mode == "on" else "🔴"
             title = f"{status} {chat.title}"
-            buttons.append([InlineKeyboardButton(title, callback_data=f"rfs_ch_{ch_id}")])
+            return [InlineKeyboardButton(title, callback_data=f"rfs_ch_{ch_id}")]
         except:
-            buttons.append([InlineKeyboardButton(f"⚠️ {ch_id} (Unavailable)", callback_data=f"rfs_ch_{ch_id}")])
+            return [InlineKeyboardButton(f"⚠️ {ch_id} (Unavailable)", callback_data=f"rfs_ch_{ch_id}")]
 
+    buttons = await asyncio.gather(*[get_btn(ch_id) for ch_id in channels])
     buttons.append([InlineKeyboardButton("Close ✖️", callback_data="close")])
 
     await temp.edit(
@@ -207,14 +207,16 @@ async def list_force_sub_channels(client: Client, message: Message):
     if not channels:
         return await temp.edit("<b>❌ No force-sub channels found.</b>")
 
-    result = "<b>⚡ Force-sub Channels:</b>\n\n"
-    for ch_id in channels:
+    async def get_line(ch_id):
         try:
             chat = await client.get_chat(ch_id)
             link = chat.invite_link or await client.export_chat_invite_link(chat.id)
-            result += f"<b>•</b> <a href='{link}'>{chat.title}</a> [<code>{ch_id}</code>]\n"
+            return f"<b>•</b> <a href='{link}'>{chat.title}</a> [<code>{ch_id}</code>]\n"
         except Exception:
-            result += f"<b>•</b> <code>{ch_id}</code> — <i>Unavailable</i>\n"
+            return f"<b>•</b> <code>{ch_id}</code> — <i>Unavailable</i>\n"
+
+    lines = await asyncio.gather(*[get_line(ch_id) for ch_id in channels])
+    result = "<b>⚡ Force-sub Channels:</b>\n\n" + "".join(lines)
 
     await temp.edit(result, disable_web_page_preview=True, reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("Close ✖️", callback_data="close")]]))
 

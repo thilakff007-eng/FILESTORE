@@ -17,6 +17,14 @@ from database.database import *
 SUB_CACHE = {}
 CACHE_TIME = 300 # 5 minutes
 
+# Channel List Cache
+CHANNELS_CACHE = []
+CHANNELS_CACHE_TS = 0
+MODES_CACHE = {}
+MODES_CACHE_TS = 0
+ADMINS_CACHE = []
+ADMINS_CACHE_TS = 0
+
 # Don't Remove Credit @ALONEKINGSTAR77, @ALONEKINGSTAR77
 # Ask Doubt on telegram @ALONEKINGSTAR77Support
 #
@@ -31,9 +39,18 @@ CACHE_TIME = 300 # 5 minutes
 
 #used for cheking if a user is admin ~Owner also treated as admin level
 async def check_admin(filter, client, update):
+    global ADMINS_CACHE, ADMINS_CACHE_TS
     try:
-        user_id = update.from_user.id       
-        return any([user_id == OWNER_ID, await db.admin_exist(user_id)])
+        user_id = update.from_user.id
+        if user_id == OWNER_ID:
+            return True
+
+        now = time.time()
+        if now - ADMINS_CACHE_TS > 60:
+            ADMINS_CACHE = await db.get_all_admins()
+            ADMINS_CACHE_TS = now
+
+        return user_id in ADMINS_CACHE
     except Exception as e:
         print(f"! Exception in check_admin: {e}")
         return False
@@ -52,25 +69,24 @@ async def check_admin(filter, client, update):
 #
 
 async def is_subscribed(client, user_id):
-    channel_ids = await db.show_channels()
-
-    if not channel_ids:
-        return True
+    global CHANNELS_CACHE, CHANNELS_CACHE_TS
 
     if user_id == OWNER_ID:
         return True
 
-    for cid in channel_ids:
-        if not await is_sub(client, user_id, cid):
-            # Retry once if join request might be processing
-            mode = await db.get_channel_mode(cid)
-            if mode == "on":
-                await asyncio.sleep(2)  # give time for @on_chat_join_request to process
-                if await is_sub(client, user_id, cid):
-                    continue
-            return False
+    now = time.time()
+    if now - CHANNELS_CACHE_TS > 60:
+        CHANNELS_CACHE = await db.show_channels()
+        CHANNELS_CACHE_TS = now
 
-    return True
+    channel_ids = CHANNELS_CACHE
+
+    if not channel_ids:
+        return True
+
+    # Check all channels in parallel
+    results = await asyncio.gather(*[is_sub(client, user_id, cid) for cid in channel_ids])
+    return all(results)
 
 
 # Don't Remove Credit @ALONEKINGSTAR77, @ALONEKINGSTAR77
@@ -86,6 +102,7 @@ async def is_subscribed(client, user_id):
 #
 
 async def is_sub(client, user_id, channel_id):
+    global MODES_CACHE, MODES_CACHE_TS
     # Check Cache
     now = time.time()
     if (user_id, channel_id) in SUB_CACHE:
@@ -96,7 +113,6 @@ async def is_sub(client, user_id, channel_id):
     try:
         member = await client.get_chat_member(channel_id, user_id)
         status = member.status
-        #print(f"[SUB] User {user_id} in {channel_id} with status {status}")
         res = status in {
             ChatMemberStatus.OWNER,
             ChatMemberStatus.ADMINISTRATOR,
@@ -107,14 +123,22 @@ async def is_sub(client, user_id, channel_id):
         return res
 
     except UserNotParticipant:
-        mode = await db.get_channel_mode(channel_id)
+        if now - MODES_CACHE_TS > 60:
+            # We don't have a bulk get_modes, but we can cache individually
+            MODES_CACHE_TS = now
+
+        if channel_id not in MODES_CACHE or now - MODES_CACHE.get(f"{channel_id}_ts", 0) > 60:
+            mode = await db.get_channel_mode(channel_id)
+            MODES_CACHE[channel_id] = mode
+            MODES_CACHE[f"{channel_id}_ts"] = now
+        else:
+            mode = MODES_CACHE[channel_id]
+
         if mode == "on":
             exists = await db.req_user_exist(channel_id, user_id)
-            #print(f"[REQ] User {user_id} join request for {channel_id}: {exists}")
             if exists:
                 SUB_CACHE[(user_id, channel_id)] = (True, now)
             return exists
-        #print(f"[NOT SUB] User {user_id} not in {channel_id} and mode != on")
         return False
 
     except Exception as e:

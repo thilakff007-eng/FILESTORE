@@ -180,15 +180,18 @@ async def cb_handler(client: Bot, query: CallbackQuery):
     elif data == "fsub_back":
         await query.answer()
         channels = await db.show_channels()
-        buttons = []
-        for cid in channels:
+
+        async def get_fsub_btn(cid):
             try:
                 chat = await client.get_chat(cid)
                 mode = await db.get_channel_mode(cid)
                 status = "🟢" if mode == "on" else "🔴"
-                buttons.append([InlineKeyboardButton(f"{status} {chat.title}", callback_data=f"rfs_ch_{cid}")])
+                return [InlineKeyboardButton(f"{status} {chat.title}", callback_data=f"rfs_ch_{cid}")]
             except:
-                continue
+                return None
+
+        buttons = await asyncio.gather(*[get_fsub_btn(cid) for cid in channels])
+        buttons = [b for b in buttons if b]
 
         await query.message.edit_text(
             "sᴇʟᴇᴄᴛ ᴀ ᴄʜᴀɴɴᴇʟ ᴛᴏ ᴛᴏɢɢʟᴇ ɪᴛs ғᴏʀᴄᴇ-sᴜʙ ᴍᴏᴅᴇ:",

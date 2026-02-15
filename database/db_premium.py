@@ -1,4 +1,5 @@
 import motor.motor_asyncio
+import time
 from config import DB_URI, DB_NAME
 from pytz import timezone
 from datetime import datetime, timedelta
@@ -8,10 +9,22 @@ dbclient = motor.motor_asyncio.AsyncIOMotorClient(DB_URI)
 database = dbclient[DB_NAME]
 collection = database['premium-users']
 
+# Cache for premium status
+PREMIUM_CACHE = {}
+PREMIUM_CACHE_TIME = 60 # 1 minute
+
 # Check if the user is a premium user
 async def is_premium_user(user_id):
+    now = time.time()
+    if user_id in PREMIUM_CACHE:
+        val, ts = PREMIUM_CACHE[user_id]
+        if now - ts < PREMIUM_CACHE_TIME:
+            return val
+
     user = await collection.find_one({"user_id": user_id})  # Async query
-    return user is not None
+    res = user is not None
+    PREMIUM_CACHE[user_id] = (res, now)
+    return res
 
 # Remove premium user
 async def remove_premium(user_id):
