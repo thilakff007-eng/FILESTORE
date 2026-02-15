@@ -1,4 +1,4 @@
-pyrogram
+pyrogram==2.0.106
 tgcrypto
 pyromod
 motor
@@ -12,3 +12,4 @@ beautifulsoup4
 shortzy
 aiofiles
 apscheduler
+gunicorn

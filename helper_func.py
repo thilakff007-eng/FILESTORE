@@ -249,6 +249,25 @@ def get_exp_time(seconds):
             result += f'{int(period_value)} {period_name}'
     return result
 
+def parse_time(time_str):
+    # Parses time like 30m, 1h, 1d
+    units = {'s': 1, 'm': 60, 'h': 3600, 'd': 86400}
+    time_str = time_str.lower().strip()
+
+    # Handle 'min' as 'm'
+    if time_str.endswith('min'):
+        time_str = time_str[:-3] + 'm'
+
+    try:
+        if time_str[-1].isdigit():
+            return int(time_str)
+
+        number = int(time_str[:-1])
+        unit = time_str[-1]
+        return number * units.get(unit, 1)
+    except:
+        return None
+
 # Don't Remove Credit @ALONEKINGSTAR77, @ALONEKINGSTAR77
 # Ask Doubt on telegram @ALONEKINGSTAR77Support
 #

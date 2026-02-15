@@ -1,5 +1,6 @@
 #(©)⚡𝗛𝗘𝗠𝗔𝗡𝗧𝗛⚡
 
+import asyncio
 from pyrogram import Client, filters
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
 from bot import Bot

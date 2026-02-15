@@ -15,6 +15,7 @@ import os
 import random
 import sys
 import time
+import pytz
 from datetime import datetime, timedelta
 from pyrogram import Client, filters, __version__
 from pyrogram.enums import ParseMode, ChatAction
@@ -23,17 +24,18 @@ from pyrogram.errors.exceptions.bad_request_400 import UserNotParticipant
 from pyrogram.errors import FloodWait, UserIsBlocked, InputUserDeactivated, UserNotParticipant
 from bot import Bot
 from config import *
-from helper_func import *
-from database.database import *
+from helper_func import admin, get_readable_time
+from database.database import db
 
 #=====================================================================================##
 
 @Bot.on_message(filters.command('stats') & admin)
 async def stats(bot: Bot, message: Message):
-    now = datetime.now()
+    ist = pytz.timezone("Asia/Kolkata")
+    now = datetime.now(ist)
     delta = now - bot.uptime
-    time = get_readable_time(delta.seconds)
-    await message.reply(BOT_STATS_TEXT.format(uptime=time))
+    uptime_str = get_readable_time(int(delta.total_seconds()))
+    await message.reply(BOT_STATS_TEXT.format(uptime=uptime_str))
 
 
 #=====================================================================================##

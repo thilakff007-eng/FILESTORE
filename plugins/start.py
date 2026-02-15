@@ -25,9 +25,9 @@ from pyrogram.errors.exceptions.bad_request_400 import UserNotParticipant
 from pyrogram.errors import FloodWait, UserIsBlocked, InputUserDeactivated, UserNotParticipant
 from bot import Bot
 from config import *
-from helper_func import *
-from database.database import *
-from database.db_premium import *
+from helper_func import is_subscribed, decode, get_messages, send_media, get_exp_time, get_readable_time, is_sub
+from database.database import db
+from database.db_premium import is_premium_user
 
 
 BAN_SUPPORT = f"{BAN_SUPPORT}"
@@ -79,6 +79,7 @@ async def start_command(client: Client, message: Message):
     user_id = message.from_user.id
     username = message.from_user.username or "N/A"
     is_premium = await is_premium_user(user_id)
+    is_admin = await check_admin(None, client, message)
 
     # Add user if not already present
     if not await db.present_user(user_id):
@@ -86,6 +87,21 @@ async def start_command(client: Client, message: Message):
             await db.add_user(user_id)
         except:
             pass
+
+    # Check Maintenance Mode
+    maintenance_expiry = await db.get_maintenance()
+    if maintenance_expiry and maintenance_expiry > datetime.now() and not is_admin:
+        remaining = (maintenance_expiry - datetime.now()).total_seconds()
+        return await message.reply_text(
+            "<b>✧─── [ 🛠️ ᴍᴀɪɴᴛᴇɴᴀɴᴄᴇ ᴍᴏᴅᴇ 🛠️ ] ───✧</b>\n\n"
+            "<b>👋 ʜᴇʟʟᴏ {mention}!</b>\n\n"
+            "<b><blockquote>⚠️ sᴏʀʀʏ, ᴛʜᴇ ʙᴏᴛ ɪs ᴄᴜʀʀᴇɴᴛʟʏ ᴜɴᴅᴇʀ ᴍᴀɪɴᴛᴇɴᴀɴᴄᴇ ᴛᴏ ɪᴍᴘʀᴏᴠᴇ ᴏᴜʀ sᴇʀᴠɪᴄᴇs. ʙᴏᴛ ᴡɪʟʟ ʙᴇ ʙᴀᴄᴋ ɪɴ {time}.</blockquote></b>\n\n"
+            "<i>✨ Pʟᴇᴀsᴇ ᴛʀʏ ᴀɢᴀɪɴ ʟᴀᴛᴇʀ. Tʜᴀɴᴋ ʏᴏᴜ ғᴏʀ ʏᴏᴜʀ ᴘᴀᴛɪᴇɴᴄᴇ! 💎</i>".format(
+                mention=message.from_user.mention,
+                time=get_readable_time(int(remaining))
+            ),
+            reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("✨ ᴊᴏɪɴ ᴜᴘᴅᴀᴛᴇs ᴄʜᴀɴɴᴇʟ ✧", url="https://t.me/ALONEKINGSTAR77")]])
+        )
 
     # Check if user is banned (Early exit)
     if await db.ban_user_exist(user_id):
@@ -113,6 +129,7 @@ async def start_command(client: Client, message: Message):
         antibot_data = await db.get_antibot_data(user_id)
         now = time.time()
         last_delivered = antibot_data.get('last_delivered_ts', 0)
+        last_link_sent = antibot_data.get('last_link_sent_ts', 0)
 
         # Check for fast retry (Automation Abuse)
         if last_delivered > 0 and (now - last_delivered) < ANTIBOT_LIMIT:
@@ -133,19 +150,24 @@ async def start_command(client: Client, message: Message):
                 base64_string = basic
                 is_direct = False
 
+            # Check for fast return after shortlink (Bot/DNS abuse)
+            if not is_direct and not is_premium and user_id != OWNER_ID:
+                if last_link_sent > 0 and (now - last_link_sent) < ANTIBOT_MIN_TIME:
+                    await db.add_ban_user(user_id)
+                    await db.log_antibot_ban(user_id, username, f"Anti-bot trigger: Returned in {int(now - last_link_sent)}s (DNS/Bot abuse)")
+                    await report_to_owner(client, user_id, username, f"Returned in {int(now - last_link_sent)}s (DNS/Bot abuse)")
+                    return await message.reply_text("<b>✧─── [ 🚫 ᴀʙᴜsᴇ ᴅᴇᴛᴇᴄᴛᴇᴅ 🚫 ] ───✧</b>\n\n<b>⚠️ ʏᴏᴜ ʀᴇᴛᴜʀɴᴇᴅ ᴛᴏᴏ ғᴀsᴛ! ᴛʜɪs ɪɴᴅɪᴄᴀᴛᴇs ᴛʜᴇ ᴜsᴇ ᴏғ ᴀᴜᴛᴏᴍᴀᴛɪᴏɴ ᴏʀ ᴅɴs ʙʏᴘᴀss. ʏᴏᴜ ʜᴀᴠᴇ ʙᴇᴇɴ ʙᴀɴɴᴇᴅ. ✧</b>")
+
             if not is_premium and user_id != OWNER_ID and not is_direct:
                 # User must solve shortlink within 2 minutes logic
-                # We update the link sent time here
                 antibot_data['last_link_sent_ts'] = now
                 await db.update_antibot_data(user_id, antibot_data)
 
                 await short_url(client, message, base64_string)
                 return
 
-            # If they reached here, they either bypassed (direct/premium) or solved it
-            # Check solve time if not premium/direct
+            # Solve time limit check
             if not is_premium and user_id != OWNER_ID and not is_direct:
-                last_link_sent = antibot_data.get('last_link_sent_ts', 0)
                 if last_link_sent > 0 and (now - last_link_sent) > ANTIBOT_SOLVE_TIME:
                     return await message.reply_text("<b>✧─── [ ⏰ ᴛɪᴍᴇ ᴇxᴘɪʀᴇᴅ ⏰ ] ───✧</b>\n\n<b><blockquote>⚠️ ʏᴏᴜ ᴛᴏᴏᴋ ᴛᴏᴏ ʟᴏɴɢ ᴛᴏ sᴏʟᴠᴇ ᴛʜᴇ sʜᴏʀᴛʟɪɴᴋ. ᴘʟᴇᴀsᴇ ᴛʀʏ ᴀɢᴀɪɴ ᴡɪᴛʜɪɴ 2 ᴍɪɴᴜᴛᴇs. ✧</blockquote></b>")
 
@@ -223,7 +245,7 @@ async def start_command(client: Client, message: Message):
 
         if FILE_AUTO_DELETE > 0:
             notification_msg = await message.reply(
-                f"<b>Tʜɪs Fɪʟᴇ ᴡɪʟʟ ʙᴇ Dᴇʟᴇᴛᴇᴅ ɪɴ  {get_exp_time(FILE_AUTO_DELETE)}. Pʟᴇᴀsᴇ sᴀᴠᴇ ᴏʀ ғᴏʀᴡᴀʀᴅ ɪᴛ ᴛᴏ ʏᴏᴜʀ sᴀᴠᴇᴅ ᴍᴇssᴀɢᴇs ʙᴇғᴏʀᴇ ɪᴛ ɢᴇᴛs Dᴇʟᴇᴛᴇᴅ.</b>"
+                f"<b>Tʜɪs Fɪʟᴇ ᴡɪʟʟ ʙᴇ Dᴇʟᴇᴛᴇᴅ ɪɴ  {get_exp_time(FILE_AUTO_DELETE)}. Pʟᴇᴀsᴇ sᴀᴠᴇ ᴏʀ ғᴏʀᴡᴀʀᴅ ɪᴛ ᴛᴏ ʏᴏᴜʀ sᴀᴠᴇᴅ ᴍᴇssᴀɢᴇs ʙᴇғᴏʀᴇ ɪᴛ ɢᴇᴛs Dᴇʟᴇʟᴛᴇᴅ.</b>"
             )
 
             await asyncio.sleep(FILE_AUTO_DELETE)

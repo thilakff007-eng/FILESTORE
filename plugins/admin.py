@@ -3,14 +3,15 @@ import os
 import random
 import sys
 import time
+from datetime import datetime, timedelta
 from pyrogram import Client, filters, __version__
 from pyrogram.enums import ParseMode, ChatAction, ChatMemberStatus, ChatType
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery, ReplyKeyboardMarkup, ChatMemberUpdated, ChatPermissions
 from pyrogram.errors.exceptions.bad_request_400 import UserNotParticipant, InviteHashEmpty, ChatAdminRequired, PeerIdInvalid, UserIsBlocked, InputUserDeactivated
 from bot import Bot
 from config import *
-from helper_func import *
-from database.database import *
+from helper_func import admin, parse_time, get_readable_time
+from database.database import db
 
 
 
@@ -123,3 +124,28 @@ async def get_admins(client: Client, message: Message):
 
     reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton("ᴄʟᴏsᴇ", callback_data="close")]])
     await pro.edit(f"<b>⚡ Current Admin List:</b>\n\n{admin_list}", reply_markup=reply_markup)
+
+@Bot.on_message(filters.command('maintenance') & filters.private & admin)
+async def maintenance_mode(client: Bot, message: Message):
+    if len(message.command) < 2:
+        # Check current status
+        expiry = await db.get_maintenance()
+        if expiry and expiry > datetime.now():
+            remaining = (expiry - datetime.now()).total_seconds()
+            return await message.reply(f"<b>✧─── [ 🛠️ ᴍᴀɪɴᴛᴇɴᴀɴᴄᴇ ᴀᴄᴛɪᴠᴇ 🛠️ ] ───✧</b>\n\n<b><blockquote>Bot is currently under maintenance for another {get_readable_time(int(remaining))}.</blockquote></b>\n\n<b>✨ ᴜsᴇ <code>/maintenance off</code> ᴛᴏ ᴅɪsᴀʙʟᴇ. ✧</b>")
+        else:
+            return await message.reply("<b>✧─── [ 🛠️ ᴍᴀɪɴᴛᴇɴᴀɴᴄᴇ ᴘᴀɴᴇʟ 🛠️ ] ───✧</b>\n\n<b><blockquote>Bot is currently LIVE.</blockquote></b>\n\n<b>✨ ᴜsᴀɢᴇ: <code>/maintenance 30m</code> or <code>/maintenance off</code> ✧</b>")
+
+    action = message.command[1].lower()
+    if action == "off":
+        await db.set_maintenance(datetime.now() - timedelta(seconds=1))
+        return await message.reply("<b>✧─── [ ✅ ʙᴏᴛ ɪs ɴᴏᴡ ʟɪᴠᴇ ✅ ] ───✧</b>\n\n<b><blockquote>ᴍᴀɪɴᴛᴇɴᴀɴᴄᴇ ᴍᴏᴅᴇ ʜᴀs ʙᴇᴇɴ ᴅɪsᴀʙʟᴇᴅ. ᴀʟʟ ᴜsᴇʀs ᴄᴀɴ ɴᴏᴡ ᴀᴄᴄᴇss ᴛʜᴇ ʙᴏᴛ.</blockquote></b>")
+
+    seconds = parse_time(action)
+    if not seconds:
+        return await message.reply("<b>❌ ɪɴᴠᴀʟɪᴅ ᴅᴜʀᴀᴛɪᴏɴ! ᴜsᴇ 30ᴍ, 1ʜ, 1ᴅ ᴇᴛᴄ.</b>")
+
+    expiry = datetime.now() + timedelta(seconds=seconds)
+    await db.set_maintenance(expiry)
+
+    await message.reply(f"<b>✧─── [ 🛠️ ᴍᴀɪɴᴛᴇɴᴀɴᴄᴇ sᴇᴛ 🛠️ ] ───✧</b>\n\n<b><blockquote>ʙᴏᴛ ɪs ɴᴏᴡ ᴜɴᴅᴇʀ ᴍᴀɪɴᴛᴇɴᴀɴᴄᴇ ғᴏʀ {get_readable_time(seconds)}.</blockquote></b>\n\n<b>🚫 ɴᴏʀᴍᴀʟ ᴜsᴇʀs ᴄᴀɴɴᴏᴛ ᴜsᴇ ᴛʜᴇ ʙᴏᴛ ᴅᴜʀɪɴɢ ᴛʜɪs ᴛɪᴍᴇ. ✧</b>")

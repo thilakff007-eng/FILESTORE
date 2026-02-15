@@ -8,15 +8,24 @@
 # All rights reserved.
 
 import random
+import asyncio
+from datetime import datetime, timedelta
 from pyrogram import Client 
 from bot import Bot
 from config import *
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
-from database.database import *
+from database.database import db
 
 @Bot.on_callback_query()
 async def cb_handler(client: Bot, query: CallbackQuery):
     data = query.data
+    user_id = query.from_user.id
+
+    # Check Maintenance Mode
+    is_admin = (user_id == OWNER_ID or await db.admin_exist(user_id))
+    maintenance_expiry = await db.get_maintenance()
+    if maintenance_expiry and maintenance_expiry > datetime.now() and not is_admin:
+        return await query.answer("⚠️ Bot is under maintenance. Please try again later. ✧", show_alert=True)
 
     if data == "help":
         await query.answer("✨ Opening Help Menu... ✧", show_alert=False)

@@ -46,6 +46,7 @@ class Database:
         self.rqst_fsub_data = self.database['request_forcesub']
         self.rqst_fsub_Channel_data = self.database['request_forcesub_channel']
         self.antibot_logs = self.database['antibot_logs']
+        self.settings_data = self.database['settings']
 
         # Cache for del_timer
         self.del_timer_cache = None
@@ -57,6 +58,10 @@ class Database:
         # Cache for banned users
         self.banned_cache = {}
         self.banned_cache_time = 60
+
+        # Cache for maintenance
+        self.maintenance_cache = None
+        self.maintenance_cache_ts = 0
 
 
     # USER DATA
@@ -295,6 +300,27 @@ class Database:
         ]
         result = await self.sex_data.aggregate(pipeline).to_list(length=1)
         return result[0]["total"] if result else 0
+
+    # MAINTENANCE MODE
+    async def set_maintenance(self, expiry_time: datetime):
+        self.maintenance_cache = expiry_time
+        self.maintenance_cache_ts = time.time()
+        await self.settings_data.update_one(
+            {'_id': 'maintenance'},
+            {'$set': {'expiry': expiry_time}},
+            upsert=True
+        )
+
+    async def get_maintenance(self):
+        now = time.time()
+        if self.maintenance_cache_ts > 0 and now - self.maintenance_cache_ts < 60:
+            return self.maintenance_cache
+
+        data = await self.settings_data.find_one({'_id': 'maintenance'})
+        res = data.get('expiry') if data else None
+        self.maintenance_cache = res
+        self.maintenance_cache_ts = now
+        return res
 
     # ANTI-BOT DATA
     async def get_antibot_data(self, user_id: int):

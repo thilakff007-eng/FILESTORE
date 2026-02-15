@@ -109,6 +109,7 @@ SHORT_MSG = "<b>✧─── [ 💎 ᴅᴏᴡɴʟᴏᴀᴅ ʀᴇᴀᴅʏ 💎 ] 
 # Anti-Bot Settings
 ANTIBOT_LIMIT = int(os.environ.get("ANTIBOT_LIMIT", 60)) # seconds for fast retry
 ANTIBOT_SOLVE_TIME = int(os.environ.get("ANTIBOT_SOLVE_TIME", 120)) # seconds to solve shortlink
+ANTIBOT_MIN_TIME = int(os.environ.get("ANTIBOT_MIN_TIME", 85)) # minimum seconds to return after shortlink
 
 # Texts
 HELP_TXT = """<b>✧─── [ ⚡ {bot_name} ⚡ ] ───✧</b>
