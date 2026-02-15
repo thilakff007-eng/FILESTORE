@@ -135,94 +135,13 @@ async def root_route_handler(request):
 async def redirect_handler(request):
     file_id = request.match_info.get('id')
     from helper_func import get_shortlink
-    from config import URL, SHORTLINK_URL, SHORTLINK_API, BOT_NAME, PICS
+    from config import URL, SHORTLINK_URL, SHORTLINK_API
 
     bridge_link = f"{URL}/get/{file_id}"
     try:
         short_link = await get_shortlink(SHORTLINK_URL, SHORTLINK_API, bridge_link)
-        anime_pic = random.choice(PICS)
-
-        html_content = f"""
-        <!DOCTYPE html>
-        <html lang="en">
-        <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>{BOT_NAME} - Secure Link</title>
-            <style>
-                body, html {{
-                    margin: 0; padding: 0;
-                    height: 100%; width: 100%;
-                    overflow: hidden;
-                    background: #1a1a2e;
-                    color: white;
-                    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-                }}
-                .background {{
-                    position: fixed;
-                    top: 0; left: 0; width: 100%; height: 100%;
-                    background: linear-gradient(rgba(26, 26, 46, 0.8), rgba(26, 26, 46, 0.8)), url('{anime_pic}') no-repeat center center;
-                    background-size: cover;
-                    z-index: -1;
-                }}
-                .overlay {{
-                    position: absolute;
-                    top: 0; left: 0;
-                    width: 100%; height: 100%;
-                    background: rgba(26, 26, 46, 0.9);
-                    display: flex; flex-direction: column;
-                    align-items: center; justify-content: center;
-                    z-index: 5;
-                    transition: opacity 0.5s ease;
-                }}
-                .loader {{
-                    width: 50px; height: 50px;
-                    border: 5px solid rgba(255,255,255,0.1);
-                    border-top: 5px solid #e94560;
-                    border-radius: 50%;
-                    animation: spin 1s linear infinite;
-                    margin-bottom: 20px;
-                }}
-                @keyframes spin {{ 0% {{ transform: rotate(0deg); }} 100% {{ transform: rotate(360deg); }} }}
-                h2 {{ color: #e94560; margin: 0; }}
-                p {{ opacity: 0.6; margin: 10px 0 0; }}
-                iframe {{
-                    position: absolute;
-                    top: 0; left: 0;
-                    width: 100%; height: 100%;
-                    border: none;
-                    z-index: 1;
-                }}
-                {WATERMARK_STYLE}
-            </style>
-        </head>
-        <body>
-            <div class="background"></div>
-            {WATERMARK_DIV}
-            <div class="overlay" id="overlay">
-                <div class="loader"></div>
-                <h2>Securing Your Link...</h2>
-                <p>Redirecting to your destination</p>
-            </div>
-
-            <iframe src="{short_link}" id="content_frame" onload="document.getElementById('overlay').style.opacity='0'; setTimeout(()=>{{document.getElementById('overlay').style.display='none'}}, 500);"></iframe>
-
-            <script>
-                setTimeout(() => {{
-                    const overlay = document.getElementById('overlay');
-                    if (overlay && overlay.style.display !== 'none') {{
-                        window.location.replace("{short_link}");
-                    }}
-                }}, 2000);
-
-                document.body.onclick = function() {{
-                    window.location.replace("{short_link}");
-                }};
-            </script>
-        </body>
-        </html>
-        """
-        return web.Response(text=html_content, content_type='text/html')
+        # Direct redirect for maximum reliability and speed
+        return web.HTTPFound(location=short_link)
     except Exception as e:
         print(f"Error in redirector: {e}")
         return web.HTTPFound(location=bridge_link)
