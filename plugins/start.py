@@ -11,12 +11,7 @@
 #
 
 import asyncio
-import os
 import random
-import sys
-import re
-import string
-import time
 from datetime import datetime, timedelta
 from pyrogram import Client, filters, __version__
 from pyrogram.enums import ParseMode, ChatAction
@@ -33,20 +28,6 @@ from database.db_premium import is_premium_user, collection, add_premium, remove
 
 BAN_SUPPORT = f"{BAN_SUPPORT}"
 TUT_VID = f"{TUT_VID}"
-
-async def report_to_owner(client: Client, user_id, username, reason):
-    try:
-        report_msg = (
-            f"<b>✧─── [ ⚠️ ᴀɴᴛɪ-ʙᴏᴛ ᴛʀɪɢɢᴇʀ ⚠️ ] ───✧</b>\n\n"
-            f"<b>👤 ᴜsᴇʀ ID:</b> <code>{user_id}</code>\n"
-            f"<b>🔗 ᴜsᴇʀɴᴀᴍᴇ:</b> @{username}\n"
-            f"<b>⏰ ᴛɪᴍᴇ:</b> <code>{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}</code>\n"
-            f"<b>🚫 ʀᴇᴀsᴏɴ:</b> <code>{reason}</code>\n\n"
-            f"<b>✨ ᴜsᴇʀ ʜᴀs ʙᴇᴇɴ ᴀᴜᴛᴏᴍᴀᴛɪᴄᴀʟʟʏ ʙᴀɴɴᴇᴅ. ✧</b>"
-        )
-        await client.send_message(OWNER_ID, report_msg)
-    except Exception as e:
-        print(f"Error reporting to owner: {e}")
 
 async def short_url(client: Client, message: Message, base64_string):
     try:
@@ -126,19 +107,6 @@ async def start_command(client: Client, message: Message):
     text = message.text
 
     if len(text) > 7:
-        # Anti-Bot Protection System
-        antibot_data = await db.get_antibot_data(user_id)
-        now = time.time()
-        last_delivered = antibot_data.get('last_delivered_ts', 0)
-        last_link_sent = antibot_data.get('last_link_sent_ts', 0)
-
-        # Check for fast retry (Automation Abuse)
-        if last_delivered > 0 and (now - last_delivered) < ANTIBOT_LIMIT:
-            await db.add_ban_user(user_id)
-            await db.log_antibot_ban(user_id, username, "Anti-bot trigger: Fast retry / Automation detected")
-            await report_to_owner(client, user_id, username, "Fast retry / Automation detected")
-            return await message.reply_text("<b>✧─── [ ⚠️ ʙᴏᴛ ᴅᴇᴛᴇᴄᴛᴇᴅ ⚠️ ] ───✧</b>\n\n<b>🚫 ᴀᴜᴛᴏᴍᴀᴛɪᴏɴ ᴀʙᴜsᴇ ᴅᴇᴛᴇᴄᴛᴇᴅ! ʏᴏᴜ ʜᴀᴠᴇ ʙᴇᴇɴ ᴀᴜᴛᴏᴍᴀᴛɪᴄᴀʟʟʏ ʙᴀɴɴᴇᴅ. ✧</b>")
-
         try:
             basic = text.split(" ", 1)[1]
             if basic.startswith("direct_"):
@@ -151,26 +119,9 @@ async def start_command(client: Client, message: Message):
                 base64_string = basic
                 is_direct = False
 
-            # Check for fast return after shortlink (Bot/DNS abuse)
-            if not is_direct and not is_premium and user_id != OWNER_ID:
-                if last_link_sent > 0 and (now - last_link_sent) < ANTIBOT_MIN_TIME:
-                    await db.add_ban_user(user_id)
-                    await db.log_antibot_ban(user_id, username, f"Anti-bot trigger: Returned in {int(now - last_link_sent)}s (DNS/Bot abuse)")
-                    await report_to_owner(client, user_id, username, f"Returned in {int(now - last_link_sent)}s (DNS/Bot abuse)")
-                    return await message.reply_text("<b>✧─── [ 🚫 ᴀʙᴜsᴇ ᴅᴇᴛᴇᴄᴛᴇᴅ 🚫 ] ───✧</b>\n\n<b>⚠️ ʏᴏᴜ ʀᴇᴛᴜʀɴᴇᴅ ᴛᴏᴏ ғᴀsᴛ! ᴛʜɪs ɪɴᴅɪᴄᴀᴛᴇs ᴛʜᴇ ᴜsᴇ ᴏғ ᴀᴜᴛᴏᴍᴀᴛɪᴏɴ ᴏʀ ᴅɴs ʙʏᴘᴀss. ʏᴏᴜ ʜᴀᴠᴇ ʙᴇᴇɴ ʙᴀɴɴᴇᴅ. ✧</b>")
-
             if not is_premium and user_id != OWNER_ID and not is_direct:
-                # User must solve shortlink within 2 minutes logic
-                antibot_data['last_link_sent_ts'] = now
-                await db.update_antibot_data(user_id, antibot_data)
-
                 await short_url(client, message, base64_string)
                 return
-
-            # Solve time limit check
-            if not is_premium and user_id != OWNER_ID and not is_direct:
-                if last_link_sent > 0 and (now - last_link_sent) > ANTIBOT_SOLVE_TIME:
-                    return await message.reply_text("<b>✧─── [ ⏰ ᴛɪᴍᴇ ᴇxᴘɪʀᴇᴅ ⏰ ] ───✧</b>\n\n<b><blockquote>⚠️ ʏᴏᴜ ᴛᴏᴏᴋ ᴛᴏᴏ ʟᴏɴɢ ᴛᴏ sᴏʟᴠᴇ ᴛʜᴇ sʜᴏʀᴛʟɪɴᴋ. ᴘʟᴇᴀsᴇ ᴛʀʏ ᴀɢᴀɪɴ ᴡɪᴛʜɪɴ 2 ᴍɪɴᴜᴛᴇs. ✧</blockquote></b>")
 
         except Exception as e:
             print(f"Error processing start payload: {e}")
@@ -238,11 +189,6 @@ async def start_command(client: Client, message: Message):
         snt_msgs = await asyncio.gather(*tasks)
         fsub_msgs = [m for m in snt_msgs if m]
 
-        # Record successful delivery for anti-bot check
-        if fsub_msgs:
-            antibot_data = await db.get_antibot_data(user_id)
-            antibot_data['last_delivered_ts'] = time.time()
-            await db.update_antibot_data(user_id, antibot_data)
 
         if FILE_AUTO_DELETE > 0:
             notification_msg = await message.reply(
