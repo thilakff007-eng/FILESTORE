@@ -46,7 +46,6 @@ class Database:
         self.rqst_fsub_data = self.database['request_forcesub']
         self.rqst_fsub_Channel_data = self.database['request_forcesub_channel']
         self.antibot_data = self.database['antibot_data']
-        self.antibot_logs = self.database['antibot_logs']
         self.settings_data = self.database['settings']
 
         # Cache for del_timer
@@ -332,15 +331,6 @@ class Database:
 
     async def update_antibot_data(self, user_id: int, data: dict):
         await self.user_data.update_one({'_id': user_id}, {'$set': {'antibot': data}}, upsert=True)
-
-    async def log_antibot_ban(self, user_id: int, username: str, reason: str):
-        log_entry = {
-            'user_id': user_id,
-            'username': username,
-            'reason': reason,
-            'timestamp': datetime.now()
-        }
-        await self.antibot_logs.insert_one(log_entry)
 
     # TOKEN VERIFICATION
     async def add_verify_token(self, token: str, user_id: int, payload: str):
