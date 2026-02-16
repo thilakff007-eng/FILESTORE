@@ -106,6 +106,11 @@ SHORTLINK_API = os.environ.get("SHORTLINK_API", "feacd420d74b472a7450442381abac0
 TUT_VID = os.environ.get("TUT_VID","https://t.me/otakustartelugu")
 SHORT_MSG = "<b>✧─── [ 💎 ᴅᴏᴡɴʟᴏᴀᴅ ʀᴇᴀᴅʏ 💎 ] ───✧</b>\n\n<b>⚡ ʜᴇʀᴇ ɪs ʏᴏᴜʀ ᴅᴏᴡɴʟᴏᴀᴅ ʟɪɴᴋ, sᴇɴᴘᴀɪ! ✨\n<blockquote>ᴍᴜsᴛ ᴡᴀᴛᴄʜ ᴛᴜᴛᴏʀɪᴀʟ ʙᴇғᴏʀᴇ ᴄʟɪᴄᴋɪɴɢ... 🏯</blockquote></b>"
 
+# Anti-Bot Settings
+ANTIBOT_LIMIT = int(os.environ.get("ANTIBOT_LIMIT", 60)) # seconds for fast retry
+ANTIBOT_SOLVE_TIME = int(os.environ.get("ANTIBOT_SOLVE_TIME", 300)) # seconds to solve shortlink
+ANTIBOT_MIN_TIME = int(os.environ.get("ANTIBOT_MIN_TIME", 30)) # minimum seconds to return after shortlink
+
 # Texts
 HELP_TXT = """<b>✧─── [ ⚡ {bot_name} ⚡ ] ───✧</b>
 

@@ -12,6 +12,7 @@
 
 import asyncio
 import random
+import uuid
 from datetime import datetime, timedelta
 from pyrogram import Client, filters, __version__
 from pyrogram.enums import ParseMode, ChatAction
@@ -29,11 +30,30 @@ from database.db_premium import is_premium_user, collection, add_premium, remove
 BAN_SUPPORT = f"{BAN_SUPPORT}"
 TUT_VID = f"{TUT_VID}"
 
+async def report_to_owner(client: Client, user_id, username, reason):
+    try:
+        report_msg = (
+            f"<b>✧─── [ ⚠️ ᴀɴᴛɪ-ʙᴏᴛ ᴛʀɪɢɢᴇʀ ⚠️ ] ───✧</b>\n\n"
+            f"<b>👤 ᴜsᴇʀ ID:</b> <code>{user_id}</code>\n"
+            f"<b>🔗 ᴜsᴇʀɴᴀᴍᴇ:</b> @{username}\n"
+            f"<b>⏰ ᴛɪᴍᴇ:</b> <code>{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}</code>\n"
+            f"<b>🚫 ʀᴇᴀsᴏɴ:</b> <code>{reason}</code>\n\n"
+            f"<b>✨ ᴜsᴇʀ ʜᴀs ʙᴇᴇɴ ᴀᴜᴛᴏᴍᴀᴛɪᴄᴀʟʟʏ ʙᴀɴɴᴇᴅ. ✧</b>"
+        )
+        await client.send_message(OWNER_ID, report_msg)
+    except Exception as e:
+        print(f"Error reporting to owner: {e}")
+
 async def short_url(client: Client, message: Message, base64_string):
     try:
+        user_id = message.from_user.id
+        # Generate a unique token for verification
+        verify_token = str(uuid.uuid4())
+        await db.add_verify_token(verify_token, user_id, base64_string)
+
         # Hide shortlink using our own redirector domain
         base_url = f"https://{URL}" if not URL.startswith("http") else URL
-        hidden_link = f"{base_url}/link/__{OWNER_ID}__/yu3elk{base64_string}7"
+        hidden_link = f"{base_url}/link/__{OWNER_ID}__/{verify_token}"
 
         buttons = [
             [
@@ -107,14 +127,55 @@ async def start_command(client: Client, message: Message):
     text = message.text
 
     if len(text) > 7:
+        # Anti-Bot Protection System (Global Tracking)
+        antibot_data = await db.get_antibot_data(user_id)
+        now_ts = datetime.now().timestamp()
+        last_delivered = antibot_data.get('last_delivered_ts', 0)
+
+        # Check for fast retry (Automation Abuse)
+        if not is_premium and user_id != OWNER_ID:
+            if last_delivered > 0 and (now_ts - last_delivered) < ANTIBOT_LIMIT:
+                await db.add_ban_user(user_id)
+                await db.log_antibot_ban(user_id, username, "Anti-bot trigger: Fast retry / Automation detected")
+                await report_to_owner(client, user_id, username, "Fast retry / Automation detected")
+                return await message.reply_text("<b>✧─── [ ⚠️ ʙᴏᴛ ᴅᴇᴛᴇᴄᴛᴇᴅ ⚠️ ] ───✧</b>\n\n<b>🚫 ᴀᴜᴛᴏᴍᴀᴛɪᴏɴ ᴀʙᴜsᴇ ᴅᴇᴛᴇᴄᴛᴇᴅ! ʏᴏᴜ ʜᴀᴠᴇ ʙᴇᴇɴ ᴀᴜᴛᴏᴍᴀᴛɪᴄᴀʟʟʏ ʙᴀɴɴᴇᴅ. ✧</b>")
+
         try:
             basic = text.split(" ", 1)[1]
+
+            # Direct Link Bypass
             if basic.startswith("direct_"):
                 base64_string = basic[7:]
                 is_direct = True
-            elif basic.startswith("yu3elk"):
-                base64_string = basic[6:-1]
+
+            # Token Based Verification Check
+            elif len(basic) > 30: # Likely a UUID
+                token_data = await db.get_verify_token(basic)
+                if not token_data:
+                    return await message.reply_text("<b>❌ ɪɴᴠᴀʟɪᴅ ᴏʀ ᴇxᴘɪʀᴇᴅ ᴠᴇʀɪғɪᴄᴀᴛɪᴏɴ ᴛᴏᴋᴇɴ!</b>")
+
+                if token_data['user_id'] != user_id:
+                    return await message.reply_text("<b>❌ ᴛʜɪs ᴛᴏᴋᴇɴ ᴡᴀs ɴᴏᴛ ɢᴇɴᴇʀᴀᴛᴇᴅ ғᴏʀ ʏᴏᴜ!</b>")
+
+                created_at = token_data['created_at']
+                solve_time = (datetime.now() - created_at).total_seconds()
+
+                # Verify solve time (Backend verification)
+                if solve_time < ANTIBOT_MIN_TIME:
+                    await db.add_ban_user(user_id)
+                    await db.log_antibot_ban(user_id, username, f"Anti-bot trigger: Returned in {int(solve_time)}s (DNS/Bot abuse)")
+                    await report_to_owner(client, user_id, username, f"Returned too fast ({int(solve_time)}s) - DNS/Bot abuse")
+                    await db.delete_verify_token(basic)
+                    return await message.reply_text("<b>✧─── [ 🚫 ᴀʙᴜsᴇ ᴅᴇᴛᴇᴄᴛᴇᴅ 🚫 ] ───✧</b>\n\n<b>⚠️ ʏᴏᴜ ʀᴇᴛᴜʀɴᴇᴅ ᴛᴏᴏ ғᴀsᴛ! ᴛʜɪs ɪɴᴅɪᴄᴀᴛᴇs ᴛʜᴇ ᴜsᴇ ᴏғ ᴀᴜᴛᴏᴍᴀᴛɪᴏɴ ᴏʀ ᴅɴs ʙʏᴘᴀss. ʏᴏᴜ ʜᴀᴠᴇ ʙᴇᴇɴ ʙᴀɴɴᴇᴅ. ✧</b>")
+
+                if solve_time > ANTIBOT_SOLVE_TIME:
+                    await db.delete_verify_token(basic)
+                    return await message.reply_text("<b>✧─── [ ⏰ ᴛɪᴍᴇ ᴇxᴘɪʀᴇᴅ ⏰ ] ───✧</b>\n\n<b><blockquote>⚠️ ʏᴏᴜ ᴛᴏᴏᴋ ᴛᴏᴏ ʟᴏɴɢ ᴛᴏ sᴏʟᴠᴇ ᴛʜᴇ sʜᴏʀᴛʟɪɴᴋ. ᴘʟᴇᴀsᴇ ᴛʀʏ ᴀɢᴀɪɴ. ✧</blockquote></b>")
+
+                base64_string = token_data['payload']
                 is_direct = True
+                await db.delete_verify_token(basic)
+
             else:
                 base64_string = basic
                 is_direct = False
@@ -189,6 +250,10 @@ async def start_command(client: Client, message: Message):
         snt_msgs = await asyncio.gather(*tasks)
         fsub_msgs = [m for m in snt_msgs if m]
 
+        # Record successful delivery for anti-bot check
+        if fsub_msgs:
+            antibot_data['last_delivered_ts'] = datetime.now().timestamp()
+            await db.update_antibot_data(user_id, antibot_data)
 
         if FILE_AUTO_DELETE > 0:
             notification_msg = await message.reply(

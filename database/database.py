@@ -45,6 +45,8 @@ class Database:
         self.fsub_data = self.database['fsub']   
         self.rqst_fsub_data = self.database['request_forcesub']
         self.rqst_fsub_Channel_data = self.database['request_forcesub_channel']
+        self.antibot_data = self.database['antibot_data']
+        self.antibot_logs = self.database['antibot_logs']
         self.settings_data = self.database['settings']
 
         # Cache for del_timer
@@ -321,6 +323,39 @@ class Database:
         self.maintenance_cache_ts = now
         return res
 
+    # ANTI-BOT DATA
+    async def get_antibot_data(self, user_id: int):
+        user = await self.user_data.find_one({'_id': user_id})
+        if user:
+            return user.get('antibot', {})
+        return {}
+
+    async def update_antibot_data(self, user_id: int, data: dict):
+        await self.user_data.update_one({'_id': user_id}, {'$set': {'antibot': data}}, upsert=True)
+
+    async def log_antibot_ban(self, user_id: int, username: str, reason: str):
+        log_entry = {
+            'user_id': user_id,
+            'username': username,
+            'reason': reason,
+            'timestamp': datetime.now()
+        }
+        await self.antibot_logs.insert_one(log_entry)
+
+    # TOKEN VERIFICATION
+    async def add_verify_token(self, token: str, user_id: int, payload: str):
+        await self.antibot_data.insert_one({
+            'token': token,
+            'user_id': user_id,
+            'payload': payload,
+            'created_at': datetime.now()
+        })
+
+    async def get_verify_token(self, token: str):
+        return await self.antibot_data.find_one({'token': token})
+
+    async def delete_verify_token(self, token: str):
+        await self.antibot_data.delete_one({'token': token})
 
 
 db = Database(DB_URI, DB_NAME)
