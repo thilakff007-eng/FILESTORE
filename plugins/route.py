@@ -249,7 +249,7 @@ async def get_route_handler(request):
                 font-weight: 500;
             }}
             .btn {{
-                display: none;
+                display: inline-block;
                 padding: 18px 45px;
                 background: linear-gradient(45deg, #00d2ff, #3a7bd5);
                 color: white;
@@ -289,29 +289,13 @@ async def get_route_handler(request):
         <div class="container">
             <img src="{anime_pic}" alt="Logo" class="logo">
             <h2>Human Verification</h2>
-            <p class="status" id="status_text">✨ Please wait <span id="timer">5</span> seconds... ✧</p>
+            <p class="status" id="status_text">✨ Verification Ready! ✧</p>
             <a href="https://t.me/{bot.username}?start={file_id}" class="btn" id="verify_btn">💎 Unlock Now ✧</a>
         </div>
         <script>
-            let timeLeft = 5;
-            const timerElement = document.getElementById('timer');
-            const btnElement = document.getElementById('verify_btn');
-            const statusText = document.getElementById('status_text');
-
-            const countdown = setInterval(() => {{
-                timeLeft--;
-                timerElement.innerText = timeLeft;
-                if (timeLeft <= 0) {{
-                    clearInterval(countdown);
-                    statusText.innerText = "✨ Verification Ready! ✧";
-                    timerElement.style.display = 'none';
-                    btnElement.style.display = 'inline-block';
-
-                    setTimeout(() => {{
-                        window.location.href = "tg://resolve?domain={bot.username}&start={file_id}";
-                    }}, 500);
-                }}
-            }}, 1000);
+            setTimeout(() => {{
+                window.location.href = "tg://resolve?domain={bot.username}&start={file_id}";
+            }}, 500);
         </script>
         <footer>
             &copy; 2025 {BOT_NAME} | Secure Verification

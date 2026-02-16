@@ -47,8 +47,8 @@ async def report_to_owner(client: Client, user_id, username, reason):
 async def short_url(client: Client, message: Message, base64_string):
     try:
         user_id = message.from_user.id
-        # Generate a unique token for verification
-        verify_token = str(uuid.uuid4())
+        # Generate a unique token for verification (with prefix to avoid overlap)
+        verify_token = f"v_{str(uuid.uuid4())}"
         await db.add_verify_token(verify_token, user_id, base64_string)
 
         # Hide shortlink using our own redirector domain
@@ -149,7 +149,7 @@ async def start_command(client: Client, message: Message):
                 is_direct = True
 
             # Token Based Verification Check
-            elif len(basic) > 30: # Likely a UUID
+            elif basic.startswith("v_"):
                 token_data = await db.get_verify_token(basic)
                 if not token_data:
                     return await message.reply_text("<b>❌ ɪɴᴠᴀʟɪᴅ ᴏʀ ᴇxᴘɪʀᴇᴅ ᴠᴇʀɪғɪᴄᴀᴛɪᴏɴ ᴛᴏᴋᴇɴ!</b>")
@@ -162,11 +162,9 @@ async def start_command(client: Client, message: Message):
 
                 # Verify solve time (Backend verification)
                 if solve_time < ANTIBOT_MIN_TIME:
-                    await db.add_ban_user(user_id)
-                    await db.log_antibot_ban(user_id, username, f"Anti-bot trigger: Returned in {int(solve_time)}s (DNS/Bot abuse)")
-                    await report_to_owner(client, user_id, username, f"Returned too fast ({int(solve_time)}s) - DNS/Bot abuse")
+                    # Just warn/reject instead of auto-ban if user thinks it's an error
                     await db.delete_verify_token(basic)
-                    return await message.reply_text("<b>✧─── [ 🚫 ᴀʙᴜsᴇ ᴅᴇᴛᴇᴄᴛᴇᴅ 🚫 ] ───✧</b>\n\n<b>⚠️ ʏᴏᴜ ʀᴇᴛᴜʀɴᴇᴅ ᴛᴏᴏ ғᴀsᴛ! ᴛʜɪs ɪɴᴅɪᴄᴀᴛᴇs ᴛʜᴇ ᴜsᴇ ᴏғ ᴀᴜᴛᴏᴍᴀᴛɪᴏɴ ᴏʀ ᴅɴs ʙʏᴘᴀss. ʏᴏᴜ ʜᴀᴠᴇ ʙᴇᴇɴ ʙᴀɴɴᴇᴅ. ✧</b>")
+                    return await message.reply_text("<b>✧─── [ 🚫 ᴀʙᴜsᴇ ᴅᴇᴛᴇᴄᴛᴇᴅ 🚫 ] ───✧</b>\n\n<b>⚠️ ʏᴏᴜ ʀᴇᴛᴜʀɴᴇᴅ ᴛᴏᴏ ғᴀsᴛ! ᴛʜɪs ɪɴᴅɪᴄᴀᴛᴇs ᴛʜᴇ ᴜsᴇ ᴏғ ᴀᴜᴛᴏᴍᴀᴛɪᴏɴ. ᴘʟᴇᴀsᴇ sᴏʟᴠᴇ ʟɪɴᴋ ʜᴏɴᴇsᴛʟʏ. ✧</b>")
 
                 if solve_time > ANTIBOT_SOLVE_TIME:
                     await db.delete_verify_token(basic)
