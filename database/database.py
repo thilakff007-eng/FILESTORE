@@ -334,11 +334,17 @@ class Database:
 
     # TOKEN VERIFICATION
     async def add_verify_token(self, token: str, user_id: int, payload: str):
+        # Ensure TTL index exists for automatic expiration after 1 hour
+        try:
+            await self.antibot_data.create_index("created_at", expireAfterSeconds=3600)
+        except Exception as e:
+            logging.debug(f"Index creation skipped or failed: {e}")
+
         await self.antibot_data.insert_one({
             'token': token,
             'user_id': user_id,
             'payload': payload,
-            'created_at': datetime.now()
+            'created_at': datetime.utcnow()
         })
 
     async def get_verify_token(self, token: str):

@@ -68,8 +68,10 @@ async def send_pin_text(client: Bot, message: Message):
                     unsuccessful += 1
 
         pls_wait = await message.reply("<i>ʙʀᴏᴀᴅᴄᴀꜱᴛ ᴘʀᴏᴄᴇꜱꜱɪɴɢ....</i>")
-        tasks = [do_pbroadcast(chat_id) for chat_id in query]
-        await asyncio.gather(*tasks)
+        for i in range(0, len(query), 100):
+            batch = query[i:i+100]
+            tasks = [do_pbroadcast(chat_id) for chat_id in batch]
+            await asyncio.gather(*tasks)
 
         status = f"""<b><u>ʙʀᴏᴀᴅᴄᴀꜱᴛ ᴄᴏᴍᴘʟᴇᴛᴇᴅ</u></b>
 
@@ -121,9 +123,10 @@ async def send_text(client: Bot, message: Message):
                     unsuccessful += 1
 
         pls_wait = await message.reply("<i>ʙʀᴏᴀᴅᴄᴀꜱᴛ ᴘʀᴏᴄᴇꜱꜱɪɴɢ....</i>")
-
-        tasks = [do_broadcast(chat_id) for chat_id in query]
-        await asyncio.gather(*tasks)
+        for i in range(0, len(query), 100):
+            batch = query[i:i+100]
+            tasks = [do_broadcast(chat_id) for chat_id in batch]
+            await asyncio.gather(*tasks)
 
         status = f"""<b><u>ʙʀᴏᴀᴅᴄᴀꜱᴛ ᴄᴏᴍᴘʟᴇᴛᴇᴅ</u>
 
@@ -207,8 +210,10 @@ async def delete_broadcast(client: Bot, message: Message):
                     unsuccessful += 1
 
         pls_wait = await message.reply("<i>Broadcast with auto-delete processing....</i>")
-        tasks = [do_dbroadcast(chat_id) for chat_id in query]
-        await asyncio.gather(*tasks)
+        for i in range(0, len(query), 100):
+            batch = query[i:i+100]
+            tasks = [do_dbroadcast(chat_id) for chat_id in batch]
+            await asyncio.gather(*tasks)
 
         status = f"""<b><u>Bʀᴏᴀᴅᴄᴀsᴛɪɴɢ ᴡɪᴛʜ Aᴜᴛᴏ-Dᴇʟᴇᴛᴇ Cᴏᴍᴘʟᴇᴛᴇᴅ</u>
 

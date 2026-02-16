@@ -1,5 +1,6 @@
 from aiohttp import web
 import random
+import logging
 from config import BOT_NAME, PICS, MAIN_LINK, OWNER_ID
 
 routes = web.RouteTableDef()
@@ -176,7 +177,10 @@ async def redirect_handler(request):
 
 @routes.get("/get/{id}")
 async def get_route_handler(request):
-    bot = request.app['bot']
+    from config import BOT_USERNAME
+    bot = request.app.get('bot')
+    username = bot.username if bot and hasattr(bot, 'username') and bot.username else BOT_USERNAME
     file_id = request.match_info.get('id')
+    logging.info(f"Redirecting user back to bot {username} with token {file_id}")
     # Direct redirect to Telegram to remove any extra wait/timer
-    return web.HTTPFound(location=f"https://t.me/{bot.username}?start={file_id}")
+    return web.HTTPFound(location=f"https://t.me/{username}?start={file_id}")

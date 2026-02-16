@@ -10,7 +10,7 @@ from logging.handlers import RotatingFileHandler
 load_dotenv()
 
 # Telegram API Configuration
-TG_BOT_TOKEN = os.environ.get("TG_BOT_TOKEN", "8448505270:AAGcLNluY6KMQHk3NajiTfwBoLggWPoVuU8")
+TG_BOT_TOKEN = os.environ.get("TG_BOT_TOKEN", "8448505270:AAEwd0kQdkYmFbR9hMQQajTLwGj3M1gmIXQ")
 APP_ID = int(os.environ.get("APP_ID", "31355944"))
 API_HASH = os.environ.get("API_HASH", "167e960d46363e3098f9c1fc78496adb")
 
@@ -92,7 +92,7 @@ FORCE_PIC = PICS[1]
 
 # Bot Settings
 FILE_AUTO_DELETE = int(os.environ.get("FILE_AUTO_DELETE", "0"))
-URL = os.environ.get("URL", "worker-production-408e.up.railway.app")
+URL = os.environ.get("URL", os.environ.get("RENDER_EXTERNAL_URL", os.environ.get("RAILWAY_STATIC_URL", "worker-production-408e.up.railway.app")))
 BOT_USERNAME = os.environ.get("BOT_USERNAME", "ALONEKINGSTAR77")
 PORT = os.environ.get("PORT", "8080")
 FSUB_LINK_EXPIRY = int(os.getenv("FSUB_LINK_EXPIRY", "10"))
@@ -106,10 +106,6 @@ SHORTLINK_API = os.environ.get("SHORTLINK_API", "feacd420d74b472a7450442381abac0
 TUT_VID = os.environ.get("TUT_VID","https://t.me/otakustartelugu")
 SHORT_MSG = "<b>✧─── [ 💎 ᴅᴏᴡɴʟᴏᴀᴅ ʀᴇᴀᴅʏ 💎 ] ───✧</b>\n\n<b>⚡ ʜᴇʀᴇ ɪs ʏᴏᴜʀ ᴅᴏᴡɴʟᴏᴀᴅ ʟɪɴᴋ, sᴇɴᴘᴀɪ! ✨\n<blockquote>ᴍᴜsᴛ ᴡᴀᴛᴄʜ ᴛᴜᴛᴏʀɪᴀʟ ʙᴇғᴏʀᴇ ᴄʟɪᴄᴋɪɴɢ... 🏯</blockquote></b>"
 
-# Anti-Bot Settings
-ANTIBOT_LIMIT = int(os.environ.get("ANTIBOT_LIMIT", 60)) # seconds for fast retry
-ANTIBOT_SOLVE_TIME = int(os.environ.get("ANTIBOT_SOLVE_TIME", 600)) # seconds to solve shortlink
-ANTIBOT_MIN_TIME = int(os.environ.get("ANTIBOT_MIN_TIME", 10)) # minimum seconds to return after shortlink
 
 # Texts
 HELP_TXT = """<b>✧─── [ ⚡ {bot_name} ⚡ ] ───✧</b>

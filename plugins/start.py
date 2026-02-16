@@ -13,6 +13,7 @@
 import asyncio
 import random
 import uuid
+import logging
 from datetime import datetime, timedelta
 from pyrogram import Client, filters, __version__
 from pyrogram.enums import ParseMode, ChatAction
@@ -122,18 +123,22 @@ async def start_command(client: Client, message: Message):
                 is_direct = True
 
             # Token Based Verification Check
-            elif basic.startswith("v_"):
-                token_data = await db.get_verify_token(basic)
+            elif basic.strip().startswith("v_"):
+                token = basic.strip()
+                token_data = await db.get_verify_token(token)
+
                 if not token_data:
-                    # Fallback or silent error if token is missing
-                    return await message.reply_text("<b>❌ ᴠᴇʀɪғɪᴄᴀᴛɪᴏɴ ғᴀɪʟᴇᴅ. ᴘʟᴇᴀsᴇ ᴛʀʏ ᴀɢᴀɪɴ ғʀᴏᴍ ᴛʜᴇ ʟɪɴᴋ.</b>")
+                    logging.warning(f"Verification token not found: {token} for user {user_id}")
+                    return await message.reply_text("<b>❌ ᴠᴇʀɪғɪᴄᴀᴛɪᴏɴ ᴇxᴘɪʀᴇᴅ ᴏʀ ɪɴᴠᴀʟɪᴅ. ᴘʟᴇᴀsᴇ ᴛʀʏ ᴀɢᴀɪɴ ғʀᴏᴍ ᴛʜᴇ ʟɪɴᴋ.</b>")
 
                 if token_data['user_id'] != user_id:
-                    return await message.reply_text("<b>❌ ᴛʜɪs ᴠᴇʀɪғɪᴄᴀᴛɪᴏɴ ɪs ɴᴏᴛ ғᴏʀ ʏᴏᴜ.</b>")
+                    logging.warning(f"User ID mismatch for token {token}: expected {token_data['user_id']}, got {user_id}")
+                    return await message.reply_text("<b>❌ ᴛʜɪs ᴠᴇʀɪғɪᴄᴀᴛɪᴏɴ ʟɪɴᴋ ᴡᴀs ɴᴏᴛ ɢᴇɴᴇʀᴀᴛᴇᴅ ғᴏʀ ʏᴏᴜ. ᴘʟᴇᴀsᴇ ɢᴇɴᴇʀᴀᴛᴇ ʏᴏᴜʀ ᴏᴡɴ ʟɪɴᴋ.</b>")
 
+                logging.info(f"Verification successful for user {user_id} with token {token}")
                 base64_string = token_data['payload']
                 is_direct = True
-                await db.delete_verify_token(basic)
+                await db.delete_verify_token(token)
 
             else:
                 base64_string = basic
@@ -212,7 +217,7 @@ async def start_command(client: Client, message: Message):
 
         if FILE_AUTO_DELETE > 0:
             notification_msg = await message.reply(
-                f"<b>Tʜɪs Fɪʟᴇ ᴡɪʟʟ ʙᴇ Dᴇʟᴇᴛᴇᴅ ɪɴ  {get_exp_time(FILE_AUTO_DELETE)}. Pʟᴇᴀsᴇ sᴀᴠᴇ ᴏʀ ғᴏʀᴡᴀʀᴅ ɪᴛ ᴛᴏ ʏᴏᴜʀ sᴀᴠᴇᴅ ᴍᴇssᴀɢᴇs ʙᴇғᴏʀᴇ ɪᴛ ɢᴇᴛs Dᴇʟᴇʟᴛᴇᴅ.</b>"
+                f"<b>Tʜɪs Fɪʟᴇ ᴡɪʟʟ ʙᴇ Dᴇʟᴇᴛᴇᴅ ɪɴ  {get_exp_time(FILE_AUTO_DELETE)}. Pʟᴇᴀsᴇ sᴀᴠᴇ ᴏʀ ғᴏʀᴡᴀʀᴅ ɪᴛ ᴛᴏ ʏᴏᴜʀ sᴀᴠᴇᴅ ᴍᴇssᴀɢᴇs ʙᴇғᴏʀᴇ ɪᴛ ɢᴇᴛs Dᴇʟᴇᴛᴇᴅ.</b>"
             )
 
             await asyncio.sleep(FILE_AUTO_DELETE)
