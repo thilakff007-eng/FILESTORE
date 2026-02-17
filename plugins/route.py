@@ -1,7 +1,8 @@
 from aiohttp import web
 import random
 import logging
-from config import BOT_NAME, PICS, MAIN_LINK, OWNER_ID
+from config import BOT_NAME, PICS, MAIN_LINK, OWNER_ID, BOT_USERNAME, SHORTLINK_URL, SHORTLINK_API, URL
+from database.database import db
 
 routes = web.RouteTableDef()
 
@@ -36,16 +37,7 @@ WATERMARK_STYLE = """
 
 WATERMARK_DIV = '<div class="watermark">⚡ OTAKUSTARTELUGU ⚡</div>'
 
-@routes.get("/", allow_head=True)
-async def root_route_handler(request):
-    anime_pic = get_random_pic()
-    html_content = f"""
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>{BOT_NAME} - Advanced File Store</title>
+ANIME_COMMON_STYLE = f"""
         <style>
             body {{
                 margin: 0;
@@ -64,123 +56,263 @@ async def root_route_handler(request):
             .background {{
                 position: fixed;
                 top: 0; left: 0; width: 100%; height: 100%;
-                background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('{anime_pic}') no-repeat center center;
+                background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('{{anime_pic}}') no-repeat center center;
                 background-size: cover;
                 z-index: -1;
-                filter: blur(8px);
+                filter: blur(5px);
                 transform: scale(1.1);
             }}
             .container {{
-                background: rgba(255, 255, 255, 0.05);
-                padding: 50px;
-                border-radius: 30px;
-                box-shadow: 0 0 30px rgba(233, 69, 96, 0.4), 0 0 60px rgba(233, 69, 96, 0.1);
-                backdrop-filter: blur(20px);
-                border: 1px solid rgba(255, 255, 255, 0.1);
-                max-width: 550px;
+                background: rgba(0, 0, 0, 0.6);
+                padding: 40px;
+                border-radius: 20px;
+                box-shadow: 0 0 20px #e94560;
+                backdrop-filter: blur(10px);
+                border: 2px solid #e94560;
+                max-width: 450px;
                 width: 90%;
-                animation: float 6s ease-in-out infinite;
-            }}
-            @keyframes float {{
-                0% {{ transform: translateY(0px); box-shadow: 0 0 30px rgba(233, 69, 96, 0.4); }}
-                50% {{ transform: translateY(-20px); box-shadow: 0 0 50px rgba(233, 69, 96, 0.6); }}
-                100% {{ transform: translateY(0px); box-shadow: 0 0 30px rgba(233, 69, 96, 0.4); }}
             }}
             .logo {{
-                width: 140px;
-                height: 140px;
+                width: 120px;
+                height: 120px;
                 border-radius: 50%;
-                margin-bottom: 25px;
-                border: 4px solid #e94560;
+                margin-bottom: 20px;
+                border: 3px solid #e94560;
                 object-fit: cover;
-                box-shadow: 0 0 20px #e94560;
-                transition: transform 0.5s;
+                box-shadow: 0 0 15px #e94560;
             }}
-            .logo:hover {{
-                transform: rotate(360deg) scale(1.1);
-            }}
-            h1 {{
-                margin: 10px 0;
-                font-size: 3em;
-                color: #fff;
-                text-shadow: 0 0 10px #e94560, 0 0 20px #e94560, 0 0 30px #e94560;
-                font-weight: 800;
-            }}
-            p {{
-                font-size: 1.2em;
-                opacity: 0.9;
-                margin-bottom: 35px;
-                color: #e0e0e0;
-                line-height: 1.6;
-            }}
+            h1 {{ color: #e94560; text-shadow: 0 0 10px #e94560; }}
             .btn {{
                 display: inline-block;
-                padding: 15px 40px;
-                background: linear-gradient(45deg, #e94560, #ff4d6d);
+                padding: 12px 30px;
+                background: #e94560;
                 color: white;
                 text-decoration: none;
-                border-radius: 50px;
-                font-weight: 700;
-                transition: all 0.4s ease;
-                box-shadow: 0 0 20px rgba(233, 69, 96, 0.6);
-                text-transform: uppercase;
-                letter-spacing: 2px;
-            }}
-            .btn:hover {{
-                background: linear-gradient(45deg, #ff4d6d, #e94560);
-                transform: scale(1.15);
-                box-shadow: 0 0 40px #e94560;
-                letter-spacing: 4px;
-            }}
-            footer {{
-                margin-top: 40px;
-                font-size: 1em;
-                opacity: 0.8;
-                color: #e94560;
+                border-radius: 30px;
                 font-weight: bold;
-                text-shadow: 0 0 5px rgba(0,0,0,0.5);
+                transition: 0.3s;
+                border: none;
+                cursor: pointer;
+                box-shadow: 0 0 10px #e94560;
             }}
+            .btn:hover {{ transform: scale(1.05); box-shadow: 0 0 20px #e94560; }}
             {WATERMARK_STYLE}
         </style>
+"""
+
+@routes.get("/", allow_head=True)
+async def root_route_handler(request):
+    anime_pic = get_random_pic()
+    html_content = f"""
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>{BOT_NAME}</title>
+        {ANIME_COMMON_STYLE.replace('{{anime_pic}}', anime_pic)}
     </head>
     <body>
         <div class="background"></div>
         {WATERMARK_DIV}
         <div class="container">
-            <img src="{anime_pic}" alt="Logo" class="logo">
+            <img src="{anime_pic}" class="logo">
             <h1>{BOT_NAME}</h1>
-            <p>Experience the future of file storage. Secure, encrypted, and lightning fast. Your files are safe with us.</p>
+            <p>Advanced File Store Bot</p>
             <a href="{MAIN_LINK}" class="btn">🚀 Join Community</a>
         </div>
-        <footer>
-            &copy; 2025 {BOT_NAME} | Premium Experience
-        </footer>
     </body>
     </html>
     """
     return web.Response(text=html_content, content_type='text/html')
 
-@routes.get(f"/link/__{OWNER_ID}__" + "/{id}")
-async def redirect_handler(request):
-    file_id = request.match_info.get('id')
-    from helper_func import get_shortlink
-    from config import URL, SHORTLINK_URL, SHORTLINK_API
+@routes.get("/task/{token}")
+async def task_handler(request):
+    token = request.match_info.get('token')
+    token_data = await db.get_verify_token(token)
+    if not token_data:
+        return web.Response(text="Invalid or expired token", status=403)
 
+    anime_pic = get_random_pic()
+    html_content = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Verification Step 1</title>
+        {ANIME_COMMON_STYLE.replace('{{anime_pic}}', anime_pic)}
+    </head>
+    <body>
+        <div class="background"></div>
+        <div class="container">
+            <h1>Step 1: Human Check</h1>
+            <p>Click the button below to prove you are human, Senpai! 🏯</p>
+            <form action="/task_done/{token}" method="POST">
+                <button type="submit" class="btn">Continue to Link</button>
+            </form>
+        </div>
+    </body>
+    </html>
+    """
+    return web.Response(text=html_content, content_type='text/html')
+
+@routes.post("/task_done/{token}")
+async def task_done_handler(request):
+    token = request.match_info.get('token')
+    await db.update_token_status(token, 'task_done')
     base_url = f"https://{URL}" if not URL.startswith("http") else URL
-    bridge_link = f"{base_url}/get/{file_id}"
+    return web.HTTPFound(location=f"{base_url}/link/__{OWNER_ID}__/{token}")
+
+@routes.get(f"/link/__{OWNER_ID}__" + "/{token}")
+async def redirect_handler(request):
+    token = request.match_info.get('token')
+    token_data = await db.get_verify_token(token)
+    if not token_data or token_data.get('status') != 'task_done':
+        return web.Response(text="Bypassing detected or invalid session.", status=403)
+
+    from helper_func import get_shortlink
+    base_url = f"https://{URL}" if not URL.startswith("http") else URL
+    bridge_link = f"{base_url}/hold/{token}"
+
     try:
         short_link = await get_shortlink(SHORTLINK_URL, SHORTLINK_API, bridge_link)
         return web.HTTPFound(location=short_link)
     except Exception as e:
-        print(f"Error in redirector: {e}")
+        logging.error(f"Shortlink error: {e}")
         return web.HTTPFound(location=bridge_link)
 
-@routes.get("/get/{id}")
+@routes.get("/hold/{token}")
+async def hold_handler(request):
+    token = request.match_info.get('token')
+    token_data = await db.get_verify_token(token)
+    if not token_data:
+        return web.Response(text="Invalid token", status=403)
+
+    anime_pic = get_random_pic()
+    html_content = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Final Verification</title>
+        {ANIME_COMMON_STYLE.replace('{{anime_pic}}', anime_pic)}
+        <style>
+            #hold-btn {{
+                width: 200px;
+                height: 200px;
+                border-radius: 50%;
+                background: #e94560;
+                border: 10px solid rgba(255, 255, 255, 0.1);
+                color: white;
+                font-size: 20px;
+                font-weight: bold;
+                cursor: pointer;
+                user-select: none;
+                transition: transform 0.2s, box-shadow 0.2s;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin: 20px auto;
+                position: relative;
+            }}
+            #hold-btn:active {{ transform: scale(0.95); }}
+            #progress-ring {{
+                position: absolute;
+                top: -10px; left: -10px;
+                width: 200px; height: 200px;
+            }}
+            .loading-dots:after {{
+                content: ' .';
+                animation: dots 1s steps(5, end) infinite;
+            }}
+            @keyframes dots {{
+                0%, 20% {{ color: rgba(0,0,0,0); text-shadow: .25em 0 0 rgba(0,0,0,0), .5em 0 0 rgba(0,0,0,0); }}
+                40% {{ color: white; text-shadow: .25em 0 0 rgba(0,0,0,0), .5em 0 0 rgba(0,0,0,0); }}
+                60% {{ text-shadow: .25em 0 0 white, .5em 0 0 rgba(0,0,0,0); }}
+                80%, 100% {{ text-shadow: .25em 0 0 white, .5em 0 0 white; }}
+            }}
+        </style>
+    </head>
+    <body>
+        <div class="background"></div>
+        <div class="container">
+            <h1>Hold to Verify</h1>
+            <p>Almost there! Hold the button for 5 seconds to get your files. 🌸</p>
+            <div id="hold-btn">Hold Me</div>
+            <p id="timer-text">Wait: 5.0s</p>
+        </div>
+
+        <script>
+            let btn = document.getElementById('hold-btn');
+            let text = document.getElementById('timer-text');
+            let timer = null;
+            let startTime = 0;
+            let duration = 5000;
+
+            function startHold(e) {{
+                e.preventDefault();
+                startTime = Date.now();
+                btn.style.boxShadow = "0 0 50px #e94560";
+                timer = setInterval(updateTimer, 100);
+            }}
+
+            function endHold() {{
+                clearInterval(timer);
+                btn.style.boxShadow = "0 0 10px #e94560";
+                text.innerText = "Wait: 5.0s";
+            }}
+
+            function updateTimer() {{
+                let elapsed = Date.now() - startTime;
+                let remaining = Math.max(0, (duration - elapsed) / 1000);
+                text.innerText = "Wait: " + remaining.toFixed(1) + "s";
+
+                if (elapsed >= duration) {{
+                    clearInterval(timer);
+                    verify();
+                }}
+            }}
+
+            async function verify() {{
+                btn.innerText = "Verifying...";
+                btn.disabled = true;
+                let res = await fetch('/complete_hold/{token}', {{method: 'POST'}});
+                if (res.ok) {{
+                    window.location.href = '/get/{token}';
+                }} else {{
+                    alert("Verification Failed! Try Again.");
+                    location.reload();
+                }}
+            }}
+
+            btn.addEventListener('mousedown', startHold);
+            btn.addEventListener('touchstart', startHold);
+            window.addEventListener('mouseup', endHold);
+            window.addEventListener('touchend', endHold);
+        </script>
+    </body>
+    </html>
+    """
+    return web.Response(text=html_content, content_type='text/html')
+
+@routes.post("/complete_hold/{token}")
+async def complete_hold_handler(request):
+    token = request.match_info.get('token')
+    token_data = await db.get_verify_token(token)
+    if not token_data:
+        return web.Response(status=403)
+
+    await db.update_token_status(token, 'verified')
+    return web.Response(status=200)
+
+@routes.get("/get/{token}")
 async def get_route_handler(request):
-    from config import BOT_USERNAME
+    token = request.match_info.get('token')
     bot = request.app.get('bot')
     username = bot.username if bot and hasattr(bot, 'username') and bot.username else BOT_USERNAME
-    file_id = request.match_info.get('id')
-    logging.info(f"Redirecting user back to bot {username} with token {file_id}")
-    # Direct redirect to Telegram to remove any extra wait/timer
-    return web.HTTPFound(location=f"https://t.me/{username}?start={file_id}")
+
+    # Check if fully verified
+    token_data = await db.get_verify_token(token)
+    if not token_data or token_data.get('status') != 'verified':
+        return web.Response(text="Not verified", status=403)
+
+    logging.info(f"Redirecting verified user back to bot {username} with token {token}")
+    return web.HTTPFound(location=f"https://t.me/{username}?start={token}")

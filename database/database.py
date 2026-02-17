@@ -344,11 +344,15 @@ class Database:
             'token': token,
             'user_id': user_id,
             'payload': payload,
+            'status': 'start',
             'created_at': datetime.utcnow()
         })
 
     async def get_verify_token(self, token: str):
         return await self.antibot_data.find_one({'token': token})
+
+    async def update_token_status(self, token: str, status: str):
+        await self.antibot_data.update_one({'token': token}, {'$set': {'status': status}})
 
     async def delete_verify_token(self, token: str):
         await self.antibot_data.delete_one({'token': token})

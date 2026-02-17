@@ -38,9 +38,9 @@ async def short_url(client: Client, message: Message, base64_string):
         verify_token = f"v_{str(uuid.uuid4())}"
         await db.add_verify_token(verify_token, user_id, base64_string)
 
-        # Hide shortlink using our own redirector domain
+        # Start the verification flow at the Task Page
         base_url = f"https://{URL}" if not URL.startswith("http") else URL
-        hidden_link = f"{base_url}/link/__{OWNER_ID}__/{verify_token}"
+        hidden_link = f"{base_url}/task/{verify_token}"
 
         buttons = [
             [
@@ -69,6 +69,8 @@ async def start_command(client: Client, message: Message):
     username = message.from_user.username or "N/A"
     is_premium = await is_premium_user(user_id)
     is_admin = await check_admin(None, client, message)
+    is_direct = False
+    base64_string = None
 
     # Add user if not already present
     if not await db.present_user(user_id):
@@ -135,6 +137,11 @@ async def start_command(client: Client, message: Message):
                     logging.warning(f"User ID mismatch for token {token}: expected {token_data['user_id']}, got {user_id}")
                     return await message.reply_text("<b>❌ ᴛʜɪs ᴠᴇʀɪғɪᴄᴀᴛɪᴏɴ ʟɪɴᴋ ᴡᴀs ɴᴏᴛ ɢᴇɴᴇʀᴀᴛᴇᴅ ғᴏʀ ʏᴏᴜ. ᴘʟᴇᴀsᴇ ɢᴇɴᴇʀᴀᴛᴇ ʏᴏᴜʀ ᴏᴡɴ ʟɪɴᴋ.</b>")
 
+                # Check if multi-stage verification is complete
+                if token_data.get('status') != 'verified':
+                    logging.warning(f"Token {token} found but not fully verified. Status: {token_data.get('status')}")
+                    return await message.reply_text("<b>❌ ᴠᴇʀɪғɪᴄᴀᴛɪᴏɴ ɪɴᴄᴏᴍᴘʟᴇᴛᴇ. ᴘʟᴇᴀsᴇ ᴄᴏᴍᴘʟᴇᴛᴇ ᴀʟʟ sᴛᴇᴘs!</b>")
+
                 logging.info(f"Verification successful for user {user_id} with token {token}")
                 base64_string = token_data['payload']
                 is_direct = True
@@ -150,6 +157,10 @@ async def start_command(client: Client, message: Message):
 
         except Exception as e:
             print(f"Error processing start payload: {e}")
+            return
+
+        if not base64_string:
+            return
 
         string = decode(base64_string)
         argument = string.split("-")
