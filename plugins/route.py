@@ -301,6 +301,16 @@ async def complete_hold_handler(request):
         return web.Response(status=403)
 
     await db.update_token_status(token, 'verified')
+
+    # Increment verify count for the user (for /stats and daily reporting)
+    try:
+        user_id = token_data.get('user_id')
+        if user_id:
+            count = await db.get_verify_count(user_id)
+            await db.set_verify_count(user_id, count + 1)
+    except Exception as e:
+        logging.error(f"Error incrementing verify count: {e}")
+
     return web.Response(status=200)
 
 @routes.get("/get/{token}")
