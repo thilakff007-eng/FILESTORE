@@ -24,7 +24,7 @@ from pyrogram.errors.exceptions.bad_request_400 import UserNotParticipant
 from pyrogram.errors import FloodWait, UserIsBlocked, InputUserDeactivated, UserNotParticipant
 from bot import Bot
 from config import *
-from helper_func import admin, get_readable_time
+from helper_func import admin, get_readable_time, get_random_button_style
 from database.database import db
 
 #=====================================================================================##
@@ -35,7 +35,8 @@ async def stats(bot: Bot, message: Message):
     now = datetime.now(ist)
     delta = now - bot.uptime
     uptime_str = get_readable_time(int(delta.total_seconds()))
-    await message.reply(BOT_STATS_TEXT.format(uptime=uptime_str))
+    s, e = get_random_button_style()
+    await message.reply(BOT_STATS_TEXT.format(uptime=uptime_str), reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("• ᴄʟᴏsᴇ •", callback_data="close", icon_custom_emoji_id=e, style=s)]]))
 
 
 #=====================================================================================##
@@ -49,7 +50,8 @@ WAIT_MSG = "<b>Working....</b>"
 async def get_users(client: Bot, message: Message):
     msg = await client.send_message(chat_id=message.chat.id, text=WAIT_MSG)
     users = await db.full_userbase()
-    await msg.edit(f"{len(users)} users are using this bot")
+    s, e = get_random_button_style()
+    await msg.edit(f"{len(users)} users are using this bot", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("• ᴄʟᴏsᴇ •", callback_data="close", icon_custom_emoji_id=e, style=s)]]))
 
 # Don't Remove Credit @ALONEKINGSTAR77, @ALONEKINGSTAR77
 # Ask Doubt on telegram @ALONEKINGSTAR77Support
@@ -73,8 +75,8 @@ async def set_delete_time(client: Bot, message: Message):
         duration = int(message.command[1])
 
         await db.set_del_timer(duration)
-
-        await message.reply(f"<b>Dᴇʟᴇᴛᴇ Tɪᴍᴇʀ ʜᴀs ʙᴇᴇɴ sᴇᴛ ᴛᴏ <blockquote>{duration} sᴇᴄᴏɴᴅs.</blockquote></b>")
+        s, e = get_random_button_style()
+        await message.reply(f"<b>Dᴇʟᴇᴛᴇ Tɪᴍᴇʀ ʜᴀs ʙᴇᴇɴ sᴇᴛ ᴛᴏ <blockquote>{duration} sᴇᴄᴏɴᴅs.</blockquote></b>", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("• ᴄʟᴏsᴇ •", callback_data="close", icon_custom_emoji_id=e, style=s)]]))
 
     except (IndexError, ValueError):
         await message.reply("<b>Pʟᴇᴀsᴇ ᴘʀᴏᴠɪᴅᴇ ᴀ ᴠᴀʟɪᴅ ᴅᴜʀᴀᴛɪᴏɴ ɪɴ sᴇᴄᴏɴᴅs.</b> Usage: /dlt_time {duration}")
@@ -82,8 +84,8 @@ async def set_delete_time(client: Bot, message: Message):
 @Bot.on_message(filters.private & filters.command('check_dlt_time') & admin)
 async def check_delete_time(client: Bot, message: Message):
     duration = await db.get_del_timer()
-
-    await message.reply(f"<b><blockquote>Cᴜʀʀᴇɴᴛ ᴅᴇʟᴇᴛᴇ ᴛɪᴍᴇʀ ɪs sᴇᴛ ᴛᴏ {duration}sᴇᴄᴏɴᴅs.</blockquote></b>")
+    s, e = get_random_button_style()
+    await message.reply(f"<b><blockquote>Cᴜʀʀᴇɴᴛ ᴅᴇʟᴇᴛᴇ ᴛɪᴍᴇʀ ɪs sᴇᴛ ᴛᴏ {duration}sᴇᴄᴏɴᴅs.</blockquote></b>", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("• ᴄʟᴏsᴇ •", callback_data="close", icon_custom_emoji_id=e, style=s)]]))
 
 #=====================================================================================##
 

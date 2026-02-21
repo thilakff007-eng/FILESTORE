@@ -17,13 +17,13 @@ import sys
 import time
 from datetime import datetime, timedelta
 from pyrogram import Client, filters, __version__
-from pyrogram.enums import ParseMode, ChatAction
+from pyrogram.enums import ParseMode, ChatAction, ButtonStyle
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery, ReplyKeyboardMarkup, ChatInviteLink, ChatPrivileges, LinkPreviewOptions
 from pyrogram.errors.exceptions.bad_request_400 import UserNotParticipant
 from pyrogram.errors import FloodWait, UserIsBlocked, InputUserDeactivated, UserNotParticipant
 from bot import Bot
 from config import *
-from helper_func import admin
+from helper_func import admin, get_random_button_style
 from database.database import db
 
 
@@ -35,7 +35,8 @@ async def add_banuser(client: Client, message: Message):
     banuser_ids = await db.get_ban_users()
     banusers = message.text.split()[1:]
 
-    reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton("❌ Cʟᴏsᴇ", callback_data="close")]])
+    s, e = get_random_button_style()
+    reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton("❌ Cʟᴏsᴇ", callback_data="close", icon_custom_emoji_id=e, style=s)]])
 
     if not banusers:
         return await pro.edit(
@@ -79,7 +80,8 @@ async def delete_banuser(client: Client, message: Message):
     banuser_ids = await db.get_ban_users()
     banusers = message.text.split()[1:]
 
-    reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton("❌ Cʟᴏsᴇ", callback_data="close")]])
+    s, e = get_random_button_style()
+    reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton("❌ Cʟᴏsᴇ", callback_data="close", icon_custom_emoji_id=e, style=s)]])
 
     if not banusers:
         return await pro.edit(
@@ -120,7 +122,8 @@ async def get_banuser_list(client: Client, message: Message):
     banuser_ids = await db.get_ban_users()
 
     if not banuser_ids:
-        return await pro.edit("<b>✅ NO ᴜsᴇʀs ɪɴ ᴛʜᴇ ʙᴀɴ Lɪsᴛ.</b>", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("❌ Cʟᴏsᴇ", callback_data="close")]]))
+        s, e = get_random_button_style()
+        return await pro.edit("<b>✅ NO ᴜsᴇʀs ɪɴ ᴛʜᴇ ʙᴀɴ Lɪsᴛ.</b>", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("❌ Cʟᴏsᴇ", callback_data="close", icon_custom_emoji_id=e, style=s)]]))
 
     result = "<b>🚫 Bᴀɴɴᴇᴅ Usᴇʀs:</b>\n\n"
     for uid in banuser_ids:
@@ -132,4 +135,5 @@ async def get_banuser_list(client: Client, message: Message):
         except:
             result += f"• <code>{uid}</code> — <i>Could not fetch name</i>\n"
 
-    await pro.edit(result, link_preview_options=LinkPreviewOptions(is_disabled=True), reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("❌ Cʟᴏsᴇ", callback_data="close")]]))
+    s, e = get_random_button_style()
+    await pro.edit(result, link_preview_options=LinkPreviewOptions(is_disabled=True), reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("❌ Cʟᴏsᴇ", callback_data="close", icon_custom_emoji_id=e, style=s)]]))

@@ -23,7 +23,7 @@ from pyrogram.errors.exceptions.bad_request_400 import UserNotParticipant
 from pyrogram.errors import FloodWait, UserIsBlocked, InputUserDeactivated, UserNotParticipant
 from bot import Bot
 from config import *
-from helper_func import admin
+from helper_func import admin, get_random_button_style
 from database.database import db
 
 
@@ -81,7 +81,8 @@ Blocked Users: <code>{blocked}</code>
 Deleted Accounts: <code>{deleted}</code>
 Unsuccessful: <code>{unsuccessful}</code>"""
 
-        return await pls_wait.edit(status)
+        s, e = get_random_button_style()
+        return await pls_wait.edit(status, reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("• ᴄʟᴏsᴇ •", callback_data="close", icon_custom_emoji_id=e, style=s)]]))
 
     else:
         msg = await message.reply("Reply to a message to broadcast and pin it.")
@@ -136,7 +137,8 @@ Blocked Users: <code>{blocked}</code>
 Deleted Accounts: <code>{deleted}</code>
 Unsuccessful: <code>{unsuccessful}</code></b>"""
 
-        return await pls_wait.edit(status)
+        s, e = get_random_button_style()
+        return await pls_wait.edit(status, reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("• ᴄʟᴏsᴇ •", callback_data="close", icon_custom_emoji_id=e, style=s)]]))
 
     else:
         msg = await message.reply(REPLY_ERROR)
@@ -223,7 +225,8 @@ Blocked Users: <code>{blocked}</code>
 Deleted Accounts: <code>{deleted}</code>
 Unsuccessful: <code>{unsuccessful}</code></b>"""
 
-        return await pls_wait.edit(status)
+        s, e = get_random_button_style()
+        return await pls_wait.edit(status, reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("• ᴄʟᴏsᴇ •", callback_data="close", icon_custom_emoji_id=e, style=s)]]))
 
     else:
         msg = await message.reply("Pʟᴇᴀsᴇ ʀᴇᴘʟʏ ᴛᴏ ᴀ ᴍᴇssᴀɢᴇ ᴛᴏ ʙʀᴏᴀᴅᴄᴀsᴛ ɪᴛ ᴡɪᴛʜ Aᴜᴛᴏ-Dᴇʟᴇᴛᴇ.")
