@@ -88,6 +88,31 @@ async def list_premium_users():
 
     return premium_user_list
 
+async def get_all_premium_users():
+    """Returns list of dicts for all active premium users."""
+    ist = timezone("Asia/Kolkata")
+    users = []
+    async for user in collection.find({}):
+        expiration_timestamp = user["expiration_timestamp"]
+        expiration_time = datetime.fromisoformat(expiration_timestamp).astimezone(ist)
+        remaining_time = expiration_time - datetime.now(ist)
+        if remaining_time.total_seconds() > 0:
+            user['remaining_seconds'] = remaining_time.total_seconds()
+            user['expiration_time'] = expiration_time
+            users.append(user)
+    return users
+
+async def get_premium_count():
+    """Returns count of active premium users."""
+    ist = timezone("Asia/Kolkata")
+    count = 0
+    async for user in collection.find({}):
+        expiration_timestamp = user["expiration_timestamp"]
+        expiration_time = datetime.fromisoformat(expiration_timestamp).astimezone(ist)
+        if expiration_time > datetime.now(ist):
+            count += 1
+    return count
+
 # Add premium user
 async def add_premium(user_id, time_value, time_unit):
     """
