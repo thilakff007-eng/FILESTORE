@@ -60,7 +60,7 @@ START_PIC = PICS[0]
 FORCE_PIC = PICS[1]
 
 # Bot Settings
-URL = os.environ.get("URL", os.environ.get("RENDER_EXTERNAL_URL", os.environ.get("RAILWAY_STATIC_URL", "worker-production-408e.up.railway.app")))
+URL = os.environ.get("URL", os.environ.get("RENDER_EXTERNAL_URL", os.environ.get("RAILWAY_STATIC_URL", "https://filestore-hqw7.onrender.com")))
 PORT = os.environ.get("PORT", "8080")
 FSUB_LINK_EXPIRY = int(os.getenv("FSUB_LINK_EXPIRY", "10"))
 TG_BOT_WORKERS = int(os.environ.get("TG_BOT_WORKERS", "500"))
