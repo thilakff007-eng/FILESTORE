@@ -8,7 +8,7 @@ from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, 
 from bot import Bot
 from config import OWNER_ID
 from database.db_premium import add_premium, remove_premium, get_all_premium_users, get_premium_count
-from helper_func import admin
+from helper_func import admin, get_random_button_style
 import pyromod
 
 @Bot.on_message(filters.command("addpremium") & admin & filters.private)
@@ -44,7 +44,8 @@ async def list_premium_cmd(client, message):
 
     if count == 0:
         text += "<i>No premium users found.</i>"
-        buttons = [[InlineKeyboardButton("❌ Close", callback_data="close", icon_custom_emoji_id=5354968347094046619, style=ButtonStyle.DANGER)]]
+        s, e = get_random_button_style()
+        buttons = [[InlineKeyboardButton("❌ Close", callback_data="close", icon_custom_emoji_id=e, style=s)]]
     else:
         text += "<b>Select a user to manage:</b>"
         buttons = []
@@ -58,9 +59,11 @@ async def list_premium_cmd(client, message):
                 name = "Unknown"
 
             rem_days = int(user['remaining_seconds'] // (24 * 3600))
-            buttons.append([InlineKeyboardButton(f"👤 {name} ({u_id}) - {rem_days}d", callback_data=f"manage_prem_{u_id}", icon_custom_emoji_id=5440389890787281213, style=ButtonStyle.PRIMARY)])
+            s, e = get_random_button_style()
+            buttons.append([InlineKeyboardButton(f"👤 {name} ({u_id}) - {rem_days}d", callback_data=f"manage_prem_{u_id}", icon_custom_emoji_id=e, style=s)])
 
-        buttons.append([InlineKeyboardButton("❌ Close", callback_data="close", icon_custom_emoji_id=5354968347094046619, style=ButtonStyle.DANGER)])
+        s, e = get_random_button_style()
+        buttons.append([InlineKeyboardButton("❌ Close", callback_data="close", icon_custom_emoji_id=e, style=s)])
 
     await message.reply(text, reply_markup=InlineKeyboardMarkup(buttons))
 
@@ -70,10 +73,13 @@ async def manage_premium_callback(client, query: CallbackQuery):
 
     # Show sub-menu
     text = f"<b>💎 Managing User:</b> <code>{user_id}</code>\n\nChoose an action:"
+    s1, e1 = get_random_button_style()
+    s2, e2 = get_random_button_style()
+    s3, e3 = get_random_button_style()
     buttons = [
-        [InlineKeyboardButton("➕ Add Extra Days", callback_data=f"add_days_{user_id}", icon_custom_emoji_id=5355142851615283756, style=ButtonStyle.SUCCESS)],
-        [InlineKeyboardButton("➖ Remove Premium", callback_data=f"rem_prem_{user_id}", icon_custom_emoji_id=5354968347094046619, style=ButtonStyle.DANGER)],
-        [InlineKeyboardButton("🔙 Back", callback_data="back_to_list_prem", icon_custom_emoji_id=5440389890787281213, style=ButtonStyle.PRIMARY)]
+        [InlineKeyboardButton("➕ Add Extra Days", callback_data=f"add_days_{user_id}", icon_custom_emoji_id=e1, style=s1)],
+        [InlineKeyboardButton("➖ Remove Premium", callback_data=f"rem_prem_{user_id}", icon_custom_emoji_id=e2, style=s2)],
+        [InlineKeyboardButton("🔙 Back", callback_data="back_to_list_prem", icon_custom_emoji_id=e3, style=s3)]
     ]
 
     await query.message.edit(text, reply_markup=InlineKeyboardMarkup(buttons))
@@ -112,8 +118,10 @@ async def rem_prem_callback(client, query: CallbackQuery):
             name = u_info.first_name
         except: name = "Unknown"
         rem_days = int(user['remaining_seconds'] // (24 * 3600))
-        buttons.append([InlineKeyboardButton(f"👤 {name} ({u_id}) - {rem_days}d", callback_data=f"manage_prem_{u_id}")])
-    buttons.append([InlineKeyboardButton("❌ Close", callback_data="close")])
+        s, e = get_random_button_style()
+        buttons.append([InlineKeyboardButton(f"👤 {name} ({u_id}) - {rem_days}d", callback_data=f"manage_prem_{u_id}", icon_custom_emoji_id=e, style=s)])
+    s, e = get_random_button_style()
+    buttons.append([InlineKeyboardButton("❌ Close", callback_data="close", icon_custom_emoji_id=e, style=s)])
     await query.message.edit(text, reply_markup=InlineKeyboardMarkup(buttons))
 
 @Bot.on_callback_query(filters.regex("^back_to_list_prem$"))
@@ -129,6 +137,8 @@ async def back_to_list_prem_callback(client, query: CallbackQuery):
             name = u_info.first_name
         except: name = "Unknown"
         rem_days = int(user['remaining_seconds'] // (24 * 3600))
-        buttons.append([InlineKeyboardButton(f"👤 {name} ({u_id}) - {rem_days}d", callback_data=f"manage_prem_{u_id}")])
-    buttons.append([InlineKeyboardButton("❌ Close", callback_data="close")])
+        s, e = get_random_button_style()
+        buttons.append([InlineKeyboardButton(f"👤 {name} ({u_id}) - {rem_days}d", callback_data=f"manage_prem_{u_id}", icon_custom_emoji_id=e, style=s)])
+    s, e = get_random_button_style()
+    buttons.append([InlineKeyboardButton("❌ Close", callback_data="close", icon_custom_emoji_id=e, style=s)])
     await query.message.edit(text, reply_markup=InlineKeyboardMarkup(buttons))

@@ -15,6 +15,7 @@ from bot import Bot
 from config import *
 from pyrogram.enums import ButtonStyle
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
+from helper_func import get_random_button_style
 from database.database import db
 
 @Bot.on_callback_query()
@@ -30,6 +31,8 @@ async def cb_handler(client: Bot, query: CallbackQuery):
 
     if data == "help":
         await query.answer("✨ Opening Help Menu... ✧", show_alert=False)
+        s1, e1 = get_random_button_style()
+        s2, e2 = get_random_button_style()
         await query.message.edit_text(
             text=HELP_TXT.format(
                 mention=query.from_user.mention,
@@ -38,13 +41,15 @@ async def cb_handler(client: Bot, query: CallbackQuery):
             ),
             disable_web_page_preview=True,
             reply_markup=InlineKeyboardMarkup([
-                [InlineKeyboardButton('✨ ʜᴏᴍᴇ', callback_data='start', icon_custom_emoji_id=5440389890787281213, style=ButtonStyle.PRIMARY),
-                 InlineKeyboardButton("🌸 ᴄʟᴏꜱᴇ", callback_data='close', icon_custom_emoji_id=5354968347094046619, style=ButtonStyle.DANGER)]
+                [InlineKeyboardButton('✨ ʜᴏᴍᴇ', callback_data='start', icon_custom_emoji_id=e1, style=s1),
+                 InlineKeyboardButton("🌸 ᴄʟᴏꜱᴇ", callback_data='close', icon_custom_emoji_id=e2, style=s2)]
             ])
         )
 
     elif data == "about":
         await query.answer("🌸 Opening About Menu... ✧", show_alert=False)
+        s1, e1 = get_random_button_style()
+        s2, e2 = get_random_button_style()
         await query.message.edit_text(
             text=ABOUT_TXT.format(
                 bot_name=BOT_NAME,
@@ -54,13 +59,18 @@ async def cb_handler(client: Bot, query: CallbackQuery):
             ),
             disable_web_page_preview=True,
             reply_markup=InlineKeyboardMarkup([
-                [InlineKeyboardButton('✨ ʜᴏᴍᴇ', callback_data='start', icon_custom_emoji_id=5440389890787281213, style=ButtonStyle.PRIMARY),
-                 InlineKeyboardButton('🌸 ᴄʟᴏꜱᴇ', callback_data='close', icon_custom_emoji_id=5354968347094046619, style=ButtonStyle.DANGER)]
+                [InlineKeyboardButton('✨ ʜᴏᴍᴇ', callback_data='start', icon_custom_emoji_id=e1, style=s1),
+                 InlineKeyboardButton('🌸 ᴄʟᴏꜱᴇ', callback_data='close', icon_custom_emoji_id=e2, style=s2)]
             ])
         )
 
     elif data == "start":
         await query.answer("⚡ Welcome Back! ✧", show_alert=False)
+        s1, e1 = get_random_button_style()
+        s2, e2 = get_random_button_style()
+        s3, e3 = get_random_button_style()
+        s4, e4 = get_random_button_style()
+        s5, e5 = get_random_button_style()
         await query.message.edit_text(
             text=START_MSG.format(
                 mention=query.from_user.mention,
@@ -70,15 +80,15 @@ async def cb_handler(client: Bot, query: CallbackQuery):
             reply_markup=InlineKeyboardMarkup(
                 [
                     [
-                        InlineKeyboardButton("🏯 ᴄᴏᴍᴍᴜɴɪᴛʏ", url=MAIN_LINK, icon_custom_emoji_id=5440389890787281213, style=ButtonStyle.PRIMARY),
-                        InlineKeyboardButton("⚡ ᴜᴘᴅᴀᴛᴇs", url="https://t.me/ALONEKINGSTAR77", icon_custom_emoji_id=5355142851615283756, style=ButtonStyle.SUCCESS)
+                        InlineKeyboardButton("🏯 ᴄᴏᴍᴍᴜɴɪᴛʏ", url=MAIN_LINK, icon_custom_emoji_id=e1, style=s1),
+                        InlineKeyboardButton("⚡ ᴜᴘᴅᴀᴛᴇs", url="https://t.me/ALONEKINGSTAR77", icon_custom_emoji_id=e2, style=s2)
                     ],
                     [
-                        InlineKeyboardButton("🌸 ᴀʙᴏᴜᴛ", callback_data="about", icon_custom_emoji_id=5440389890787281213, style=ButtonStyle.PRIMARY),
-                        InlineKeyboardButton("⭐ ʜᴇʟᴘ", callback_data="help", icon_custom_emoji_id=5355142851615283756, style=ButtonStyle.SUCCESS)
+                        InlineKeyboardButton("🌸 ᴀʙᴏᴜᴛ", callback_data="about", icon_custom_emoji_id=e3, style=s3),
+                        InlineKeyboardButton("⭐ ʜᴇʟᴘ", callback_data="help", icon_custom_emoji_id=e4, style=s4)
                     ],
                     [
-                        InlineKeyboardButton("💎 ᴘʀᴇᴍɪᴜᴍ ᴀᴄᴄᴇss 💎", callback_data="premium", icon_custom_emoji_id=5355142851615283756, style=ButtonStyle.SUCCESS)
+                        InlineKeyboardButton("💎 ᴘʀᴇᴍɪᴜᴍ ᴀᴄᴄᴇss 💎", callback_data="premium", icon_custom_emoji_id=e5, style=s5)
                     ]
                 ]
             )
@@ -115,14 +125,16 @@ async def cb_handler(client: Bot, query: CallbackQuery):
                 f"<b>♻️ ɪɴsᴛᴀɴᴛ ᴀᴄᴛɪᴠᴀᴛɪᴏɴ ᴀғᴛᴇʀ ᴘᴀʏᴍᴇɴᴛ.</b>\n"
                 f"‼️ sᴇɴᴅ sᴄʀᴇᴇɴsʜᴏᴛ ᴛᴏ ᴀᴅᴍɪɴ ғᴏʀ ᴠᴇʀɪғɪᴄᴀᴛɪᴏɴ. ✧"
             )
+        s1, e1 = get_random_button_style()
+        s2, e2 = get_random_button_style()
         reply_markup = InlineKeyboardMarkup(
             [
                 [
                     InlineKeyboardButton(
-                        "👨‍💻 ᴄᴏɴᴛᴀᴄᴛ ᴀᴅᴍɪɴ", url=(SCREENSHOT_URL), icon_custom_emoji_id=5440389890787281213, style=ButtonStyle.PRIMARY
+                        "👨‍💻 ᴄᴏɴᴛᴀᴄᴛ ᴀᴅᴍɪɴ", url=(SCREENSHOT_URL), icon_custom_emoji_id=e1, style=s1
                     )
                 ],
-                [InlineKeyboardButton("🌸 ᴄʟᴏsᴇ", callback_data="close", icon_custom_emoji_id=5354968347094046619, style=ButtonStyle.DANGER)],
+                [InlineKeyboardButton("🌸 ᴄʟᴏsᴇ", callback_data="close", icon_custom_emoji_id=e2, style=s2)],
             ]
         )
 

@@ -5,12 +5,12 @@ import sys
 import time
 from datetime import datetime, timedelta
 from pyrogram import Client, filters, __version__
-from pyrogram.enums import ParseMode, ChatAction, ChatMemberStatus, ChatType
+from pyrogram.enums import ParseMode, ChatAction, ChatMemberStatus, ChatType, ButtonStyle
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery, ReplyKeyboardMarkup, ChatMemberUpdated, ChatPermissions
 from pyrogram.errors.exceptions.bad_request_400 import UserNotParticipant, InviteHashEmpty, ChatAdminRequired, PeerIdInvalid, UserIsBlocked, InputUserDeactivated
 from bot import Bot
 from config import *
-from helper_func import admin, parse_time, get_readable_time
+from helper_func import admin, parse_time, get_readable_time, get_random_button_style
 from database.database import db
 
 
@@ -18,12 +18,13 @@ from database.database import db
 # Commands for adding admins by owner
 @Bot.on_message(filters.command('add_admin') & filters.private & filters.user(OWNER_ID))
 async def add_admins(client: Client, message: Message):
-    pro = await message.reply("<b><i>ᴘʟᴇᴀsᴇ ᴡᴀɪᴛ..</i></b>", quote=True)
+    pro = await message.reply("<b><i>ᴘʟᴇᴀsᴇ ᴡᴀɪᴛ..</i></b>")
     check = 0
     admin_ids = await db.get_all_admins()
     admins = message.text.split()[1:]
 
-    reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton("ᴄʟᴏsᴇ", callback_data="close")]])
+    s, e = get_random_button_style()
+    reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton("ᴄʟᴏsᴇ", callback_data="close", icon_custom_emoji_id=e, style=s)]])
 
     if not admins:
         return await pro.edit(
@@ -68,11 +69,12 @@ async def add_admins(client: Client, message: Message):
 
 @Bot.on_message(filters.command('deladmin') & filters.private & filters.user(OWNER_ID))
 async def delete_admins(client: Client, message: Message):
-    pro = await message.reply("<b><i>ᴘʟᴇᴀsᴇ ᴡᴀɪᴛ..</i></b>", quote=True)
+    pro = await message.reply("<b><i>ᴘʟᴇᴀsᴇ ᴡᴀɪᴛ..</i></b>")
     admin_ids = await db.get_all_admins()
     admins = message.text.split()[1:]
 
-    reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton("ᴄʟᴏsᴇ", callback_data="close")]])
+    s, e = get_random_button_style()
+    reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton("ᴄʟᴏsᴇ", callback_data="close", icon_custom_emoji_id=e, style=s)]])
 
     if not admins:
         return await pro.edit(
@@ -114,7 +116,7 @@ async def delete_admins(client: Client, message: Message):
 
 @Bot.on_message(filters.command('admins') & filters.private & admin)
 async def get_admins(client: Client, message: Message):
-    pro = await message.reply("<b><i>ᴘʟᴇᴀsᴇ ᴡᴀɪᴛ..</i></b>", quote=True)
+    pro = await message.reply("<b><i>ᴘʟᴇᴀsᴇ ᴡᴀɪᴛ..</i></b>")
     admin_ids = await db.get_all_admins()
 
     if not admin_ids:
@@ -122,7 +124,8 @@ async def get_admins(client: Client, message: Message):
     else:
         admin_list = "\n".join(f"<b><blockquote>ID: <code>{id}</code></blockquote></b>" for id in admin_ids)
 
-    reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton("ᴄʟᴏsᴇ", callback_data="close")]])
+    s, e = get_random_button_style()
+    reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton("ᴄʟᴏsᴇ", callback_data="close", icon_custom_emoji_id=e, style=s)]])
     await pro.edit(f"<b>⚡ Current Admin List:</b>\n\n{admin_list}", reply_markup=reply_markup)
 
 @Bot.on_message(filters.command('maintenance') & filters.private & admin)

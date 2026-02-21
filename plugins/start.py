@@ -23,7 +23,7 @@ from pyrogram.errors import FloodWait, UserIsBlocked, InputUserDeactivated, User
 from pytz import timezone
 from bot import Bot
 from config import *
-from helper_func import is_subscribed, decode, get_messages, send_media, get_exp_time, get_readable_time, is_sub, admin, check_admin
+from helper_func import is_subscribed, decode, get_messages, send_media, get_exp_time, get_readable_time, is_sub, admin, check_admin, get_random_button_style
 from database.database import db
 from database.db_premium import is_premium_user, collection, add_premium, remove_premium, check_user_plan
 
@@ -42,13 +42,17 @@ async def short_url(client: Client, message: Message, base64_string):
         base_url = f"https://{URL}" if not URL.startswith("http") else URL
         hidden_link = f"{base_url}/task/{verify_token}"
 
+        s1, e1 = get_random_button_style()
+        s2, e2 = get_random_button_style()
+        s3, e3 = get_random_button_style()
+
         buttons = [
             [
-                InlineKeyboardButton(text="ᴅᴏᴡɴʟᴏᴀᴅ", url=hidden_link, icon_custom_emoji_id=5355142851615283756, style=ButtonStyle.SUCCESS),
-                InlineKeyboardButton(text="ᴛᴜᴛᴏʀɪᴀʟ", url=TUT_VID, icon_custom_emoji_id=5440389890787281213, style=ButtonStyle.PRIMARY)
+                InlineKeyboardButton(text="ᴅᴏᴡɴʟᴏᴀᴅ", url=hidden_link, icon_custom_emoji_id=e1, style=s1),
+                InlineKeyboardButton(text="ᴛᴜᴛᴏʀɪᴀʟ", url=TUT_VID, icon_custom_emoji_id=e2, style=s2)
             ],
             [
-                InlineKeyboardButton(text="ᴘʀᴇᴍɪᴜᴍ", callback_data="premium", icon_custom_emoji_id=5355142851615283756, style=ButtonStyle.SUCCESS)
+                InlineKeyboardButton(text="ᴘʀᴇᴍɪᴜᴍ", callback_data="premium", icon_custom_emoji_id=e3, style=s3)
             ]
         ]
 
@@ -192,38 +196,34 @@ async def start_command(client: Client, message: Message):
         finally:
             await temp_msg.delete()
 
-        sem = asyncio.Semaphore(5) # Allow 5 concurrent copies
-
-        async def copy_with_sem(msg):
+        fsub_msgs = []
+        for msg in messages:
             if not msg or msg.empty:
-                return None
-            async with sem:
-                original_caption = msg.caption.html if msg.caption else ""
-                caption = f"{original_caption}\n\n{CUSTOM_CAPTION}" if CUSTOM_CAPTION else original_caption
-                reply_markup = msg.reply_markup if DISABLE_CHANNEL_BUTTON else None
-                try:
-                    return await msg.copy(
-                        chat_id=message.from_user.id,
-                        caption=caption,
-                        parse_mode=ParseMode.HTML,
-                        reply_markup=reply_markup,
-                        protect_content=PROTECT_CONTENT
-                    )
-                except FloodWait as e:
-                    await asyncio.sleep(e.x)
-                    return await msg.copy(
-                        chat_id=message.from_user.id,
-                        caption=caption,
-                        parse_mode=ParseMode.HTML,
-                        reply_markup=reply_markup,
-                        protect_content=PROTECT_CONTENT
-                    )
-                except Exception:
-                    return None
-
-        tasks = [copy_with_sem(msg) for msg in messages]
-        snt_msgs = await asyncio.gather(*tasks)
-        fsub_msgs = [m for m in snt_msgs if m]
+                continue
+            original_caption = msg.caption.html if msg.caption else ""
+            caption = f"{original_caption}\n\n{CUSTOM_CAPTION}" if CUSTOM_CAPTION else original_caption
+            reply_markup = msg.reply_markup if DISABLE_CHANNEL_BUTTON else None
+            try:
+                snt = await msg.copy(
+                    chat_id=message.from_user.id,
+                    caption=caption,
+                    parse_mode=ParseMode.HTML,
+                    reply_markup=reply_markup,
+                    protect_content=PROTECT_CONTENT
+                )
+                fsub_msgs.append(snt)
+            except FloodWait as e:
+                await asyncio.sleep(e.x)
+                snt = await msg.copy(
+                    chat_id=message.from_user.id,
+                    caption=caption,
+                    parse_mode=ParseMode.HTML,
+                    reply_markup=reply_markup,
+                    protect_content=PROTECT_CONTENT
+                )
+                fsub_msgs.append(snt)
+            except Exception:
+                pass
 
 
         if FILE_AUTO_DELETE > 0:
@@ -246,8 +246,9 @@ async def start_command(client: Client, message: Message):
                     if message.command and len(message.command) > 1
                     else None
                 )
+                s, e = get_random_button_style()
                 keyboard = InlineKeyboardMarkup(
-                    [[InlineKeyboardButton("ɢᴇᴛ ғɪʟᴇ ᴀɢᴀɪɴ!", url=reload_url, icon_custom_emoji_id=5355142851615283756, style=ButtonStyle.SUCCESS)]]
+                    [[InlineKeyboardButton("ɢᴇᴛ ғɪʟᴇ ᴀɢᴀɪɴ!", url=reload_url, icon_custom_emoji_id=e, style=s)]]
                 ) if reload_url else None
 
                 await notification_msg.edit(
@@ -259,15 +260,19 @@ async def start_command(client: Client, message: Message):
             except Exception as e:
                 print(f"Error updating notification with 'Get File Again' button: {e}")
     else:
+        s1, e1 = get_random_button_style()
+        s2, e2 = get_random_button_style()
+        s3, e3 = get_random_button_style()
+        s4, e4 = get_random_button_style()
         reply_markup = InlineKeyboardMarkup(
             [
                 [
-                    InlineKeyboardButton("🏯 Community", url=MAIN_LINK, icon_custom_emoji_id=5440389890787281213, style=ButtonStyle.PRIMARY),
-                    InlineKeyboardButton("⚡ Updates", url="https://t.me/ALONEKINGSTAR77", icon_custom_emoji_id=5355142851615283756, style=ButtonStyle.SUCCESS)
+                    InlineKeyboardButton("🏯 Community", url=MAIN_LINK, icon_custom_emoji_id=e1, style=s1),
+                    InlineKeyboardButton("⚡ Updates", url="https://t.me/ALONEKINGSTAR77", icon_custom_emoji_id=e2, style=s2)
                 ],
                 [
-                    InlineKeyboardButton("🌸 About", callback_data="about", icon_custom_emoji_id=5440389890787281213, style=ButtonStyle.PRIMARY),
-                    InlineKeyboardButton("⭐ Help", callback_data="help", icon_custom_emoji_id=5355142851615283756, style=ButtonStyle.SUCCESS)
+                    InlineKeyboardButton("🌸 About", callback_data="about", icon_custom_emoji_id=e3, style=s3),
+                    InlineKeyboardButton("⭐ Help", callback_data="help", icon_custom_emoji_id=e4, style=s4)
                 ]
             ]
         )
@@ -527,4 +532,4 @@ async def total_verify_count_cmd(client, message: Message):
 @Bot.on_message(filters.command('commands') & filters.private & admin)
 async def bcmd(bot: Bot, message: Message):        
     reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton("• ᴄʟᴏsᴇ •", callback_data = "close")]])
-    await message.reply(text=CMD_TXT, reply_markup = reply_markup, quote= True)
+    await message.reply(text=CMD_TXT, reply_markup = reply_markup)

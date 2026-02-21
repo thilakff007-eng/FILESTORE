@@ -6,7 +6,7 @@ import re
 import asyncio
 import time
 from pyrogram import filters
-from pyrogram.enums import ChatMemberStatus
+from pyrogram.enums import ChatMemberStatus, ButtonStyle
 from config import *
 from pyrogram.errors.exceptions.bad_request_400 import UserNotParticipant
 from shortzy import Shortzy
@@ -194,12 +194,11 @@ async def get_messages(client, message_ids):
     return messages
 
 async def get_message_id(client, message):
-    if message.forward_from_chat:
-        if message.forward_from_chat.id == client.db_channel.id:
-            return message.forward_from_message_id
-        else:
-            return 0
-    elif message.forward_sender_name:
+    if message.forward_origin:
+        # Check for Chat origin (channels)
+        if hasattr(message.forward_origin, "chat") and message.forward_origin.chat:
+            if message.forward_origin.chat.id == client.db_channel.id:
+                return getattr(message.forward_origin, "message_id", message.forward_from_message_id)
         return 0
     elif message.text:
         pattern = r"https://t.me/(?:c/)?(.*)/(\d+)"
@@ -306,6 +305,11 @@ async def send_media(message, media, caption, reply_markup=None):
             caption=caption,
             reply_markup=reply_markup
         )
+
+def get_random_button_style():
+    styles = [ButtonStyle.PRIMARY, ButtonStyle.SUCCESS, ButtonStyle.DANGER]
+    emojis = [5440389890787281213, 5355142851615283756, 5354968347094046619, 5411322049111827415, 5451996160375954443]
+    return random.choice(styles), random.choice(emojis)
 
 subscribed = filters.create(is_subscribed)
 admin = filters.create(check_admin)

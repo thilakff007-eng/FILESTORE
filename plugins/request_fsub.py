@@ -38,7 +38,7 @@ from database.database import db
 #Request force sub mode commad,,,,,,
 @Bot.on_message(filters.command('fsub_mode') & filters.private & admin)
 async def change_force_sub_mode(client: Client, message: Message):
-    temp = await message.reply("<b><i>ᴡᴀɪᴛ ᴀ sᴇᴄ..</i></b>", quote=True)
+    temp = await message.reply("<b><i>ᴡᴀɪᴛ ᴀ sᴇᴄ..</i></b>")
     channels = await db.show_channels()
 
     if not channels:
@@ -113,7 +113,7 @@ async def handle_join_request(client, chat_join_request):
 # Add channel
 @Bot.on_message(filters.command(['addfsub', 'addchnl']) & filters.private & admin)
 async def add_force_sub(client: Client, message: Message):
-    temp = await message.reply("Wait a sec...", quote=True)
+    temp = await message.reply("Wait a sec...")
     args = message.text.split(maxsplit=1)
 
     if len(args) != 2:
@@ -173,7 +173,7 @@ async def add_force_sub(client: Client, message: Message):
 # Delete channel
 @Bot.on_message(filters.command(['removefsub', 'delchnl']) & filters.private & admin)
 async def del_force_sub(client: Client, message: Message):
-    temp = await message.reply("<b><i>ᴡᴀɪᴛ ᴀ sᴇᴄ..</i></b>", quote=True)
+    temp = await message.reply("<b><i>ᴡᴀɪᴛ ᴀ sᴇᴄ..</i></b>")
     args = message.text.split(maxsplit=1)
     all_channels = await db.show_channels()
 
@@ -201,7 +201,7 @@ async def del_force_sub(client: Client, message: Message):
 # View all channels
 @Bot.on_message(filters.command(['fsublist', 'listchnl']) & filters.private & admin)
 async def list_force_sub_channels(client: Client, message: Message):
-    temp = await message.reply("<b><i>ᴡᴀɪᴛ ᴀ sᴇᴄ..</i></b>", quote=True)
+    temp = await message.reply("<b><i>ᴡᴀɪᴛ ᴀ sᴇᴄ..</i></b>")
     channels = await db.show_channels()
 
     if not channels:
@@ -236,21 +236,21 @@ async def list_force_sub_channels(client: Client, message: Message):
 @Bot.on_message(filters.command('delreq') & filters.private & admin)
 async def delete_requested_users(client, message: Message):
     if len(message.command) < 2:
-        return await message.reply("⚠️ Usᴀɢᴇ: `/delreq <channel_id>`", quote=True)
+        return await message.reply("⚠️ Usᴀɢᴇ: `/delreq <channel_id>`")
 
     try:
         channel_id = int(message.command[1])
     except ValueError:
-        return await message.reply("❌ Iɴᴠᴀʟɪᴅ ᴄʜᴀɴɴᴇʟ ID.", quote=True)
+        return await message.reply("❌ Iɴᴠᴀʟɪᴅ ᴄʜᴀɴɴᴇʟ ID.")
 
     # Get channel request data
     channel_data = await db.rqst_fsub_Channel_data.find_one({'_id': channel_id})
     if not channel_data:
-        return await message.reply("ℹ️ Nᴏ ʀᴇǫᴜᴇsᴛ ᴄʜᴀɴɴᴇʟ ғᴏᴜɴᴅ ғᴏʀ ᴛʜɪs ᴄʜᴀɴɴᴇʟ.", quote=True)
+        return await message.reply("ℹ️ Nᴏ ʀᴇǫᴜᴇsᴛ ᴄʜᴀɴɴᴇʟ ғᴏᴜɴᴅ ғᴏʀ ᴛʜɪs ᴄʜᴀɴɴᴇʟ.")
 
     user_ids = channel_data.get("user_ids", [])
     if not user_ids:
-        return await message.reply("✅ Nᴏ ᴜsᴇʀs ᴛᴏ ᴘʀᴏᴄᴇss.", quote=True)
+        return await message.reply("✅ Nᴏ ᴜsᴇʀs ᴛᴏ ᴘʀᴏᴄᴇss.")
 
     removed = 0
     skipped = 0
@@ -285,8 +285,7 @@ async def delete_requested_users(client, message: Message):
         f"✅ Cʟᴇᴀɴᴜᴘ ᴄᴏᴍᴘʟᴇᴛᴇᴅ ғᴏʀ ᴄʜᴀɴɴᴇʟ `{channel_id}`\n\n"
         f"👤 Rᴇᴍᴏᴠᴇᴅ ᴜsᴇʀs ɴᴏᴛ ɪɴ ᴄʜᴀɴɴᴇʟ: `{left_users}`\n"
         f"🗑️ Rᴇᴍᴏᴠᴇᴅ ʟᴇғᴛᴏᴠᴇʀ ɴᴏɴ-ʀᴇǫᴜᴇsᴛ ᴜsᴇʀs: `{removed}`\n"
-        f"✅ Sᴛɪʟʟ ᴍᴇᴍʙᴇʀs: `{skipped}`",
-        quote=True
+        f"✅ Sᴛɪʟʟ ᴍᴇᴍʙᴇʀs: `{skipped}`"
     )
 
 # Don't Remove Credit @ALONEKINGSTAR77, @ALONEKINGSTAR77
