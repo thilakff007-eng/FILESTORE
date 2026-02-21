@@ -87,6 +87,7 @@ async def start_command(client: Client, message: Message):
     maintenance_expiry = await db.get_maintenance()
     if maintenance_expiry and maintenance_expiry > datetime.now() and not is_admin:
         remaining = (maintenance_expiry - datetime.now()).total_seconds()
+        s, e = get_random_button_style()
         return await message.reply_text(
             "<b>✧─── [ 🛠️ ᴍᴀɪɴᴛᴇɴᴀɴᴄᴇ ᴍᴏᴅᴇ 🛠️ ] ───✧</b>\n\n"
             "<b>👋 ʜᴇʟʟᴏ {mention}!</b>\n\n"
@@ -95,17 +96,18 @@ async def start_command(client: Client, message: Message):
                 mention=message.from_user.mention,
                 time=get_readable_time(int(remaining))
             ),
-            reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("✨ ᴊᴏɪɴ ᴜᴘᴅᴀᴛᴇs ᴄʜᴀɴɴᴇʟ ✧", url="https://t.me/ALONEKINGSTAR77")]])
+            reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("✨ ᴊᴏɪɴ ᴜᴘᴅᴀᴛᴇs ᴄʜᴀɴɴᴇʟ ✧", url="https://t.me/ALONEKINGSTAR77", icon_custom_emoji_id=e, style=s)]])
         )
 
     # Check if user is banned (Early exit)
     if await db.ban_user_exist(user_id):
+        s, e = get_random_button_style()
         return await message.reply_text(
             "<b>✧─── [ 🚫 ᴀᴄᴄᴇss ᴅᴇɴɪᴇᴅ 🚫 ] ───✧</b>\n\n"
             "<b><blockquote>⛔️ You are Bᴀɴɴᴇᴅ from using this bot.</blockquote></b>\n\n"
             "<i>✨ Contact support if you think this is a mistake. ✧</i>",
             reply_markup=InlineKeyboardMarkup(
-                [[InlineKeyboardButton("💎 Contact Support", url=BAN_SUPPORT)]]
+                [[InlineKeyboardButton("💎 Contact Support", url=BAN_SUPPORT, icon_custom_emoji_id=e, style=s)]]
             )
         )
 
@@ -342,7 +344,8 @@ async def not_joined(client: Client, message: Message):
                                 expire_date=datetime.utcnow() + timedelta(seconds=FSUB_LINK_EXPIRY) if FSUB_LINK_EXPIRY else None)
                             link = invite.invite_link
 
-                    buttons.append([InlineKeyboardButton(text=name, url=link)])
+                    s, e = get_random_button_style()
+                    buttons.append([InlineKeyboardButton(text=name, url=link, icon_custom_emoji_id=e, style=s)])
                     count += 1
                     await temp.edit(f"<b>{'! ' * count}</b>")
 
@@ -355,10 +358,13 @@ async def not_joined(client: Client, message: Message):
 
         # Retry Button
         try:
+            s, e = get_random_button_style()
             buttons.append([
                 InlineKeyboardButton(
                     text='♻️ Tʀʏ Aɢᴀɪɴ',
-                    url=f"https://t.me/{client.username}?start={message.command[1]}"
+                    url=f"https://t.me/{client.username}?start={message.command[1]}",
+                    icon_custom_emoji_id=e,
+                    style=s
                 )
             ])
         except IndexError:
@@ -530,6 +536,7 @@ async def total_verify_count_cmd(client, message: Message):
 #=====================================================================================##
 
 @Bot.on_message(filters.command('commands') & filters.private & admin)
-async def bcmd(bot: Bot, message: Message):        
-    reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton("• ᴄʟᴏsᴇ •", callback_data = "close")]])
+async def bcmd(bot: Bot, message: Message):
+    s, e = get_random_button_style()
+    reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton("• ᴄʟᴏsᴇ •", callback_data = "close", icon_custom_emoji_id=e, style=s)]])
     await message.reply(text=CMD_TXT, reply_markup = reply_markup)

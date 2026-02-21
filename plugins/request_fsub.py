@@ -16,7 +16,7 @@ import sys
 import time
 from pyrogram import Client, filters, __version__
 from pyrogram.enums import ParseMode, ChatAction, ChatMemberStatus, ChatType
-from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery, ReplyKeyboardMarkup, ChatMemberUpdated, ChatPermissions
+from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery, ReplyKeyboardMarkup, ChatMemberUpdated, ChatPermissions, LinkPreviewOptions
 from pyrogram.errors.exceptions.bad_request_400 import UserNotParticipant, InviteHashEmpty, ChatAdminRequired, PeerIdInvalid, UserIsBlocked, InputUserDeactivated, UserNotParticipant
 from bot import Bot
 from config import *
@@ -55,12 +55,13 @@ async def change_force_sub_mode(client: Client, message: Message):
             return [InlineKeyboardButton(f"⚠️ {ch_id} (Unavailable)", callback_data=f"rfs_ch_{ch_id}")]
 
     buttons = await asyncio.gather(*[get_btn(ch_id) for ch_id in channels])
-    buttons.append([InlineKeyboardButton("Close ✖️", callback_data="close")])
+    s, e = get_random_button_style()
+    buttons.append([InlineKeyboardButton("Close ✖️", callback_data="close", icon_custom_emoji_id=e, style=s)])
 
     await temp.edit(
         "<b>⚡ Select a channel to toggle Force-Sub Mode:</b>",
         reply_markup=InlineKeyboardMarkup(buttons),
-        disable_web_page_preview=True
+        link_preview_options=LinkPreviewOptions(is_disabled=True)
     )
 
 # This handler captures membership updates (like when a user leaves, banned)
@@ -150,7 +151,7 @@ async def add_force_sub(client: Client, message: Message):
             f"✅ Added Successfully!\n\n"
             f"<b>Name:</b> <a href='{link}'>{chat.title}</a>\n"
             f"<b>ID:</b> <code>{chat_id}</code>",
-            disable_web_page_preview=True
+            link_preview_options=LinkPreviewOptions(is_disabled=True)
         )
 
     except Exception as e:
@@ -218,7 +219,8 @@ async def list_force_sub_channels(client: Client, message: Message):
     lines = await asyncio.gather(*[get_line(ch_id) for ch_id in channels])
     result = "<b>⚡ Force-sub Channels:</b>\n\n" + "".join(lines)
 
-    await temp.edit(result, disable_web_page_preview=True, reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("Close ✖️", callback_data="close")]]))
+    s, e = get_random_button_style()
+    await temp.edit(result, link_preview_options=LinkPreviewOptions(is_disabled=True), reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("Close ✖️", callback_data="close", icon_custom_emoji_id=e, style=s)]]))
 
 # Don't Remove Credit @ALONEKINGSTAR77, @ALONEKINGSTAR77
 # Ask Doubt on telegram @ALONEKINGSTAR77Support

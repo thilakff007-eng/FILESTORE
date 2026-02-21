@@ -64,7 +64,8 @@ class Bot(Client):
                 "root": "plugins"
             },
             workers=TG_BOT_WORKERS,
-            bot_token=TG_BOT_TOKEN
+            bot_token=TG_BOT_TOKEN,
+            parse_mode=ParseMode.HTML
         )
         self.LOGGER = LOGGER
 
@@ -85,7 +86,6 @@ class Bot(Client):
             self.LOGGER(__name__).info("\nBot Stopped. Join https://t.me/otakustartelugu for support")
             sys.exit()
 
-        self.set_parse_mode(ParseMode.HTML)
         self.LOGGER(__name__).info(f"Bot Running..!\n\nCreated by \nhttps://t.me/otakustartelugu")
         self.LOGGER(__name__).info(r"""
 
@@ -98,7 +98,6 @@ class Bot(Client):
  
                                           """)
 
-        self.set_parse_mode(ParseMode.HTML)
         self.username = usr_bot_me.username
         self.LOGGER(__name__).info(f"Bot Running..! Made by @ALONEKINGSTAR77")
 

@@ -14,7 +14,7 @@ from pyrogram import Client
 from bot import Bot
 from config import *
 from pyrogram.enums import ButtonStyle
-from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
+from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery, LinkPreviewOptions
 from helper_func import get_random_button_style
 from database.database import db
 
@@ -39,7 +39,7 @@ async def cb_handler(client: Bot, query: CallbackQuery):
                 bot_name=BOT_NAME,
                 main_link=MAIN_LINK
             ),
-            disable_web_page_preview=True,
+            link_preview_options=LinkPreviewOptions(is_disabled=True),
             reply_markup=InlineKeyboardMarkup([
                 [InlineKeyboardButton('✨ ʜᴏᴍᴇ', callback_data='start', icon_custom_emoji_id=e1, style=s1),
                  InlineKeyboardButton("🌸 ᴄʟᴏꜱᴇ", callback_data='close', icon_custom_emoji_id=e2, style=s2)]
@@ -57,7 +57,7 @@ async def cb_handler(client: Bot, query: CallbackQuery):
                 bot_username=client.username,
                 main_link=MAIN_LINK
             ),
-            disable_web_page_preview=True,
+            link_preview_options=LinkPreviewOptions(is_disabled=True),
             reply_markup=InlineKeyboardMarkup([
                 [InlineKeyboardButton('✨ ʜᴏᴍᴇ', callback_data='start', icon_custom_emoji_id=e1, style=s1),
                  InlineKeyboardButton('🌸 ᴄʟᴏꜱᴇ', callback_data='close', icon_custom_emoji_id=e2, style=s2)]
@@ -76,7 +76,7 @@ async def cb_handler(client: Bot, query: CallbackQuery):
                 mention=query.from_user.mention,
                 bot_name=BOT_NAME
             ),
-            disable_web_page_preview=True,
+            link_preview_options=LinkPreviewOptions(is_disabled=True),
             reply_markup=InlineKeyboardMarkup(
                 [
                     [
@@ -171,9 +171,11 @@ async def cb_handler(client: Bot, query: CallbackQuery):
             mode = await db.get_channel_mode(cid)
             status = "🟢 ᴏɴ" if mode == "on" else "🔴 ᴏғғ"
             new_mode = "ᴏғғ" if mode == "on" else "on"
+            s1, e1 = get_random_button_style()
+            s2, e2 = get_random_button_style()
             buttons = [
-                [InlineKeyboardButton(f"ʀᴇǫ ᴍᴏᴅᴇ {'OFF' if mode == 'on' else 'ON'}", callback_data=f"rfs_toggle_{cid}_{new_mode}")],
-                [InlineKeyboardButton("‹ ʙᴀᴄᴋ", callback_data="fsub_back")]
+                [InlineKeyboardButton(f"ʀᴇǫ ᴍᴏᴅᴇ {'OFF' if mode == 'on' else 'ON'}", callback_data=f"rfs_toggle_{cid}_{new_mode}", icon_custom_emoji_id=e1, style=s1)],
+                [InlineKeyboardButton("‹ ʙᴀᴄᴋ", callback_data="fsub_back", icon_custom_emoji_id=e2, style=s2)]
             ]
             await query.message.edit_text(
                 f"Channel: {chat.title}\nCurrent Force-Sub Mode: {status}",
@@ -194,9 +196,11 @@ async def cb_handler(client: Bot, query: CallbackQuery):
         chat = await client.get_chat(cid)
         status = "🟢 ON" if mode == "on" else "🔴 OFF"
         new_mode = "off" if mode == "on" else "on"
+        s1, e1 = get_random_button_style()
+        s2, e2 = get_random_button_style()
         buttons = [
-            [InlineKeyboardButton(f"ʀᴇǫ ᴍᴏᴅᴇ {'OFF' if mode == 'on' else 'ON'}", callback_data=f"rfs_toggle_{cid}_{new_mode}")],
-            [InlineKeyboardButton("‹ ʙᴀᴄᴋ", callback_data="fsub_back")]
+            [InlineKeyboardButton(f"ʀᴇǫ ᴍᴏᴅᴇ {'OFF' if mode == 'on' else 'ON'}", callback_data=f"rfs_toggle_{cid}_{new_mode}", icon_custom_emoji_id=e1, style=s1)],
+            [InlineKeyboardButton("‹ ʙᴀᴄᴋ", callback_data="fsub_back", icon_custom_emoji_id=e2, style=s2)]
         ]
         await query.message.edit_text(
             f"Channel: {chat.title}\nCurrent Force-Sub Mode: {status}",
@@ -212,7 +216,8 @@ async def cb_handler(client: Bot, query: CallbackQuery):
                 chat = await client.get_chat(cid)
                 mode = await db.get_channel_mode(cid)
                 status = "🟢" if mode == "on" else "🔴"
-                return [InlineKeyboardButton(f"{status} {chat.title}", callback_data=f"rfs_ch_{cid}")]
+                s, e = get_random_button_style()
+                return [InlineKeyboardButton(f"{status} {chat.title}", callback_data=f"rfs_ch_{cid}", icon_custom_emoji_id=e, style=s)]
             except:
                 return None
 

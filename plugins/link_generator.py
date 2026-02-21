@@ -6,7 +6,7 @@ from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
 from bot import Bot
 from pyrogram.types import ReplyKeyboardMarkup, ReplyKeyboardRemove
 from asyncio import TimeoutError
-from helper_func import encode, get_message_id, admin, check_admin
+from helper_func import encode, get_message_id, admin, check_admin, get_random_button_style
 
 @Bot.on_message(filters.private & admin & filters.command('batch'))
 async def batch(client: Client, message: Message):
@@ -38,7 +38,8 @@ async def batch(client: Client, message: Message):
     string = f"get-{f_msg_id * abs(client.db_channel.id)}-{s_msg_id * abs(client.db_channel.id)}"
     base64_string = encode(string)
     link = f"https://t.me/{client.username}?start={base64_string}"
-    reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton("🔁 Share URL", url=f'https://telegram.me/share/url?url={link}')]])
+    s, e = get_random_button_style()
+    reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton("🔁 Share URL", url=f'https://telegram.me/share/url?url={link}', icon_custom_emoji_id=e, style=s)]])
     await second_message.reply_text(f"<b>Here is your link</b>\n\n{link}", reply_markup=reply_markup)
 
 
@@ -58,7 +59,8 @@ async def link_generator(client: Client, message: Message):
 
     base64_string = encode(f"get-{msg_id * abs(client.db_channel.id)}")
     link = f"https://t.me/{client.username}?start={base64_string}"
-    reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton("🔁 Share URL", url=f'https://telegram.me/share/url?url={link}')]])
+    s, e = get_random_button_style()
+    reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton("🔁 Share URL", url=f'https://telegram.me/share/url?url={link}', icon_custom_emoji_id=e, style=s)]])
     await channel_message.reply_text(f"<b>Here is your link</b>\n\n{link}", reply_markup=reply_markup)
 
 
@@ -101,7 +103,8 @@ async def custom_batch(client: Client, message: Message):
     base64_string = encode(string)
     link = f"https://t.me/{client.username}?start={base64_string}"
 
-    reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton("🔁 Share URL", url=f'https://telegram.me/share/url?url={link}')]])
+    s, e = get_random_button_style()
+    reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton("🔁 Share URL", url=f'https://telegram.me/share/url?url={link}', icon_custom_emoji_id=e, style=s)]])
     await message.reply(f"<b>Here is your custom batch link:</b>\n\n{link}", reply_markup=reply_markup)
 
 
@@ -124,5 +127,6 @@ async def dlink_generator(client: Client, message: Message):
 
     base64_string = encode(f"get-{msg_id * abs(client.db_channel.id)}")
     link = f"https://t.me/{client.username}?start=direct_{base64_string}"
-    reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton("🔁 Share URL", url=f'https://telegram.me/share/url?url={link}')]])
+    s, e = get_random_button_style()
+    reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton("🔁 Share URL", url=f'https://telegram.me/share/url?url={link}', icon_custom_emoji_id=e, style=s)]])
     await channel_message.reply_text(f"<b>Here is your direct link (skips shortener)</b>\n\n{link}", reply_markup=reply_markup)
