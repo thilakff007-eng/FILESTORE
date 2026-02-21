@@ -13,6 +13,7 @@ from datetime import datetime, timedelta
 from pyrogram import Client 
 from bot import Bot
 from config import *
+from pyrogram.enums import ButtonStyle
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
 from database.database import db
 
@@ -37,8 +38,8 @@ async def cb_handler(client: Bot, query: CallbackQuery):
             ),
             disable_web_page_preview=True,
             reply_markup=InlineKeyboardMarkup([
-                [InlineKeyboardButton('✨ ʜᴏᴍᴇ', callback_data='start'),
-                 InlineKeyboardButton("🌸 ᴄʟᴏꜱᴇ", callback_data='close')]
+                [InlineKeyboardButton('✨ ʜᴏᴍᴇ', callback_data='start', icon_custom_emoji_id=5440389890787281213, style=ButtonStyle.PRIMARY),
+                 InlineKeyboardButton("🌸 ᴄʟᴏꜱᴇ", callback_data='close', icon_custom_emoji_id=5354968347094046619, style=ButtonStyle.DANGER)]
             ])
         )
 
@@ -53,8 +54,8 @@ async def cb_handler(client: Bot, query: CallbackQuery):
             ),
             disable_web_page_preview=True,
             reply_markup=InlineKeyboardMarkup([
-                [InlineKeyboardButton('✨ ʜᴏᴍᴇ', callback_data='start'),
-                 InlineKeyboardButton('🌸 ᴄʟᴏꜱᴇ', callback_data='close')]
+                [InlineKeyboardButton('✨ ʜᴏᴍᴇ', callback_data='start', icon_custom_emoji_id=5440389890787281213, style=ButtonStyle.PRIMARY),
+                 InlineKeyboardButton('🌸 ᴄʟᴏꜱᴇ', callback_data='close', icon_custom_emoji_id=5354968347094046619, style=ButtonStyle.DANGER)]
             ])
         )
 
@@ -69,15 +70,15 @@ async def cb_handler(client: Bot, query: CallbackQuery):
             reply_markup=InlineKeyboardMarkup(
                 [
                     [
-                        InlineKeyboardButton("🏯 ᴄᴏᴍᴍᴜɴɪᴛʏ", url=MAIN_LINK),
-                        InlineKeyboardButton("⚡ ᴜᴘᴅᴀᴛᴇs", url="https://t.me/ALONEKINGSTAR77")
+                        InlineKeyboardButton("🏯 ᴄᴏᴍᴍᴜɴɪᴛʏ", url=MAIN_LINK, icon_custom_emoji_id=5440389890787281213, style=ButtonStyle.PRIMARY),
+                        InlineKeyboardButton("⚡ ᴜᴘᴅᴀᴛᴇs", url="https://t.me/ALONEKINGSTAR77", icon_custom_emoji_id=5355142851615283756, style=ButtonStyle.SUCCESS)
                     ],
                     [
-                        InlineKeyboardButton("🌸 ᴀʙᴏᴜᴛ", callback_data="about"),
-                        InlineKeyboardButton("⭐ ʜᴇʟᴘ", callback_data="help")
+                        InlineKeyboardButton("🌸 ᴀʙᴏᴜᴛ", callback_data="about", icon_custom_emoji_id=5440389890787281213, style=ButtonStyle.PRIMARY),
+                        InlineKeyboardButton("⭐ ʜᴇʟᴘ", callback_data="help", icon_custom_emoji_id=5355142851615283756, style=ButtonStyle.SUCCESS)
                     ],
                     [
-                        InlineKeyboardButton("💎 ᴘʀᴇᴍɪᴜᴍ ᴀᴄᴄᴇss 💎", callback_data="premium")
+                        InlineKeyboardButton("💎 ᴘʀᴇᴍɪᴜᴍ ᴀᴄᴄᴇss 💎", callback_data="premium", icon_custom_emoji_id=5355142851615283756, style=ButtonStyle.SUCCESS)
                     ]
                 ]
             )
@@ -118,10 +119,10 @@ async def cb_handler(client: Bot, query: CallbackQuery):
             [
                 [
                     InlineKeyboardButton(
-                        "👨‍💻 ᴄᴏɴᴛᴀᴄᴛ ᴀᴅᴍɪɴ", url=(SCREENSHOT_URL)
+                        "👨‍💻 ᴄᴏɴᴛᴀᴄᴛ ᴀᴅᴍɪɴ", url=(SCREENSHOT_URL), icon_custom_emoji_id=5440389890787281213, style=ButtonStyle.PRIMARY
                     )
                 ],
-                [InlineKeyboardButton("🌸 ᴄʟᴏsᴇ", callback_data="close")],
+                [InlineKeyboardButton("🌸 ᴄʟᴏsᴇ", callback_data="close", icon_custom_emoji_id=5354968347094046619, style=ButtonStyle.DANGER)],
             ]
         )
 

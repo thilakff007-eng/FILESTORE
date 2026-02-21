@@ -3,6 +3,7 @@
 # Premium Management Plugin
 
 from pyrogram import Client, filters
+from pyrogram.enums import ButtonStyle
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
 from bot import Bot
 from config import OWNER_ID
@@ -43,7 +44,7 @@ async def list_premium_cmd(client, message):
 
     if count == 0:
         text += "<i>No premium users found.</i>"
-        buttons = [[InlineKeyboardButton("❌ Close", callback_data="close")]]
+        buttons = [[InlineKeyboardButton("❌ Close", callback_data="close", icon_custom_emoji_id=5354968347094046619, style=ButtonStyle.DANGER)]]
     else:
         text += "<b>Select a user to manage:</b>"
         buttons = []
@@ -57,9 +58,9 @@ async def list_premium_cmd(client, message):
                 name = "Unknown"
 
             rem_days = int(user['remaining_seconds'] // (24 * 3600))
-            buttons.append([InlineKeyboardButton(f"👤 {name} ({u_id}) - {rem_days}d", callback_data=f"manage_prem_{u_id}")])
+            buttons.append([InlineKeyboardButton(f"👤 {name} ({u_id}) - {rem_days}d", callback_data=f"manage_prem_{u_id}", icon_custom_emoji_id=5440389890787281213, style=ButtonStyle.PRIMARY)])
 
-        buttons.append([InlineKeyboardButton("❌ Close", callback_data="close")])
+        buttons.append([InlineKeyboardButton("❌ Close", callback_data="close", icon_custom_emoji_id=5354968347094046619, style=ButtonStyle.DANGER)])
 
     await message.reply(text, reply_markup=InlineKeyboardMarkup(buttons))
 
@@ -70,9 +71,9 @@ async def manage_premium_callback(client, query: CallbackQuery):
     # Show sub-menu
     text = f"<b>💎 Managing User:</b> <code>{user_id}</code>\n\nChoose an action:"
     buttons = [
-        [InlineKeyboardButton("➕ Add Extra Days", callback_data=f"add_days_{user_id}")],
-        [InlineKeyboardButton("➖ Remove Premium", callback_data=f"rem_prem_{user_id}")],
-        [InlineKeyboardButton("🔙 Back", callback_data="back_to_list_prem")]
+        [InlineKeyboardButton("➕ Add Extra Days", callback_data=f"add_days_{user_id}", icon_custom_emoji_id=5355142851615283756, style=ButtonStyle.SUCCESS)],
+        [InlineKeyboardButton("➖ Remove Premium", callback_data=f"rem_prem_{user_id}", icon_custom_emoji_id=5354968347094046619, style=ButtonStyle.DANGER)],
+        [InlineKeyboardButton("🔙 Back", callback_data="back_to_list_prem", icon_custom_emoji_id=5440389890787281213, style=ButtonStyle.PRIMARY)]
     ]
 
     await query.message.edit(text, reply_markup=InlineKeyboardMarkup(buttons))

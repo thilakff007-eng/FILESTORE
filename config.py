@@ -10,7 +10,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Telegram API Configuration
-TG_BOT_TOKEN = os.environ.get("TG_BOT_TOKEN", "8448505270:AAFenpkWjEkw0DQB-qYH6tGIh80udDOSyKI")
+TG_BOT_TOKEN = os.environ.get("TG_BOT_TOKEN", "8448505270:AAFp5Lg_S-E7fZgmefhcdXzsYpmlu0PYdsk")
 APP_ID = int(os.environ.get("APP_ID", "31355944"))
 API_HASH = os.environ.get("API_HASH", "167e960d46363e3098f9c1fc78496adb")
 
@@ -60,7 +60,7 @@ START_PIC = PICS[0]
 FORCE_PIC = PICS[1]
 
 # Bot Settings
-URL = os.environ.get("URL", os.environ.get("RENDER_EXTERNAL_URL", os.environ.get("RAILWAY_STATIC_URL", "https://filestore-hqw7.onrender.com")))
+URL = os.environ.get("URL", os.environ.get("RENDER_EXTERNAL_URL", os.environ.get("RAILWAY_STATIC_URL", "worker-production-408e.up.railway.app")))
 PORT = os.environ.get("PORT", "8080")
 FSUB_LINK_EXPIRY = int(os.getenv("FSUB_LINK_EXPIRY", "10"))
 TG_BOT_WORKERS = int(os.environ.get("TG_BOT_WORKERS", "500"))

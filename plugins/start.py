@@ -16,7 +16,7 @@ import uuid
 import logging
 from datetime import datetime, timedelta
 from pyrogram import Client, filters, __version__
-from pyrogram.enums import ParseMode, ChatAction
+from pyrogram.enums import ParseMode, ChatAction, ButtonStyle
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery, ReplyKeyboardMarkup, ChatInviteLink, ChatPrivileges
 from pyrogram.errors.exceptions.bad_request_400 import UserNotParticipant
 from pyrogram.errors import FloodWait, UserIsBlocked, InputUserDeactivated, UserNotParticipant
@@ -44,11 +44,11 @@ async def short_url(client: Client, message: Message, base64_string):
 
         buttons = [
             [
-                InlineKeyboardButton(text="ᴅᴏᴡɴʟᴏᴀᴅ", url=hidden_link),
-                InlineKeyboardButton(text="ᴛᴜᴛᴏʀɪᴀʟ", url=TUT_VID)
+                InlineKeyboardButton(text="ᴅᴏᴡɴʟᴏᴀᴅ", url=hidden_link, icon_custom_emoji_id=5355142851615283756, style=ButtonStyle.SUCCESS),
+                InlineKeyboardButton(text="ᴛᴜᴛᴏʀɪᴀʟ", url=TUT_VID, icon_custom_emoji_id=5440389890787281213, style=ButtonStyle.PRIMARY)
             ],
             [
-                InlineKeyboardButton(text="ᴘʀᴇᴍɪᴜᴍ", callback_data="premium")
+                InlineKeyboardButton(text="ᴘʀᴇᴍɪᴜᴍ", callback_data="premium", icon_custom_emoji_id=5355142851615283756, style=ButtonStyle.SUCCESS)
             ]
         ]
 
@@ -247,7 +247,7 @@ async def start_command(client: Client, message: Message):
                     else None
                 )
                 keyboard = InlineKeyboardMarkup(
-                    [[InlineKeyboardButton("ɢᴇᴛ ғɪʟᴇ ᴀɢᴀɪɴ!", url=reload_url)]]
+                    [[InlineKeyboardButton("ɢᴇᴛ ғɪʟᴇ ᴀɢᴀɪɴ!", url=reload_url, icon_custom_emoji_id=5355142851615283756, style=ButtonStyle.SUCCESS)]]
                 ) if reload_url else None
 
                 await notification_msg.edit(
@@ -262,12 +262,12 @@ async def start_command(client: Client, message: Message):
         reply_markup = InlineKeyboardMarkup(
             [
                 [
-                    InlineKeyboardButton("🏯 Community", url=MAIN_LINK),
-                    InlineKeyboardButton("⚡ Updates", url="https://t.me/ALONEKINGSTAR77")
+                    InlineKeyboardButton("🏯 Community", url=MAIN_LINK, icon_custom_emoji_id=5440389890787281213, style=ButtonStyle.PRIMARY),
+                    InlineKeyboardButton("⚡ Updates", url="https://t.me/ALONEKINGSTAR77", icon_custom_emoji_id=5355142851615283756, style=ButtonStyle.SUCCESS)
                 ],
                 [
-                    InlineKeyboardButton("🌸 About", callback_data="about"),
-                    InlineKeyboardButton("⭐ Help", callback_data="help")
+                    InlineKeyboardButton("🌸 About", callback_data="about", icon_custom_emoji_id=5440389890787281213, style=ButtonStyle.PRIMARY),
+                    InlineKeyboardButton("⭐ Help", callback_data="help", icon_custom_emoji_id=5355142851615283756, style=ButtonStyle.SUCCESS)
                 ]
             ]
         )
