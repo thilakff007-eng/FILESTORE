@@ -58,6 +58,16 @@
       "description": "The Domain URL (without https://)",
       "value": "worker-production-408e.up.railway.app",
       "required": false
+    },
+    "SHORTLINK_URL": {
+      "description": "Your shortener domain (e.g., arolinks.com)",
+      "value": "arolinks.com",
+      "required": false
+    },
+    "SHORTLINK_API": {
+      "description": "Your shortener API key",
+      "value": "e49643875c2fa34dd6087254e58283d65ffc7748",
+      "required": false
     }
   },
   "buildpacks": [
