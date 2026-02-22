@@ -105,13 +105,8 @@ async def get_all_premium_users():
 async def get_premium_count():
     """Returns count of active premium users."""
     ist = timezone("Asia/Kolkata")
-    count = 0
-    async for user in collection.find({}):
-        expiration_timestamp = user["expiration_timestamp"]
-        expiration_time = datetime.fromisoformat(expiration_timestamp).astimezone(ist)
-        if expiration_time > datetime.now(ist):
-            count += 1
-    return count
+    now_str = datetime.now(ist).isoformat()
+    return await collection.count_documents({"expiration_timestamp": {"$gt": now_str}})
 
 # Add premium user
 async def add_premium(user_id, time_value, time_unit):

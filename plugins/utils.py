@@ -35,8 +35,21 @@ async def stats(bot: Bot, message: Message):
     now = datetime.now(ist)
     delta = now - bot.uptime
     uptime_str = get_readable_time(int(delta.total_seconds()))
+
+    users = await db.count_users()
+    admins = await db.count_admins()
+    from database.db_premium import get_premium_count
+    premium = await get_premium_count()
+
+    text = f"<b>✧─── [ ⚡ Bᴏᴛ Sᴛᴀᴛɪsᴛɪᴄs ⚡ ] ───✧</b>\n\n" \
+           f"<b>✨ Uᴘᴛɪᴍᴇ:</b> <code>{uptime_str}</code>\n" \
+           f"<b>👤 Tᴏᴛᴀʟ Usᴇʀs:</b> <code>{users}</code>\n" \
+           f"<b>💎 Pʀᴇᴍɪᴜᴍ Usᴇʀs:</b> <code>{premium}</code>\n" \
+           f"<b>🛠️ Tᴏᴛᴀʟ Aᴅᴍɪɴs:</b> <code>{admins}</code>\n\n" \
+           f"<i>⚡ Sᴛᴀᴛs Fᴇᴛᴄʜᴇᴅ Sᴜᴄᴄᴇssғᴜʟʟʏ! ✧</i>"
+
     s, e = get_random_button_style()
-    await message.reply(BOT_STATS_TEXT.format(uptime=uptime_str), reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("• ᴄʟᴏsᴇ •", callback_data="close", icon_custom_emoji_id=e, style=s)]]))
+    await message.reply(text, reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("• ᴄʟᴏsᴇ •", callback_data="close", icon_custom_emoji_id=e, style=s)]]))
 
 
 #=====================================================================================##
@@ -49,9 +62,9 @@ WAIT_MSG = "<b>Working....</b>"
 @Bot.on_message(filters.command('users') & filters.private & admin)
 async def get_users(client: Bot, message: Message):
     msg = await client.send_message(chat_id=message.chat.id, text=WAIT_MSG)
-    users = await db.full_userbase()
+    count = await db.count_users()
     s, e = get_random_button_style()
-    await msg.edit(f"{len(users)} users are using this bot", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("• ᴄʟᴏsᴇ •", callback_data="close", icon_custom_emoji_id=e, style=s)]]))
+    await msg.edit(f"{count} users are using this bot", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("• ᴄʟᴏsᴇ •", callback_data="close", icon_custom_emoji_id=e, style=s)]]))
 
 # Don't Remove Credit @ALONEKINGSTAR77, @ALONEKINGSTAR77
 # Ask Doubt on telegram @ALONEKINGSTAR77Support

@@ -23,7 +23,7 @@ from pyrogram.errors import FloodWait, UserIsBlocked, InputUserDeactivated, User
 from pytz import timezone
 from bot import Bot
 from config import *
-from helper_func import is_subscribed, decode, get_messages, send_media, get_exp_time, get_readable_time, is_sub, admin, check_admin, get_random_button_style
+from helper_func import is_subscribed, decode, get_messages, send_media, get_exp_time, get_readable_time, is_sub, admin, check_admin, get_random_button_style, CHAT_INFO_CACHE
 from database.database import db
 from database.db_premium import is_premium_user, collection, add_premium, remove_premium, check_user_plan
 
@@ -298,15 +298,13 @@ async def start_command(client: Client, message: Message):
 
 
 
-# Create a global dictionary to store chat data
-chat_data_cache = {}
-
 async def not_joined(client: Client, message: Message):
     temp = await message.reply("<b><i>Checking Subscription...</i></b>")
 
     user_id = message.from_user.id
     buttons = []
     count = 0
+    now = time.time()
 
     try:
         all_channels = await db.show_channels()  # Should return list of (chat_id, mode) tuples
@@ -318,31 +316,29 @@ async def not_joined(client: Client, message: Message):
             if not await is_sub(client, user_id, chat_id):
                 try:
                     # Cache chat info
-                    if chat_id in chat_data_cache:
-                        data = chat_data_cache[chat_id]
+                    if chat_id in CHAT_INFO_CACHE and (now - CHAT_INFO_CACHE[chat_id][1] < 3600):
+                        data = CHAT_INFO_CACHE[chat_id][0]
                     else:
-                        data = await client.get_chat(chat_id)
-                        chat_data_cache[chat_id] = data
+                        chat = await client.get_chat(chat_id)
+                        try:
+                            link = chat.invite_link or await client.export_chat_invite_link(chat.id)
+                        except:
+                            link = f"https://t.me/{chat.username}" if chat.username else f"https://t.me/c/{str(chat.id)[4:]}"
+                        data = {'title': chat.title, 'link': link}
+                        CHAT_INFO_CACHE[chat_id] = (data, now)
 
-                    name = data.title
+                    name = data['title']
 
-                    # Generate proper invite link based on the mode
-                    if mode == "on" and not data.username:
+                    link = data['link']
+
+                    # Generate proper invite link based on the mode (Override if Request Mode is ON)
+                    if mode == "on":
                         invite = await client.create_chat_invite_link(
                             chat_id=chat_id,
                             creates_join_request=True,
                             expire_date=datetime.utcnow() + timedelta(seconds=FSUB_LINK_EXPIRY) if FSUB_LINK_EXPIRY else None
-                            )
+                        )
                         link = invite.invite_link
-
-                    else:
-                        if data.username:
-                            link = f"https://t.me/{data.username}"
-                        else:
-                            invite = await client.create_chat_invite_link(
-                                chat_id=chat_id,
-                                expire_date=datetime.utcnow() + timedelta(seconds=FSUB_LINK_EXPIRY) if FSUB_LINK_EXPIRY else None)
-                            link = invite.invite_link
 
                     s, e = get_random_button_style()
                     buttons.append([InlineKeyboardButton(text=name, url=link, icon_custom_emoji_id=e, style=s)])
@@ -397,133 +393,6 @@ async def check_plan(client: Client, message: Message):
 
     # Send the response message to the user
     await message.reply(status_message)
-
-#=====================================================================================##
-# Command to add premium user
-@Bot.on_message(filters.command('addpremium') & filters.private & admin)
-async def add_premium_user_command(client, msg):
-    if len(msg.command) != 4:
-        await msg.reply_text(
-            "Usage: /addpremium <user_id> <time_value> <time_unit>\n\n"
-            "Time Units:\n"
-            "s - seconds\n"
-            "m - minutes\n"
-            "h - hours\n"
-            "d - days\n"
-            "y - years\n\n"
-            "Examples:\n"
-            "/addpremium 123456789 30 m → 30 minutes\n"
-            "/addpremium 123456789 2 h → 2 hours\n"
-            "/addpremium 123456789 1 d → 1 day\n"
-            "/addpremium 123456789 1 y → 1 year"
-        )
-        return
-
-    try:
-        user_id = int(msg.command[1])
-        time_value = int(msg.command[2])
-        time_unit = msg.command[3].lower()  # supports: s, m, h, d, y
-
-        # Call add_premium function
-        expiration_time = await add_premium(user_id, time_value, time_unit)
-
-        # Notify the admin
-        await msg.reply_text(
-            f"✅ User `{user_id}` added as a premium user for {time_value} {time_unit}.\n"
-            f"Expiration Time: `{expiration_time}`"
-        )
-
-        # Notify the user
-        await client.send_message(
-            chat_id=user_id,
-            text=(
-                f"🎉 Premium Activated!\n\n"
-                f"You have received premium access for `{time_value} {time_unit}`.\n"
-                f"Expires on: `{expiration_time}`"
-            ),
-        )
-
-    except ValueError:
-        await msg.reply_text("❌ Invalid input. Please ensure user ID and time value are numbers.")
-    except Exception as e:
-        await msg.reply_text(f"⚠️ An error occurred: `{str(e)}`")
-
-
-# Command to remove premium user
-@Bot.on_message(filters.command('remove_premium') & filters.private & admin)
-async def pre_remove_user(client: Client, msg: Message):
-    if len(msg.command) != 2:
-        await msg.reply_text("useage: /remove_premium user_id ")
-        return
-    try:
-        user_id = int(msg.command[1])
-        await remove_premium(user_id)
-        await msg.reply_text(f"User {user_id} has been removed.")
-    except ValueError:
-        await msg.reply_text("user_id must be an integer or not available in database.")
-
-
-# Command to list active premium users
-@Bot.on_message(filters.command('premium_users') & filters.private & admin)
-async def list_premium_users_command(client, message):
-    # Define IST timezone
-    ist = timezone("Asia/Kolkata")
-
-    # Retrieve all users from the collection
-    premium_users_cursor = collection.find({})
-    premium_user_list = ['Active Premium Users in database:']
-    current_time = datetime.now(ist)  # Get current time in IST
-
-    # Use async for to iterate over the async cursor
-    async for user in premium_users_cursor:
-        user_id = user["user_id"]
-        expiration_timestamp = user["expiration_timestamp"]
-
-        try:
-            # Convert expiration_timestamp to a timezone-aware datetime object in IST
-            expiration_time = datetime.fromisoformat(expiration_timestamp).astimezone(ist)
-
-            # Calculate remaining time
-            remaining_time = expiration_time - current_time
-
-            if remaining_time.total_seconds() <= 0:
-                # Remove expired users from the database
-                await collection.delete_one({"user_id": user_id})
-                continue  # Skip to the next user if this one is expired
-
-            # If not expired, retrieve user info
-            user_info = await client.get_users(user_id)
-            username = user_info.username if user_info.username else "No Username"
-            first_name = user_info.first_name
-            mention=user_info.mention
-
-            # Calculate days, hours, minutes, seconds left
-            days, hours, minutes, seconds = (
-                remaining_time.days,
-                remaining_time.seconds // 3600,
-                (remaining_time.seconds // 60) % 60,
-                remaining_time.seconds % 60,
-            )
-            expiry_info = f"{days}d {hours}h {minutes}m {seconds}s left"
-
-            # Add user details to the list
-            premium_user_list.append(
-                f"UserID: <code>{user_id}</code>\n"
-                f"User: @{username}\n"
-                f"Name: {mention}\n"
-                f"Expiry: {expiry_info}"
-            )
-        except Exception as e:
-            premium_user_list.append(
-                f"UserID: <code>{user_id}</code>\n"
-                f"Error: Unable to fetch user details ({str(e)})"
-            )
-
-    if len(premium_user_list) == 1:  # No active users found
-        await message.reply_text("I found 0 active premium users in my DB")
-    else:
-        await message.reply_text("\n\n".join(premium_user_list), parse_mode=None)
-
 
 #=====================================================================================##
 

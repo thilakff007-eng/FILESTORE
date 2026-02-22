@@ -83,6 +83,9 @@ class Database:
         user_ids = [doc['_id'] for doc in user_docs]
         return user_ids
 
+    async def count_users(self):
+        return await self.user_data.count_documents({})
+
     async def del_user(self, user_id: int):
         await self.user_data.delete_one({'_id': user_id})
         return
@@ -107,6 +110,9 @@ class Database:
         users_docs = await self.admins_data.find().to_list(length=None)
         user_ids = [doc['_id'] for doc in users_docs]
         return user_ids
+
+    async def count_admins(self):
+        return await self.admins_data.count_documents({})
 
 
     # BAN USER DATA

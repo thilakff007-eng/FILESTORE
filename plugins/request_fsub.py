@@ -14,13 +14,14 @@ import os
 import random
 import sys
 import time
+import logging
 from pyrogram import Client, filters, __version__
 from pyrogram.enums import ParseMode, ChatAction, ChatMemberStatus, ChatType
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery, ReplyKeyboardMarkup, ChatMemberUpdated, ChatPermissions, LinkPreviewOptions
 from pyrogram.errors.exceptions.bad_request_400 import UserNotParticipant, InviteHashEmpty, ChatAdminRequired, PeerIdInvalid, UserIsBlocked, InputUserDeactivated, UserNotParticipant
 from bot import Bot
 from config import *
-from helper_func import admin
+from helper_func import admin, get_random_button_style, CHAT_INFO_CACHE
 from database.database import db
 
 # Don't Remove Credit @ALONEKINGSTAR77, @ALONEKINGSTAR77
@@ -38,19 +39,27 @@ from database.database import db
 #Request force sub mode commad,,,,,,
 @Bot.on_message(filters.command('fsub_mode') & filters.private & admin)
 async def change_force_sub_mode(client: Client, message: Message):
-    temp = await message.reply("<b><i>ᴡᴀɪᴛ ᴀ sᴇᴄ..</i></b>")
+    temp = await message.reply("<b><i>Fᴇᴛᴄʜɪɴɢ ᴍᴏᴅᴇs... ⚡</i></b>")
     channels = await db.show_channels()
 
     if not channels:
-        return await temp.edit("<b>❌ No force-sub channels found.</b>")
+        s, e = get_random_button_style()
+        return await temp.edit("<b>❌ No force-sub channels found.</b>", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("Close ✖️", callback_data="close", icon_custom_emoji_id=e, style=s)]]))
 
     async def get_btn(ch_id):
+        now = time.time()
+        mode = await db.get_channel_mode(ch_id)
+        status = "🟢" if mode == "on" else "🔴"
+
+        if ch_id in CHAT_INFO_CACHE:
+            data, ts = CHAT_INFO_CACHE[ch_id]
+            if now - ts < 3600:
+                return [InlineKeyboardButton(f"{status} {data['title']}", callback_data=f"rfs_ch_{ch_id}")]
+
         try:
             chat = await client.get_chat(ch_id)
-            mode = await db.get_channel_mode(ch_id)
-            status = "🟢" if mode == "on" else "🔴"
-            title = f"{status} {chat.title}"
-            return [InlineKeyboardButton(title, callback_data=f"rfs_ch_{ch_id}")]
+            CHAT_INFO_CACHE[ch_id] = ({'title': chat.title, 'link': chat.invite_link}, now)
+            return [InlineKeyboardButton(f"{status} {chat.title}", callback_data=f"rfs_ch_{ch_id}")]
         except:
             return [InlineKeyboardButton(f"⚠️ {ch_id} (Unavailable)", callback_data=f"rfs_ch_{ch_id}")]
 
@@ -202,22 +211,36 @@ async def del_force_sub(client: Client, message: Message):
 # View all channels
 @Bot.on_message(filters.command(['fsublist', 'listchnl']) & filters.private & admin)
 async def list_force_sub_channels(client: Client, message: Message):
-    temp = await message.reply("<b><i>ᴡᴀɪᴛ ᴀ sᴇᴄ..</i></b>")
+    temp = await message.reply("<b><i>Fᴇᴛᴄʜɪɴɢ ᴄʜᴀɴɴᴇʟ ʟɪsᴛ... ⚡</i></b>")
     channels = await db.show_channels()
 
     if not channels:
-        return await temp.edit("<b>❌ No force-sub channels found.</b>")
+        s, e = get_random_button_style()
+        return await temp.edit("<b>❌ No force-sub channels found.</b>", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("Close ✖️", callback_data="close", icon_custom_emoji_id=e, style=s)]]))
 
     async def get_line(ch_id):
+        now = time.time()
+        if ch_id in CHAT_INFO_CACHE:
+            data, ts = CHAT_INFO_CACHE[ch_id]
+            if now - ts < 3600: # 1 hour cache
+                return f"<b>•</b> <a href='{data['link']}'>{data['title']}</a> [<code>{ch_id}</code>]\n"
+
         try:
             chat = await client.get_chat(ch_id)
-            link = chat.invite_link or await client.export_chat_invite_link(chat.id)
+            try:
+                link = chat.invite_link or await client.export_chat_invite_link(chat.id)
+            except:
+                link = f"https://t.me/{chat.username}" if chat.username else f"https://t.me/c/{str(chat.id)[4:]}"
+
+            CHAT_INFO_CACHE[ch_id] = ({'title': chat.title, 'link': link}, now)
             return f"<b>•</b> <a href='{link}'>{chat.title}</a> [<code>{ch_id}</code>]\n"
-        except Exception:
+        except Exception as e:
+            logging.error(f"Error fetching chat {ch_id}: {e}")
             return f"<b>•</b> <code>{ch_id}</code> — <i>Unavailable</i>\n"
 
     lines = await asyncio.gather(*[get_line(ch_id) for ch_id in channels])
-    result = "<b>⚡ Force-sub Channels:</b>\n\n" + "".join(lines)
+    result = "<b>✧─── [ ⚡ Fᴏʀᴄᴇ-Sᴜʙ Cʜᴀɴɴᴇʟs ⚡ ] ───✧</b>\n\n" + "".join(lines)
+    result += f"\n<b>Total Channels:</b> <code>{len(channels)}</code>"
 
     s, e = get_random_button_style()
     await temp.edit(result, link_preview_options=LinkPreviewOptions(is_disabled=True), reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("Close ✖️", callback_data="close", icon_custom_emoji_id=e, style=s)]]))
