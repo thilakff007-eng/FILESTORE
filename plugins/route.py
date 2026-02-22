@@ -1,6 +1,7 @@
 from aiohttp import web
 import random
 import logging
+import time
 from config import BOT_NAME, PICS, MAIN_LINK, OWNER_ID, BOT_USERNAME, SHORTLINK_URL, SHORTLINK_API, URL
 from database.database import db
 
@@ -308,8 +309,11 @@ async def complete_hold_handler(request):
         if user_id:
             count = await db.get_verify_count(user_id)
             await db.set_verify_count(user_id, count + 1)
+
+            # Update user's verified status for 24h persistence
+            await db.update_verify_status(user_id, is_verified=True, verified_time=time.time())
     except Exception as e:
-        logging.error(f"Error incrementing verify count: {e}")
+        logging.error(f"Error updating verify status: {e}")
 
     return web.Response(status=200)
 

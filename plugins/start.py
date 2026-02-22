@@ -50,9 +50,6 @@ async def short_url(client: Client, message: Message, base64_string):
             [
                 InlineKeyboardButton(text="ᴅᴏᴡɴʟᴏᴀᴅ", url=hidden_link, icon_custom_emoji_id=e1, style=s1),
                 InlineKeyboardButton(text="ᴛᴜᴛᴏʀɪᴀʟ", url=TUT_VID, icon_custom_emoji_id=e2, style=s2)
-            ],
-            [
-                InlineKeyboardButton(text="ᴘʀᴇᴍɪᴜᴍ", callback_data="premium", icon_custom_emoji_id=e3, style=s3)
             ]
         ]
 
@@ -162,8 +159,14 @@ async def start_command(client: Client, message: Message):
                     is_direct = False
 
             if not is_premium and user_id != OWNER_ID and not is_direct:
-                await short_url(client, message, base64_string)
-                return
+                # Check for 24h verification persistence
+                verify_status = await db.get_verify_status(user_id)
+                last_verified = verify_status.get('verified_time', 0)
+                if time.time() - last_verified < 86400: # 24 hours
+                    is_direct = True
+                else:
+                    await short_url(client, message, base64_string)
+                    return
 
         except Exception as e:
             print(f"Error processing start payload: {e}")

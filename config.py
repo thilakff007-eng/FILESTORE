@@ -10,7 +10,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Telegram API Configuration
-TG_BOT_TOKEN = os.environ.get("TG_BOT_TOKEN", "8448505270:AAFp5Lg_S-E7fZgmefhcdXzsYpmlu0PYdsk")
+TG_BOT_TOKEN = os.environ.get("TG_BOT_TOKEN", "8448505270:AAEwd0kQdkYmFbR9hMQQajTLwGj3M1gmIXQ")
 APP_ID = int(os.environ.get("APP_ID", "31355944"))
 API_HASH = os.environ.get("API_HASH", "167e960d46363e3098f9c1fc78496adb")
 
@@ -24,7 +24,7 @@ OWNER = os.environ.get("OWNER", "ALONEKINGSTAR77")
 ADMINS = [OWNER_ID]
 
 # Force Subscribe Configuration
-INITIAL_FSUB = [-1003829663116, -1003751074840, -1003884048084, -1003376668245]
+INITIAL_FSUB = [-1003884048084, -1003376668245, -1003569023885]
 CHANNEL_ID = int(os.environ.get("CHANNEL_ID", "-1003444768506")) # Your db channel Id
 
 # UI / Design Configuration

@@ -18,7 +18,7 @@ from database.db_premium import is_premium_user
 # Subscription Cache: (user_id, channel_id) -> (bool, timestamp)
 SUB_CACHE = {}
 CACHE_TIME_TRUE = 300 # 5 minutes for joined users
-CACHE_TIME_FALSE = 10 # 10 seconds for non-joined users
+CACHE_TIME_FALSE = 2 # 2 seconds for non-joined users (faster retry)
 
 # Channel List Cache
 CHANNELS_CACHE = []
