@@ -42,6 +42,7 @@ class Database:
         self.banned_user_data = self.database['banned_user']
         self.autho_user_data = self.database['autho_user']
         self.del_timer_data = self.database['del_timer']
+        self.premium_data = self.database['premium_users']
         self.fsub_data = self.database['fsub']   
         self.rqst_fsub_data = self.database['request_forcesub']
         self.rqst_fsub_Channel_data = self.database['request_forcesub_channel']
@@ -63,8 +64,12 @@ class Database:
         self.maintenance_cache = None
         self.maintenance_cache_ts = 0
 
+        # Cache for channel modes
+        self.modes_cache = {}
 
-    # USER DATA
+        # Cache for show_channels
+        self.channels_cache = None
+        self.channels_cache_ts = 0
     async def present_user(self, user_id: int):
         if user_id in self.users_cache:
             return True
@@ -190,18 +195,33 @@ class Database:
         return await self.rem_channel(channel_id)
 
     async def show_channels(self):
+        now = time.time()
+        if self.channels_cache is not None and now - self.channels_cache_ts < 60:
+            return self.channels_cache
+
         channel_docs = await self.fsub_data.find().to_list(length=None)
         channel_ids = [doc['_id'] for doc in channel_docs]
+        self.channels_cache = channel_ids
+        self.channels_cache_ts = now
         return channel_ids
 
     
 # Get current mode of a channel
     async def get_channel_mode(self, channel_id: int):
+        now = time.time()
+        if channel_id in self.modes_cache:
+            val, ts = self.modes_cache[channel_id]
+            if now - ts < 60:
+                return val
+
         data = await self.fsub_data.find_one({'_id': channel_id})
-        return data.get("mode", "off") if data else "off"
+        res = data.get("mode", "off") if data else "off"
+        self.modes_cache[channel_id] = (res, now)
+        return res
 
     # Set mode of a channel
     async def set_channel_mode(self, channel_id: int, mode: str):
+        self.modes_cache[channel_id] = (mode, time.time())
         await self.fsub_data.update_one(
             {'_id': channel_id},
             {'$set': {'mode': mode}},
@@ -362,6 +382,33 @@ class Database:
 
     async def delete_verify_token(self, token: str):
         await self.antibot_data.delete_one({'token': token})
+
+    # PREMIUM MANAGEMENT
+    async def get_premium_user(self, user_id: int):
+        data = await self.premium_data.find_one({'_id': user_id})
+        if data:
+            # Check if expired
+            expiry = data.get('expiry')
+            if expiry and datetime.utcnow() > expiry:
+                await self.remove_premium_user(user_id)
+                return None
+            return data
+        return None
+
+    async def add_premium_user(self, user_id: int, expiry: datetime):
+        await self.premium_data.update_one(
+            {'_id': user_id},
+            {'$set': {'expiry': expiry}},
+            upsert=True
+        )
+
+    async def remove_premium_user(self, user_id: int):
+        await self.premium_data.delete_one({'_id': user_id})
+
+    async def get_all_premium_users(self):
+        # Cleanup expired before returning
+        await self.premium_data.delete_many({'expiry': {'$lt': datetime.utcnow()}})
+        return await self.premium_data.find().to_list(length=None)
 
 
 db = Database(DB_URI, DB_NAME)

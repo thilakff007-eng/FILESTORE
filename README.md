@@ -7,7 +7,7 @@ An advanced, high-performance Telegram File Store Bot with a secure, multi-stage
 - **Request Mode FSUB:** Automatically handles and verifies join requests for private channels.
 - **Advanced Verification Flow:**
   - **Step 1:** Frontend Human Check (Anime Task Page).
-  - **Step 2:** Premium Shortlink (Shrinkearn).
+  - **Step 2:** Premium Shortlink (arolinks.com).
   - **Step 3:** Secure "Hold to Verify" (5-second interaction to prevent automated scripts).
 - **Premium Management System:** Interactive UI for adding/listing/managing premium users with expiry tracking.
 - **Branding:** Fully rebranded as ⚡𝗛𝗘𝗠𝗔𝗡𝗧𝗛⚡ (@ALONEKINGSTAR77).
@@ -34,7 +34,7 @@ An advanced, high-performance Telegram File Store Bot with a secure, multi-stage
 | `DATABASE_NAME` | MongoDB Database Name (e.g., Cluster0) |
 | `OWNER_ID` | Your Telegram User ID (Owner) |
 | `CHANNEL_ID` | Database Channel ID (Bot must be Admin) |
-| `SHORTLINK_URL` | Shortener domain (e.g., shrinkearn.com) |
+| `SHORTLINK_URL` | Shortener domain (e.g., arolinks.com) |
 | `SHORTLINK_API` | Shortener API Key |
 | `URL` | Your App's public URL (without https://) |
 | `TUTORIAL` | Tutorial video link for users. |

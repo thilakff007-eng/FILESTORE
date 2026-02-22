@@ -13,10 +13,12 @@ from pyrogram.errors.exceptions.bad_request_400 import UserNotParticipant
 from shortzy import Shortzy
 from pyrogram.errors import FloodWait
 from database.database import db
+from database.db_premium import is_premium_user
 
 # Subscription Cache: (user_id, channel_id) -> (bool, timestamp)
 SUB_CACHE = {}
-CACHE_TIME = 300 # 5 minutes
+CACHE_TIME_TRUE = 300 # 5 minutes for joined users
+CACHE_TIME_FALSE = 10 # 10 seconds for non-joined users
 
 # Channel List Cache
 CHANNELS_CACHE = []
@@ -79,6 +81,10 @@ async def is_subscribed(client, user_id):
     if user_id == OWNER_ID:
         return True
 
+    # Premium users bypass everything
+    if await is_premium_user(user_id):
+        return True
+
     now = time.time()
     if now - CHANNELS_CACHE_TS > 60:
         CHANNELS_CACHE = await db.show_channels()
@@ -89,12 +95,10 @@ async def is_subscribed(client, user_id):
     if not channel_ids:
         return True
 
-    # Optimized: Stop at first fail for normal checks
-    # not_joined() will still check all to show buttons
-    for cid in channel_ids:
-        if not await is_sub(client, user_id, cid):
-            return False
-    return True
+    # Check all in parallel for speed
+    tasks = [is_sub(client, user_id, cid) for cid in channel_ids]
+    results = await asyncio.gather(*tasks)
+    return all(results)
 
 
 # Don't Remove Credit @ALONEKINGSTAR77, @ALONEKINGSTAR77
@@ -115,7 +119,8 @@ async def is_sub(client, user_id, channel_id):
     now = time.time()
     if (user_id, channel_id) in SUB_CACHE:
         val, ts = SUB_CACHE[(user_id, channel_id)]
-        if now - ts < CACHE_TIME:
+        cache_time = CACHE_TIME_TRUE if val else CACHE_TIME_FALSE
+        if now - ts < cache_time:
             return val
 
     res = False

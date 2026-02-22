@@ -155,7 +155,11 @@ async def start_command(client: Client, message: Message):
 
             else:
                 base64_string = basic
-                is_direct = False
+                # Check if shortlinks are globally disabled or not configured
+                if not SHORTLINK_URL or not SHORTLINK_API or SHORTLINK_URL.lower() == "none":
+                    is_direct = True
+                else:
+                    is_direct = False
 
             if not is_premium and user_id != OWNER_ID and not is_direct:
                 await short_url(client, message, base64_string)
@@ -299,89 +303,82 @@ async def start_command(client: Client, message: Message):
 
 
 async def not_joined(client: Client, message: Message):
-    temp = await message.reply("<b><i>Checking Subscription... ⏳</i></b>")
-
     user_id = message.from_user.id
-    buttons = []
     now = time.time()
 
+    # Check all channels
+    all_channels = await db.show_channels()
+    if not all_channels:
+        return True
+
+    check_tasks = [is_sub(client, user_id, cid) for cid in all_channels]
+    sub_results = await asyncio.gather(*check_tasks)
+
+    buttons = []
+    for i, is_joined in enumerate(sub_results):
+        if not is_joined:
+            chat_id = all_channels[i]
+            try:
+                mode = await db.get_channel_mode(chat_id)
+                # Cache chat info
+                if chat_id in CHAT_INFO_CACHE and (now - CHAT_INFO_CACHE[chat_id][1] < 3600):
+                    data = CHAT_INFO_CACHE[chat_id][0]
+                else:
+                    async with TG_SEMA:
+                        chat = await client.get_chat(chat_id)
+                    try:
+                        link = chat.invite_link or await client.export_chat_invite_link(chat.id)
+                    except:
+                        link = f"https://t.me/{chat.username}" if chat.username else f"https://t.me/c/{str(chat.id)[4:]}"
+                    data = {'title': chat.title, 'link': link}
+                    CHAT_INFO_CACHE[chat_id] = (data, now)
+
+                name = data['title']
+                link = data['link']
+
+                if mode == "on":
+                    async with TG_SEMA:
+                        invite = await client.create_chat_invite_link(
+                            chat_id=chat_id,
+                            creates_join_request=True,
+                            expire_date=datetime.utcnow() + timedelta(seconds=FSUB_LINK_EXPIRY) if FSUB_LINK_EXPIRY else None
+                        )
+                    link = invite.invite_link
+
+                s, e = get_random_button_style()
+                buttons.append([InlineKeyboardButton(text=name, url=link, icon_custom_emoji_id=e, style=s)])
+
+            except Exception as e:
+                logging.error(f"Error with chat {chat_id}: {e}")
+
+    if not buttons:
+        return True
+
+    # Generate Retry Button
     try:
-        all_channels = await db.show_channels()
-
-        # Check all in parallel first
-        check_tasks = [is_sub(client, user_id, cid) for cid in all_channels]
-        sub_results = await asyncio.gather(*check_tasks)
-
-        for i, is_joined in enumerate(sub_results):
-            if not is_joined:
-                chat_id = all_channels[i]
-                try:
-                    mode = await db.get_channel_mode(chat_id)
-                    # Cache chat info
-                    if chat_id in CHAT_INFO_CACHE and (now - CHAT_INFO_CACHE[chat_id][1] < 3600):
-                        data = CHAT_INFO_CACHE[chat_id][0]
-                    else:
-                        async with TG_SEMA:
-                            chat = await client.get_chat(chat_id)
-                        try:
-                            link = chat.invite_link or await client.export_chat_invite_link(chat.id)
-                        except:
-                            link = f"https://t.me/{chat.username}" if chat.username else f"https://t.me/c/{str(chat.id)[4:]}"
-                        data = {'title': chat.title, 'link': link}
-                        CHAT_INFO_CACHE[chat_id] = (data, now)
-
-                    name = data['title']
-                    link = data['link']
-
-                    if mode == "on":
-                        async with TG_SEMA:
-                            invite = await client.create_chat_invite_link(
-                                chat_id=chat_id,
-                                creates_join_request=True,
-                                expire_date=datetime.utcnow() + timedelta(seconds=FSUB_LINK_EXPIRY) if FSUB_LINK_EXPIRY else None
-                            )
-                        link = invite.invite_link
-
-                    s, e = get_random_button_style()
-                    buttons.append([InlineKeyboardButton(text=name, url=link, icon_custom_emoji_id=e, style=s)])
-
-                except Exception as e:
-                    logging.error(f"Error with chat {chat_id}: {e}")
-
-        if not buttons:
-            # If all are joined but we reached here, maybe it was a race condition or cache lag
-            await temp.delete()
-            return await start_command(client, message)
-
-        # Retry Button
-        try:
+        payload = message.command[1] if len(message.command) > 1 else ""
+        if payload:
             s, e = get_random_button_style()
             buttons.append([
                 InlineKeyboardButton(
                     text='♻️ Tʀʏ Aɢᴀɪɴ',
-                    url=f"https://t.me/{client.username}?start={message.command[1]}",
+                    url=f"https://t.me/{client.username}?start={payload}",
                     icon_custom_emoji_id=e,
                     style=s
                 )
             ])
-        except IndexError:
-            pass
+    except Exception:
+        pass
 
-        await send_media(
-            message=message,
-            media=random.choice(PICS),
-            caption=FORCE_MSG.format(
-                mention=message.from_user.mention
-            ),
-            reply_markup=InlineKeyboardMarkup(buttons)
-        )
-
-    except Exception as e:
-        print(f"Final Error: {e}")
-        await temp.edit(
-            f"<b><i>! Eʀʀᴏʀ, Cᴏɴᴛᴀᴄᴛ ᴅᴇᴠᴇʟᴏᴘᴇʀ ᴛᴏ sᴏʟᴠᴇ ᴛʜᴇ ɪssᴜᴇs @ALONEKINGSTAR77</i></b>\n"
-            f"<blockquote expandable><b>Rᴇᴀsᴏɴ:</b> {e}</blockquote>"
-        )
+    await send_media(
+        message=message,
+        media=random.choice(PICS),
+        caption=FORCE_MSG.format(
+            mention=message.from_user.mention
+        ),
+        reply_markup=InlineKeyboardMarkup(buttons)
+    )
+    return False
 
 #=====================================================================================##
 
