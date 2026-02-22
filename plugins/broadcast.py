@@ -37,7 +37,7 @@ REPLY_ERROR = "<code>Use this command as a reply to any telegram message without
 @Bot.on_message(filters.private & filters.command('pbroadcast') & admin)
 async def send_pin_text(client: Bot, message: Message):
     if message.reply_to_message:
-        query = await db.full_userbase()
+        all_users = db.user_data.find({})
         broadcast_msg = message.reply_to_message
         successful = 0
         blocked = 0
@@ -68,14 +68,20 @@ async def send_pin_text(client: Bot, message: Message):
                     unsuccessful += 1
 
         pls_wait = await message.reply("<i>ʙʀᴏᴀᴅᴄᴀꜱᴛ ᴘʀᴏᴄᴇꜱꜱɪɴɢ....</i>")
-        for i in range(0, len(query), 100):
-            batch = query[i:i+100]
-            tasks = [do_pbroadcast(chat_id) for chat_id in batch]
-            await asyncio.gather(*tasks)
+
+        count = await db.count_users()
+        batch = []
+        async for user in all_users:
+            batch.append(do_pbroadcast(user['_id']))
+            if len(batch) >= 100:
+                await asyncio.gather(*batch)
+                batch = []
+        if batch:
+            await asyncio.gather(*batch)
 
         status = f"""<b><u>ʙʀᴏᴀᴅᴄᴀꜱᴛ ᴄᴏᴍᴘʟᴇᴛᴇᴅ</u></b>
 
-Total Users: <code>{len(query)}</code>
+Total Users: <code>{count}</code>
 Successful: <code>{successful}</code>
 Blocked Users: <code>{blocked}</code>
 Deleted Accounts: <code>{deleted}</code>
@@ -95,7 +101,7 @@ Unsuccessful: <code>{unsuccessful}</code>"""
 @Bot.on_message(filters.private & filters.command('broadcast') & admin)
 async def send_text(client: Bot, message: Message):
     if message.reply_to_message:
-        query = await db.full_userbase()
+        all_users = db.user_data.find({})
         broadcast_msg = message.reply_to_message
         successful = 0
         blocked = 0
@@ -124,14 +130,20 @@ async def send_text(client: Bot, message: Message):
                     unsuccessful += 1
 
         pls_wait = await message.reply("<i>ʙʀᴏᴀᴅᴄᴀꜱᴛ ᴘʀᴏᴄᴇꜱꜱɪɴɢ....</i>")
-        for i in range(0, len(query), 100):
-            batch = query[i:i+100]
-            tasks = [do_broadcast(chat_id) for chat_id in batch]
-            await asyncio.gather(*tasks)
+
+        count = await db.count_users()
+        batch = []
+        async for user in all_users:
+            batch.append(do_broadcast(user['_id']))
+            if len(batch) >= 100:
+                await asyncio.gather(*batch)
+                batch = []
+        if batch:
+            await asyncio.gather(*batch)
 
         status = f"""<b><u>ʙʀᴏᴀᴅᴄᴀꜱᴛ ᴄᴏᴍᴘʟᴇᴛᴇᴅ</u>
 
-Total Users: <code>{len(query)}</code>
+Total Users: <code>{count}</code>
 Successful: <code>{successful}</code>
 Blocked Users: <code>{blocked}</code>
 Deleted Accounts: <code>{deleted}</code>
@@ -169,7 +181,7 @@ async def delete_broadcast(client: Bot, message: Message):
             await message.reply("<b>Pʟᴇᴀsᴇ ᴜsᴇ ᴀ ᴠᴀʟɪᴅ ᴅᴜʀᴀᴛɪᴏɴ ɪɴ sᴇᴄᴏɴᴅs.</b> Usᴀɢᴇ: /dbroadcast {duration}")
             return
 
-        query = await db.full_userbase()
+        all_users = db.user_data.find({})
         broadcast_msg = message.reply_to_message
         successful = 0
         blocked = 0
@@ -212,14 +224,20 @@ async def delete_broadcast(client: Bot, message: Message):
                     unsuccessful += 1
 
         pls_wait = await message.reply("<i>Broadcast with auto-delete processing....</i>")
-        for i in range(0, len(query), 100):
-            batch = query[i:i+100]
-            tasks = [do_dbroadcast(chat_id) for chat_id in batch]
-            await asyncio.gather(*tasks)
+
+        count = await db.count_users()
+        batch = []
+        async for user in all_users:
+            batch.append(do_dbroadcast(user['_id']))
+            if len(batch) >= 100:
+                await asyncio.gather(*batch)
+                batch = []
+        if batch:
+            await asyncio.gather(*batch)
 
         status = f"""<b><u>Bʀᴏᴀᴅᴄᴀsᴛɪɴɢ ᴡɪᴛʜ Aᴜᴛᴏ-Dᴇʟᴇᴛᴇ Cᴏᴍᴘʟᴇᴛᴇᴅ</u>
 
-Total Users: <code>{len(query)}</code>
+Total Users: <code>{count}</code>
 Successful: <code>{successful}</code>
 Blocked Users: <code>{blocked}</code>
 Deleted Accounts: <code>{deleted}</code>

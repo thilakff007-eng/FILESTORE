@@ -21,7 +21,7 @@ from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, 
 from pyrogram.errors.exceptions.bad_request_400 import UserNotParticipant, InviteHashEmpty, ChatAdminRequired, PeerIdInvalid, UserIsBlocked, InputUserDeactivated, UserNotParticipant
 from bot import Bot
 from config import *
-from helper_func import admin, get_random_button_style, CHAT_INFO_CACHE
+from helper_func import admin, get_random_button_style, CHAT_INFO_CACHE, TG_SEMA
 from database.database import db
 
 # Don't Remove Credit @ALONEKINGSTAR77, @ALONEKINGSTAR77
@@ -52,15 +52,18 @@ async def change_force_sub_mode(client: Client, message: Message):
         status = "🟢" if mode == "on" else "🔴"
 
         if ch_id in CHAT_INFO_CACHE:
-            data, ts = CHAT_INFO_CACHE[ch_id]
-            if now - ts < 3600:
-                return [InlineKeyboardButton(f"{status} {data['title']}", callback_data=f"rfs_ch_{ch_id}")]
+            item = CHAT_INFO_CACHE[ch_id]
+            if isinstance(item, tuple) and len(item) == 2:
+                data, ts = item
+                if now - ts < 3600:
+                    return [InlineKeyboardButton(f"{status} {data['title']}", callback_data=f"rfs_ch_{ch_id}")]
 
         try:
-            chat = await client.get_chat(ch_id)
+            async with TG_SEMA:
+                chat = await client.get_chat(ch_id)
             CHAT_INFO_CACHE[ch_id] = ({'title': chat.title, 'link': chat.invite_link}, now)
             return [InlineKeyboardButton(f"{status} {chat.title}", callback_data=f"rfs_ch_{ch_id}")]
-        except:
+        except Exception:
             return [InlineKeyboardButton(f"⚠️ {ch_id} (Unavailable)", callback_data=f"rfs_ch_{ch_id}")]
 
     buttons = await asyncio.gather(*[get_btn(ch_id) for ch_id in channels])
@@ -221,12 +224,15 @@ async def list_force_sub_channels(client: Client, message: Message):
     async def get_line(ch_id):
         now = time.time()
         if ch_id in CHAT_INFO_CACHE:
-            data, ts = CHAT_INFO_CACHE[ch_id]
-            if now - ts < 3600: # 1 hour cache
-                return f"<b>•</b> <a href='{data['link']}'>{data['title']}</a> [<code>{ch_id}</code>]\n"
+            item = CHAT_INFO_CACHE[ch_id]
+            if isinstance(item, tuple) and len(item) == 2:
+                data, ts = item
+                if now - ts < 3600: # 1 hour cache
+                    return f"<b>•</b> <a href='{data['link']}'>{data['title']}</a> [<code>{ch_id}</code>]\n"
 
         try:
-            chat = await client.get_chat(ch_id)
+            async with TG_SEMA:
+                chat = await client.get_chat(ch_id)
             try:
                 link = chat.invite_link or await client.export_chat_invite_link(chat.id)
             except:

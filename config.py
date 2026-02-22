@@ -63,7 +63,7 @@ FORCE_PIC = PICS[1]
 URL = os.environ.get("URL", os.environ.get("RENDER_EXTERNAL_URL", os.environ.get("RAILWAY_STATIC_URL", "worker-production-408e.up.railway.app")))
 PORT = os.environ.get("PORT", "8080")
 FSUB_LINK_EXPIRY = int(os.getenv("FSUB_LINK_EXPIRY", "10"))
-TG_BOT_WORKERS = int(os.environ.get("TG_BOT_WORKERS", "500"))
+TG_BOT_WORKERS = int(os.environ.get("TG_BOT_WORKERS", "100"))
 PROTECT_CONTENT = os.environ.get('PROTECT_CONTENT', "False").lower() == "true"
 DISABLE_CHANNEL_BUTTON = os.environ.get("DISABLE_CHANNEL_BUTTON", "False").lower() == "true"
 

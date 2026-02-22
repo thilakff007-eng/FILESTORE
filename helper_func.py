@@ -27,6 +27,9 @@ ADMINS_CACHE = []
 ADMINS_CACHE_TS = 0
 CHAT_INFO_CACHE = {}
 
+# Semaphore to limit concurrent TG API calls
+TG_SEMA = asyncio.Semaphore(10)
+
 # Don't Remove Credit @ALONEKINGSTAR77, @ALONEKINGSTAR77
 # Ask Doubt on telegram @ALONEKINGSTAR77Support
 #
@@ -86,9 +89,12 @@ async def is_subscribed(client, user_id):
     if not channel_ids:
         return True
 
-    # Check all channels in parallel
-    results = await asyncio.gather(*[is_sub(client, user_id, cid) for cid in channel_ids])
-    return all(results)
+    # Optimized: Stop at first fail for normal checks
+    # not_joined() will still check all to show buttons
+    for cid in channel_ids:
+        if not await is_sub(client, user_id, cid):
+            return False
+    return True
 
 
 # Don't Remove Credit @ALONEKINGSTAR77, @ALONEKINGSTAR77
@@ -112,21 +118,18 @@ async def is_sub(client, user_id, channel_id):
         if now - ts < CACHE_TIME:
             return val
 
+    res = False
     try:
-        member = await client.get_chat_member(channel_id, user_id)
-        status = member.status
-        res = status in {
-            ChatMemberStatus.OWNER,
-            ChatMemberStatus.ADMINISTRATOR,
-            ChatMemberStatus.MEMBER
-        }
-        if res:
-            SUB_CACHE[(user_id, channel_id)] = (True, now)
-        return res
-
+        async with TG_SEMA:
+            member = await client.get_chat_member(channel_id, user_id)
+            status = member.status
+            res = status in {
+                ChatMemberStatus.OWNER,
+                ChatMemberStatus.ADMINISTRATOR,
+                ChatMemberStatus.MEMBER
+            }
     except UserNotParticipant:
         if now - MODES_CACHE_TS > 60:
-            # We don't have a bulk get_modes, but we can cache individually
             MODES_CACHE_TS = now
 
         if channel_id not in MODES_CACHE or now - MODES_CACHE.get(f"{channel_id}_ts", 0) > 60:
@@ -137,15 +140,15 @@ async def is_sub(client, user_id, channel_id):
             mode = MODES_CACHE[channel_id]
 
         if mode == "on":
-            exists = await db.req_user_exist(channel_id, user_id)
-            if exists:
-                SUB_CACHE[(user_id, channel_id)] = (True, now)
-            return exists
-        return False
-
+            res = await db.req_user_exist(channel_id, user_id)
+        else:
+            res = False
     except Exception as e:
         print(f"[!] Error in is_sub(): {e}")
-        return False
+        res = False
+
+    SUB_CACHE[(user_id, channel_id)] = (res, now)
+    return res
 
 # Don't Remove Credit @ALONEKINGSTAR77, @ALONEKINGSTAR77
 # Ask Doubt on telegram @ALONEKINGSTAR77Support

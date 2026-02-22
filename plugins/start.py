@@ -299,27 +299,30 @@ async def start_command(client: Client, message: Message):
 
 
 async def not_joined(client: Client, message: Message):
-    temp = await message.reply("<b><i>Checking Subscription...</i></b>")
+    temp = await message.reply("<b><i>Checking Subscription... ⏳</i></b>")
 
     user_id = message.from_user.id
     buttons = []
-    count = 0
     now = time.time()
 
     try:
-        all_channels = await db.show_channels()  # Should return list of (chat_id, mode) tuples
-        for total, chat_id in enumerate(all_channels, start=1):
-            mode = await db.get_channel_mode(chat_id)  # fetch mode 
+        all_channels = await db.show_channels()
 
-            await message.reply_chat_action(ChatAction.TYPING)
+        # Check all in parallel first
+        check_tasks = [is_sub(client, user_id, cid) for cid in all_channels]
+        sub_results = await asyncio.gather(*check_tasks)
 
-            if not await is_sub(client, user_id, chat_id):
+        for i, is_joined in enumerate(sub_results):
+            if not is_joined:
+                chat_id = all_channels[i]
                 try:
+                    mode = await db.get_channel_mode(chat_id)
                     # Cache chat info
                     if chat_id in CHAT_INFO_CACHE and (now - CHAT_INFO_CACHE[chat_id][1] < 3600):
                         data = CHAT_INFO_CACHE[chat_id][0]
                     else:
-                        chat = await client.get_chat(chat_id)
+                        async with TG_SEMA:
+                            chat = await client.get_chat(chat_id)
                         try:
                             link = chat.invite_link or await client.export_chat_invite_link(chat.id)
                         except:
@@ -328,29 +331,27 @@ async def not_joined(client: Client, message: Message):
                         CHAT_INFO_CACHE[chat_id] = (data, now)
 
                     name = data['title']
-
                     link = data['link']
 
-                    # Generate proper invite link based on the mode (Override if Request Mode is ON)
                     if mode == "on":
-                        invite = await client.create_chat_invite_link(
-                            chat_id=chat_id,
-                            creates_join_request=True,
-                            expire_date=datetime.utcnow() + timedelta(seconds=FSUB_LINK_EXPIRY) if FSUB_LINK_EXPIRY else None
-                        )
+                        async with TG_SEMA:
+                            invite = await client.create_chat_invite_link(
+                                chat_id=chat_id,
+                                creates_join_request=True,
+                                expire_date=datetime.utcnow() + timedelta(seconds=FSUB_LINK_EXPIRY) if FSUB_LINK_EXPIRY else None
+                            )
                         link = invite.invite_link
 
                     s, e = get_random_button_style()
                     buttons.append([InlineKeyboardButton(text=name, url=link, icon_custom_emoji_id=e, style=s)])
-                    count += 1
-                    await temp.edit(f"<b>{'! ' * count}</b>")
 
                 except Exception as e:
-                    print(f"Error with chat {chat_id}: {e}")
-                    return await temp.edit(
-                        f"<b><i>! Eʀʀᴏʀ, Cᴏɴᴛᴀᴄᴛ ᴅᴇᴠᴇʟᴏᴘᴇʀ ᴛᴏ sᴏʟᴠᴇ ᴛʜᴇ ɪssᴜᴇs @ALONEKINGSTAR77</i></b>\n"
-                        f"<blockquote expandable><b>Rᴇᴀsᴏɴ:</b> {e}</blockquote>"
-                    )
+                    logging.error(f"Error with chat {chat_id}: {e}")
+
+        if not buttons:
+            # If all are joined but we reached here, maybe it was a race condition or cache lag
+            await temp.delete()
+            return await start_command(client, message)
 
         # Retry Button
         try:
