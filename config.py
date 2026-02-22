@@ -10,7 +10,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Telegram API Configuration
-TG_BOT_TOKEN = os.environ.get("TG_BOT_TOKEN", "8448505270:AAEwd0kQdkYmFbR9hMQQajTLwGj3M1gmIXQ")
+TG_BOT_TOKEN = os.environ.get("TG_BOT_TOKEN", "8448505270:AAGNwmee_tgOY4_7KpTRjtPQuf6F0KOTCVE")
 APP_ID = int(os.environ.get("APP_ID", "31355944"))
 API_HASH = os.environ.get("API_HASH", "167e960d46363e3098f9c1fc78496adb")
 
