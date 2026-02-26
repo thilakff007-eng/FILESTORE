@@ -14,6 +14,7 @@ import asyncio
 import random
 import uuid
 import logging
+import time
 from datetime import datetime, timedelta
 from pyrogram import Client, filters, __version__
 from pyrogram.enums import ParseMode, ChatAction, ButtonStyle
@@ -23,7 +24,7 @@ from pyrogram.errors import FloodWait, UserIsBlocked, InputUserDeactivated, User
 from pytz import timezone
 from bot import Bot
 from config import *
-from helper_func import is_subscribed, decode, get_messages, send_media, get_exp_time, get_readable_time, is_sub, admin, check_admin, get_random_button_style, CHAT_INFO_CACHE
+from helper_func import is_subscribed, decode, get_messages, send_media, get_exp_time, get_readable_time, is_sub, admin, check_admin, get_random_button_style, CHAT_INFO_CACHE, TG_SEMA
 from database.database import db
 from database.db_premium import is_premium_user, collection, add_premium, remove_premium, check_user_plan
 
@@ -175,6 +176,7 @@ async def start_command(client: Client, message: Message):
         if not base64_string:
             return
 
+        await db.track_link_click(base64_string)
         string = decode(base64_string)
         argument = string.split("-")
 

@@ -40,7 +40,7 @@ async def batch(client: Client, message: Message):
     link = f"https://t.me/{client.username}?start={base64_string}"
     s, e = get_random_button_style()
     reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton("🔁 Share URL", url=f'https://telegram.me/share/url?url={link}', icon_custom_emoji_id=e, style=s)]])
-    await second_message.reply_text(f"<b>Here is your link</b>\n\n{link}", reply_markup=reply_markup)
+    await second_message.reply_text(f"<b>⚡ Here is Your Link, Senpai! Click to Copy 🏯</b>\n\n<code>{link}</code>", reply_markup=reply_markup)
 
 
 @Bot.on_message(filters.private & admin & filters.command('genlink'))
@@ -61,7 +61,7 @@ async def link_generator(client: Client, message: Message):
     link = f"https://t.me/{client.username}?start={base64_string}"
     s, e = get_random_button_style()
     reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton("🔁 Share URL", url=f'https://telegram.me/share/url?url={link}', icon_custom_emoji_id=e, style=s)]])
-    await channel_message.reply_text(f"<b>Here is your link</b>\n\n{link}", reply_markup=reply_markup)
+    await channel_message.reply_text(f"<b>⚡ Here is Your Link, Senpai! Click to Copy 🏯</b>\n\n<code>{link}</code>", reply_markup=reply_markup)
 
 
 @Bot.on_message(filters.private & admin & filters.command("custom_batch"))
@@ -105,7 +105,7 @@ async def custom_batch(client: Client, message: Message):
 
     s, e = get_random_button_style()
     reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton("🔁 Share URL", url=f'https://telegram.me/share/url?url={link}', icon_custom_emoji_id=e, style=s)]])
-    await message.reply(f"<b>Here is your custom batch link:</b>\n\n{link}", reply_markup=reply_markup)
+    await message.reply(f"<b>⚡ Here is Your Custom Batch Link, Senpai! Click to Copy 🏯</b>\n\n<code>{link}</code>", reply_markup=reply_markup)
 
 
 @Bot.on_message(filters.private & filters.command('dlink'))
@@ -129,4 +129,4 @@ async def dlink_generator(client: Client, message: Message):
     link = f"https://t.me/{client.username}?start=direct_{base64_string}"
     s, e = get_random_button_style()
     reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton("🔁 Share URL", url=f'https://telegram.me/share/url?url={link}', icon_custom_emoji_id=e, style=s)]])
-    await channel_message.reply_text(f"<b>Here is your direct link (skips shortener)</b>\n\n{link}", reply_markup=reply_markup)
+    await channel_message.reply_text(f"<b>⚡ Here is Your Direct Link, Senpai! Click to Copy 🏯</b>\n\n<code>{link}</code>", reply_markup=reply_markup)

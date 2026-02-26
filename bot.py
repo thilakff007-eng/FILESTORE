@@ -37,8 +37,28 @@ scheduler.add_job(remove_expired_users, "interval", seconds=10)
 async def daily_reset_task():
     try:
         await db.reset_all_verify_counts()
+        await db.reset_daily_link_clicks()
     except Exception:
         pass  
+
+async def report_top_links_task(client):
+    try:
+        top_links = await db.get_top_links_daily(10)
+        if not top_links:
+            return
+
+        report_text = "<b>✧─── [ 📊 Tᴏᴘ Cʟɪᴄᴋᴇᴅ Lɪɴᴋs (6H) ] ───✧</b>\n\n"
+        for i, link_data in enumerate(top_links, 1):
+            link_id = link_data['_id']
+            clicks = link_data.get('daily_clicks', 0)
+            link = f"https://t.me/{client.username}?start={link_id}"
+            report_text += f"{i}. <code>{link}</code>\n   ┗ ᴄʟɪᴄᴋs: <b>{clicks}</b>\n\n"
+
+        report_text += "<i>✨ Rᴇᴘᴏʀᴛ ɢᴇɴᴇʀᴀᴛᴇᴅ ᴇᴠᴇʀʏ 6 ʜᴏᴜʀs. ✧</i>"
+
+        await client.send_message(LOG_CHANNEL, text=report_text)
+    except Exception as e:
+        logging.error(f"Error in report_top_links_task: {e}")
 
 scheduler.add_job(daily_reset_task, "cron", hour=0, minute=0)
 #scheduler.start()
@@ -71,6 +91,7 @@ class Bot(Client):
 
     async def start(self):
         await super().start()
+        scheduler.add_job(report_top_links_task, "interval", hours=6, args=[self])
         scheduler.start()
         usr_bot_me = await self.get_me()
         self.uptime = get_indian_time()

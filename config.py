@@ -55,6 +55,8 @@ PICS = [
     "https://freeimage.host/i/q94kmNI"
 ]
 
+LOG_CHANNEL = -1003562197365
+
 # Random UI Images
 START_PIC = PICS[0]
 FORCE_PIC = PICS[1]

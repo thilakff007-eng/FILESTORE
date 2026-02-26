@@ -48,6 +48,7 @@ class Database:
         self.rqst_fsub_Channel_data = self.database['request_forcesub_channel']
         self.antibot_data = self.database['antibot_data']
         self.settings_data = self.database['settings']
+        self.link_clicks_data = self.database['link_clicks']
 
         # Cache for del_timer
         self.del_timer_cache = None
@@ -409,6 +410,23 @@ class Database:
         # Cleanup expired before returning
         await self.premium_data.delete_many({'expiry': {'$lt': datetime.utcnow()}})
         return await self.premium_data.find().to_list(length=None)
+
+    # LINK CLICK TRACKING
+    async def track_link_click(self, link_id: str):
+        await self.link_clicks_data.update_one(
+            {'_id': link_id},
+            {
+                '$inc': {'total_clicks': 1, 'daily_clicks': 1},
+                '$set': {'last_click': datetime.utcnow()}
+            },
+            upsert=True
+        )
+
+    async def get_top_links_daily(self, limit=10):
+        return await self.link_clicks_data.find().sort('daily_clicks', -1).limit(limit).to_list(length=limit)
+
+    async def reset_daily_link_clicks(self):
+        await self.link_clicks_data.update_many({}, {'$set': {'daily_clicks': 0}})
 
 
 db = Database(DB_URI, DB_NAME)

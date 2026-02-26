@@ -291,9 +291,17 @@ def parse_time(time_str):
 
 
 async def get_shortlink(url, api, link):
-    shortzy = Shortzy(api_key=api, base_site=url)
-    link = await shortzy.convert(link)
-    return link
+    try:
+        shortzy = Shortzy(api_key=api, base_site=url)
+        # Using wait_for to prevent "loading issues" from slow shorteners
+        link = await asyncio.wait_for(shortzy.convert(link), timeout=10)
+        return link
+    except asyncio.TimeoutError:
+        print(f"Shortlink timeout for {url}")
+        return link
+    except Exception as e:
+        print(f"Shortlink error: {e}")
+        return link
 
 async def send_media(message, media, caption, reply_markup=None):
     if media.endswith(('.mp4', '.mkv', '.webm')):
