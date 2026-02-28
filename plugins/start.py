@@ -212,7 +212,8 @@ async def start_command(client: Client, message: Message):
             if not msg or msg.empty:
                 continue
             original_caption = msg.caption.html if msg.caption else ""
-            caption = f"{original_caption}\n\n{CUSTOM_CAPTION}" if CUSTOM_CAPTION else original_caption
+            prefix = "<b>@OTAKUSTARTELUGU</b>\n\n"
+            caption = f"{prefix}{original_caption}\n\n{CUSTOM_CAPTION}" if CUSTOM_CAPTION else f"{prefix}{original_caption}"
             reply_markup = msg.reply_markup if DISABLE_CHANNEL_BUTTON else None
             try:
                 snt = await msg.copy(
