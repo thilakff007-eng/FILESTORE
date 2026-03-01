@@ -224,9 +224,56 @@ async def cb_handler(client: Bot, query: CallbackQuery):
         buttons = await asyncio.gather(*[get_fsub_btn(cid) for cid in channels])
         buttons = [b for b in buttons if b]
 
+        s, e = get_random_button_style()
+        buttons.append([InlineKeyboardButton("‹ ʙᴀᴄᴋ", callback_data="cp_back", icon_custom_emoji_id=e, style=s)])
+
         await query.message.edit_text(
             "sᴇʟᴇᴄᴛ ᴀ ᴄʜᴀɴɴᴇʟ ᴛᴏ ᴛᴏɢɢʟᴇ ɪᴛs ғᴏʀᴄᴇ-sᴜʙ ᴍᴏᴅᴇ:",
             reply_markup=InlineKeyboardMarkup(buttons)
+        )
+
+    elif data == "stats":
+        if not is_admin:
+            return await query.answer("⚠️ Access Denied!", show_alert=True)
+
+        await query.answer("📊 Fetching statistics...", show_alert=False)
+
+        ist = pytz.timezone("Asia/Kolkata")
+        now = datetime.now(ist)
+        delta = now - client.uptime
+        uptime_str = get_readable_time(int(delta.total_seconds()))
+
+        users = await db.count_users()
+        admins = await db.count_admins()
+        from database.db_premium import get_premium_count
+        premium = await get_premium_count()
+
+        text = f"<b>✧─── [ ⚡ Bᴏᴛ Sᴛᴀᴛɪsᴛɪᴄs ⚡ ] ───✧</b>\n\n" \
+               f"<b>✨ Uᴘᴛɪᴍᴇ:</b> <code>{uptime_str}</code>\n" \
+               f"<b>👤 Tᴏᴛᴀʟ Usᴇʀs:</b> <code>{users}</code>\n" \
+               f"<b>💎 Pʀᴇᴍɪᴜᴍ Usᴇʀs:</b> <code>{premium}</code>\n" \
+               f"<b>🛠️ Tᴏᴛᴀʟ Aᴅᴍɪɴs:</b> <code>{admins}</code>\n\n" \
+               f"<i>⚡ Sᴛᴀᴛs Fᴇᴛᴄʜᴇᴅ Sᴜᴄᴄᴇssғᴜʟʟʏ! ✧</i>"
+
+        s1, e1 = get_random_button_style()
+        s2, e2 = get_random_button_style()
+
+        reply_markup = InlineKeyboardMarkup([
+            [InlineKeyboardButton("‹ ʙᴀᴄᴋ", callback_data="cp_back", icon_custom_emoji_id=e1, style=s1)],
+            [InlineKeyboardButton("• ᴄʟᴏsᴇ •", callback_data="close", icon_custom_emoji_id=e2, style=s2)]
+        ])
+
+        await query.message.edit_text(text, reply_markup=reply_markup)
+
+    elif data == "cp_back":
+        if not is_admin:
+            return await query.answer("⚠️ Access Denied!", show_alert=True)
+        await query.answer()
+        from plugins.admin_panel import get_control_panel_markup
+        await query.message.edit_text(
+            "<b>✧─── [ ⚡ ᴀᴅᴍɪɴ ᴄᴏɴᴛʀᴏʟ ᴘᴀɴᴇʟ 🏯 ] ───✧</b>\n\n"
+            "Welcome Senpai! Here you can manage all the bot's core variables and settings in real-time. ⭐",
+            reply_markup=await get_control_panel_markup(client)
         )
 
 

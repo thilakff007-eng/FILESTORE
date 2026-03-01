@@ -65,6 +65,10 @@ class Database:
         self.maintenance_cache = None
         self.maintenance_cache_ts = 0
 
+        # Cache for shortener status
+        self.shortener_cache = None
+        self.shortener_cache_ts = 0
+
         # Cache for channel modes
         self.modes_cache = {}
 
@@ -348,6 +352,38 @@ class Database:
         self.maintenance_cache = res
         self.maintenance_cache_ts = now
         return res
+
+    # SHORTENER SETTINGS
+    async def set_shortener_status(self, status: bool):
+        self.shortener_cache = status
+        self.shortener_cache_ts = time.time()
+        await self.settings_data.update_one(
+            {'_id': 'shortener'},
+            {'$set': {'enabled': status}},
+            upsert=True
+        )
+
+    async def get_shortener_status(self):
+        now = time.time()
+        if self.shortener_cache is not None and now - self.shortener_cache_ts < 60:
+            return self.shortener_cache
+
+        data = await self.settings_data.find_one({'_id': 'shortener'})
+        res = data.get('enabled', True) if data else True
+        self.shortener_cache = res
+        self.shortener_cache_ts = now
+        return res
+
+    async def set_setting(self, key: str, value):
+        await self.settings_data.update_one(
+            {'_id': key},
+            {'$set': {'value': value}},
+            upsert=True
+        )
+
+    async def get_setting(self, key: str, default=None):
+        data = await self.settings_data.find_one({'_id': key})
+        return data.get('value', default) if data else default
 
     # ANTI-BOT DATA
     async def get_antibot_data(self, user_id: int):

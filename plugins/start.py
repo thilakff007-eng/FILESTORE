@@ -47,12 +47,14 @@ async def short_url(client: Client, message: Message, base64_string):
         s2, e2 = get_random_button_style()
         s3, e3 = get_random_button_style()
 
+        is_tutorial = await db.get_setting("is_tutorial", True)
         buttons = [
             [
-                InlineKeyboardButton(text="ᴅᴏᴡɴʟᴏᴀᴅ", url=hidden_link, icon_custom_emoji_id=e1, style=s1),
-                InlineKeyboardButton(text="ᴛᴜᴛᴏʀɪᴀʟ", url=TUT_VID, icon_custom_emoji_id=e2, style=s2)
+                InlineKeyboardButton(text="ᴅᴏᴡɴʟᴏᴀᴅ", url=hidden_link, icon_custom_emoji_id=e1, style=s1)
             ]
         ]
+        if is_tutorial:
+            buttons[0].append(InlineKeyboardButton(text="ᴛᴜᴛᴏʀɪᴀʟ", url=TUT_VID, icon_custom_emoji_id=e2, style=s2))
 
         await send_media(
             message=message,
@@ -154,7 +156,8 @@ async def start_command(client: Client, message: Message):
             else:
                 base64_string = basic
                 # Check if shortlinks are globally disabled or not configured
-                if not SHORTLINK_URL or not SHORTLINK_API or SHORTLINK_URL.lower() == "none":
+                shortener_enabled = await db.get_shortener_status()
+                if not SHORTLINK_URL or not SHORTLINK_API or SHORTLINK_URL.lower() == "none" or not shortener_enabled:
                     is_direct = True
                 else:
                     is_direct = False
