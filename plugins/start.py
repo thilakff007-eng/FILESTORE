@@ -117,6 +117,8 @@ async def start_command(client: Client, message: Message):
 
     # File auto-delete time in seconds
     FILE_AUTO_DELETE = await db.get_del_timer()
+    # Use DB setting if available, otherwise fallback to config
+    protect_content_val = await db.get_setting("protect_content", PROTECT_CONTENT)
 
     # Handle normal message flow
     text = message.text
@@ -224,7 +226,7 @@ async def start_command(client: Client, message: Message):
                     caption=caption,
                     parse_mode=ParseMode.HTML,
                     reply_markup=reply_markup,
-                    protect_content=PROTECT_CONTENT
+                    protect_content=protect_content_val
                 )
                 fsub_msgs.append(snt)
             except FloodWait as e:
@@ -234,7 +236,7 @@ async def start_command(client: Client, message: Message):
                     caption=caption,
                     parse_mode=ParseMode.HTML,
                     reply_markup=reply_markup,
-                    protect_content=PROTECT_CONTENT
+                    protect_content=protect_content_val
                 )
                 fsub_msgs.append(snt)
             except Exception:

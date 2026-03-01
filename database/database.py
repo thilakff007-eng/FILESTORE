@@ -385,6 +385,12 @@ class Database:
         data = await self.settings_data.find_one({'_id': key})
         return data.get('value', default) if data else default
 
+    async def get_protect_content(self):
+        return await self.get_setting("protect_content", False)
+
+    async def set_protect_content(self, status: bool):
+        await self.set_setting("protect_content", status)
+
     # ANTI-BOT DATA
     async def get_antibot_data(self, user_id: int):
         user = await self.user_data.find_one({'_id': user_id})
