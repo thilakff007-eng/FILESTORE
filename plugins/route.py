@@ -36,7 +36,7 @@ WATERMARK_STYLE = """
             }
 """
 
-WATERMARK_DIV = '<div class="watermark">⚡ OTAKUSTARTELUGU ⚡</div>'
+WATERMARK_DIV = f'<div class="watermark">{BOT_NAME}</div>'
 
 ANIME_COMMON_STYLE = f"""
         <style>

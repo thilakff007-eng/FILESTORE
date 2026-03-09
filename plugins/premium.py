@@ -34,7 +34,7 @@ async def add_premium_cmd(client, message):
     except Exception as e:
         await message.reply(f"<b>❌ Error:</b> <code>{e}</code>")
 
-@Bot.on_message(filters.command("listpremium") & admin & filters.private)
+@Bot.on_message(filters.command(["premium_users", "listpremium"]) & admin & filters.private)
 async def list_premium_cmd(client, message):
     users = await get_all_premium_users()
     count = len(users)
@@ -83,6 +83,20 @@ async def manage_premium_callback(client, query: CallbackQuery):
     ]
 
     await query.message.edit(text, reply_markup=InlineKeyboardMarkup(buttons))
+
+
+@Bot.on_message(filters.command("remove_premium") & admin & filters.private)
+async def remove_premium_cmd(client, message):
+    if len(message.command) < 2:
+        return await message.reply("<b>Usage: /remove_premium {user_id}</b>")
+    try:
+        user_id = int(message.command[1])
+        await remove_premium(user_id)
+        await message.reply(f"<b>✅ Premium Access Revoked for <code>{user_id}</code>.</b>")
+    except ValueError:
+        await message.reply("<b>❌ Invalid User ID.</b>")
+    except Exception as e:
+        await message.reply(f"<b>❌ Error:</b> <code>{e}</code>")
 
 @Bot.on_callback_query(filters.regex(r"^add_days_(\d+)"))
 async def add_days_callback(client, query: CallbackQuery):

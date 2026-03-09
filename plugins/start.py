@@ -202,15 +202,13 @@ async def start_command(client: Client, message: Message):
                 print(f"Error decoding ID: {e}")
                 return
 
-        temp_msg = await message.reply("<b>Please wait...</b>")
+        # Removed redundant "Please wait..." message for cleaner flow
         try:
             messages = await get_messages(client, ids)
         except Exception as e:
             await message.reply_text("Something went wrong!")
             print(f"Error getting messages: {e}")
             return
-        finally:
-            await temp_msg.delete()
 
         fsub_msgs = []
         for msg in messages:
@@ -418,3 +416,30 @@ async def bcmd(bot: Bot, message: Message):
     s, e = get_random_button_style()
     reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton("• ᴄʟᴏsᴇ •", callback_data = "close", icon_custom_emoji_id=e, style=s)]])
     await message.reply(text=CMD_TXT, reply_markup = reply_markup)
+
+
+@Bot.on_message(filters.command('help') & filters.private)
+async def help_command(client: Client, message: Message):
+    s, e = get_random_button_style()
+    await message.reply_text(
+        text=HELP_TXT.format(
+            mention=message.from_user.mention,
+            bot_name=BOT_NAME,
+            main_link=MAIN_LINK
+        ),
+        reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("• ᴄʟᴏsᴇ •", callback_data="close", icon_custom_emoji_id=e, style=s)]])
+    )
+
+
+@Bot.on_message(filters.command('about') & filters.private)
+async def about_command(client: Client, message: Message):
+    s, e = get_random_button_style()
+    await message.reply_text(
+        text=ABOUT_TXT.format(
+            bot_name=BOT_NAME,
+            owner_name=OWNER,
+            bot_username=client.username,
+            main_link=MAIN_LINK
+        ),
+        reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("• ᴄʟᴏsᴇ •", callback_data="close", icon_custom_emoji_id=e, style=s)]])
+    )

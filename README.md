@@ -7,7 +7,7 @@ An advanced, high-performance Telegram File Store Bot with a secure, multi-stage
 - **Request Mode FSUB:** Automatically handles and verifies join requests for private channels.
 - **Advanced Verification Flow:**
   - **Step 1:** Frontend Human Check (Anime Task Page).
-  - **Step 2:** Premium Shortlink (arolinks.com).
+  - **Step 2:** Premium Shortlink (mdiskshort.in/).
   - **Step 3:** Secure "Hold to Verify" (5-second interaction to prevent automated scripts).
 - **Premium Management System:** Interactive UI for adding/listing/managing premium users with expiry tracking.
 - **Branding:** Fully rebranded as ⚡𝗛𝗘𝗠𝗔𝗡𝗧𝗛⚡ (@ALONEKINGSTAR77).
@@ -16,44 +16,51 @@ An advanced, high-performance Telegram File Store Bot with a secure, multi-stage
 - **Auto-Delete:** Files automatically delete after a set time to ensure privacy.
 - **Maintenance Mode:** Admin can toggle maintenance to perform updates safely.
 
-## 🚀 Deployment (Render/Docker)
-1. **Fork the Repository:** Clone this repo to your Github account.
-2. **Create Web Service on Render:**
-   - Connect your Github repo.
-   - Choose **Docker** as the Runtime.
-   - Add the required environment variables (see below).
-   - Render will automatically build the image using the provided `Dockerfile`.
+## 🚀 Commands
+### User Commands
+- `/start` - Start the bot and get files.
+- `/help` - View help information.
+- `/about` - About the bot.
+- `/myplan` - Check your premium status.
+
+### Admin Commands
+- `/control_panel` - Real-time settings management.
+- `/batch` - Create batch links for multiple files.
+- `/genlink` - Generate a single file link.
+- `/custom_batch` - Create custom batches by copying messages.
+- `/broadcast` - Broadcast message to all users.
+- `/dbroadcast` - Broadcast with auto-delete timer.
+- `/pbroadcast` - Pin broadcasted messages.
+- `/addfsub` - Add a Force Subscribe channel.
+- `/removefsub` - Remove a Force Subscribe channel.
+- `/fsublist` - List all FSUB channels.
+- `/fsub_mode` - Toggle Request Mode for FSUB.
+- `/add_admin` - Add a new bot admin.
+- `/deladmin` - Remove an admin.
+- `/admins` - List all bot admins.
+- `/addpremium` - Add a premium user.
+- `/remove_premium` - Revoke premium access.
+- `/premium_users` - List all premium users.
+- `/stats` - View detailed bot statistics.
+- `/count` - Check verification counts.
+- `/maintenance` - Toggle maintenance mode.
+- `/hash` - Manage link masking algorithms.
+- `/delreq` - Cleanup leftover FSUB join requests.
 
 ## ⚙️ Environment Variables
 | Variable | Description |
 |----------|-------------|
 | `TG_BOT_TOKEN` | Your Telegram Bot Token (@BotFather) |
-| `API_ID` | Your Telegram API ID |
+| `APP_ID` | Your Telegram API ID |
 | `API_HASH` | Your Telegram API HASH |
 | `DATABASE_URL` | MongoDB Connection URI |
 | `DATABASE_NAME` | MongoDB Database Name (e.g., Cluster0) |
 | `OWNER_ID` | Your Telegram User ID (Owner) |
 | `CHANNEL_ID` | Database Channel ID (Bot must be Admin) |
-| `SHORTLINK_URL` | Shortener domain (e.g., arolinks.com) |
+| `SHORTLINK_URL` | Shortener domain (e.g., mdiskshort.in/) |
 | `SHORTLINK_API` | Shortener API Key |
 | `URL` | Your App's public URL (without https://) |
 | `TUTORIAL` | Tutorial video link for users. |
-
-## 🛠️ Admin Commands
-- `/start` - Check bot status and uptime.
-- `/broadcast` - Broadcast message to all users (Async).
-- `/pbroadcast` - Broadcast and Pin message.
-- `/dbroadcast` - Broadcast with auto-delete timer.
-- `/addfsub` - Add a Force Subscribe channel.
-- `/removefsub` - Remove a channel from FSUB.
-- `/fsublist` - List all FSUB channels.
-- `/maintenance` - Toggle maintenance mode (e.g., `/maintenance 1h` or `/maintenance off`).
-- `/stats` - View bot and user statistics.
-- `/addpremium` - Interactive flow to add premium users.
-- `/listpremium` - Interactive list to manage premium users.
-- `/admins` - List current bot admins.
-- `/add_admin` - Add a new bot admin (Owner only).
-- `/deladmin` - Remove a bot admin (Owner only).
 
 ## 🌸 Credits
 - **Bot Name:** ⚡𝗛𝗘𝗠𝗔𝗡𝗧𝗛⚡
@@ -61,4 +68,4 @@ An advanced, high-performance Telegram File Store Bot with a secure, multi-stage
 - **Main Link:** [otakustartelugu](https://t.me/otakustartelugu)
 
 ---
-*Built with ❤️ for the community.*
+*Built with ❤️ for the community by @ALONEKINGSTAR77.*

@@ -66,18 +66,6 @@ async def get_users(client: Bot, message: Message):
     s, e = get_random_button_style()
     await msg.edit(f"{count} users are using this bot", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("• ᴄʟᴏsᴇ •", callback_data="close", icon_custom_emoji_id=e, style=s)]]))
 
-# Don't Remove Credit @ALONEKINGSTAR77, @ALONEKINGSTAR77
-# Ask Doubt on telegram @ALONEKINGSTAR77Support
-#
-# Copyright (C) 2025 by @ALONEKINGSTAR77@Github, < https://github.com/@ALONEKINGSTAR77 >.
-#
-# This file is part of < https://github.com/@ALONEKINGSTAR77/FileStore > project,
-# and is released under the MIT License.
-# Please see < https://github.com/@ALONEKINGSTAR77/FileStore/blob/master/LICENSE >
-#
-# All rights reserved.
-#
-
 #=====================================================================================##
 
 #AUTO-DELETE
@@ -102,14 +90,7 @@ async def check_delete_time(client: Bot, message: Message):
 
 #=====================================================================================##
 
-# Don't Remove Credit @ALONEKINGSTAR77, @ALONEKINGSTAR77
-# Ask Doubt on telegram @ALONEKINGSTAR77Support
-#
-# Copyright (C) 2025 by @ALONEKINGSTAR77@Github, < https://github.com/@ALONEKINGSTAR77 >.
-#
-# This file is part of < https://github.com/@ALONEKINGSTAR77/FileStore > project,
-# and is released under the MIT License.
-# Please see < https://github.com/@ALONEKINGSTAR77/FileStore/blob/master/LICENSE >
-#
-# All rights reserved.
-#
+@Bot.on_message(filters.private & ~filters.command(['start', 'commands', 'help', 'about', 'myplan', 'myplan', 'count', 'premium_users', 'listpremium', 'remove_premium', 'addpremium', 'control_panel', 'stats', 'users', 'dlt_time', 'check_dlt_time', 'broadcast', 'dbroadcast', 'pbroadcast', 'batch', 'genlink', 'custom_batch', 'add_admin', 'deladmin', 'admins', 'maintenance', 'fsub_mode', 'addfsub', 'addchnl', 'removefsub', 'delchnl', 'fsublist', 'listchnl', 'delreq', 'hash', 'ban', 'unban', 'banlist', 'dlink']))
+async def default_handler(client, message):
+    if not admin(client, message):
+        await message.reply_text(USER_REPLY_TEXT)
