@@ -12,7 +12,7 @@ An advanced, high-performance Telegram File Store Bot with a secure, multi-stage
 - **Premium Management System:** Interactive UI for adding/listing/managing premium users with expiry tracking.
 - **Branding:** Fully rebranded as ⚡𝗛𝗘𝗠𝗔𝗡𝗧𝗛⚡ (@ALONEKINGSTAR77).
 - **Performance:** Async handlers, non-blocking DB operations, and optimized caching with batch broadcasting.
-- **UI:** Modern Anime-themed web UI with neon effects, loading animations, and fast callback responses.
+- **UI:** Modern Anime-themed web UI with neon effects, loading animations, and lightning-fast callback responses (Zero Lag).
 - **Auto-Delete:** Files automatically delete after a set time to ensure privacy.
 - **Maintenance Mode:** Admin can toggle maintenance to perform updates safely.
 
