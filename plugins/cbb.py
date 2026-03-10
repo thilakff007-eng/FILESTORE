@@ -276,6 +276,28 @@ async def cb_handler(client: Bot, query: CallbackQuery):
             reply_markup=await get_control_panel_markup(client)
         )
 
+    elif data.startswith("set_hash_"):
+        if not is_admin:
+            return await query.answer("⚠️ Access Denied!", show_alert=True)
+
+        algo = data.split("_")[-1]
+        await db.set_setting("primary_hash_algo", algo)
+        await query.answer(f"✅ Set {algo} as primary hashing algorithm!", show_alert=True)
+
+        current_algo = algo
+        buttons = []
+        for i in range(0, len(ALGORITHMS), 2):
+            row = []
+            for a in ALGORITHMS[i:i+2]:
+                prefix = "✅ " if a == current_algo else ""
+                row.append(InlineKeyboardButton(f"{prefix}{a}", callback_data=f"set_hash_{a}"))
+            buttons.append(row)
+
+        s, e = get_random_button_style()
+        buttons.append([InlineKeyboardButton("• ᴄʟᴏsᴇ •", callback_data="close", icon_custom_emoji_id=e, style=s)])
+
+        await query.message.edit_reply_markup(reply_markup=InlineKeyboardMarkup(buttons))
+
 
 # Don't Remove Credit @ALONEKINGSTAR77, @ALONEKINGSTAR77
 # Ask Doubt on telegram @ALONEKINGSTAR77Support

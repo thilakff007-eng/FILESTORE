@@ -94,6 +94,9 @@ UPI_ID = os.environ.get("UPI_ID", "ALONEKINGSTAR77@upi")
 SCREENSHOT_URL = os.environ.get("SCREENSHOT_URL", "https://t.me/ALONEKINGSTAR77")
 QR_PIC = os.environ.get("QR_PIC", "https://freeimage.host/i/q94kIvp")
 
+# Available Hash Algorithms
+ALGORITHMS = ["SHA-256", "SHA-512", "HMAC-SHA256", "BLAKE3", "AES-256", "ChaCha20", "Argon2", "scrypt"]
+
 # Admin Texts
 CMD_TXT = """<b>⚡ ᴀᴅᴍɪɴ ᴄᴏᴍᴍᴀɴᴅs:</b>
 
