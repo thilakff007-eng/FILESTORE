@@ -90,7 +90,9 @@ async def check_delete_time(client: Bot, message: Message):
 
 #=====================================================================================##
 
-@Bot.on_message(filters.private & ~filters.command(['start', 'commands', 'help', 'about', 'myplan', 'myplan', 'count', 'premium_users', 'listpremium', 'remove_premium', 'addpremium', 'control_panel', 'stats', 'users', 'dlt_time', 'check_dlt_time', 'broadcast', 'dbroadcast', 'pbroadcast', 'batch', 'genlink', 'custom_batch', 'add_admin', 'deladmin', 'admins', 'maintenance', 'fsub_mode', 'addfsub', 'addchnl', 'removefsub', 'delchnl', 'fsublist', 'listchnl', 'delreq', 'hash', 'ban', 'unban', 'banlist', 'dlink']))
+@Bot.on_message(filters.private & ~filters.command(['start', 'commands', 'help', 'about', 'myplan', 'count', 'premium_users', 'listpremium', 'remove_premium', 'addpremium', 'control_panel', 'stats', 'users', 'dlt_time', 'check_dlt_time', 'broadcast', 'dbroadcast', 'pbroadcast', 'batch', 'genlink', 'custom_batch', 'add_admin', 'deladmin', 'admins', 'maintenance', 'fsub_mode', 'addfsub', 'addchnl', 'removefsub', 'delchnl', 'fsublist', 'listchnl', 'delreq', 'hash', 'ban', 'unban', 'banlist', 'dlink']))
 async def default_handler(client, message):
-    if not admin(client, message):
-        await message.reply_text(USER_REPLY_TEXT)
+    # Only send USER_REPLY_TEXT if it's NOT a command and NOT an admin sending a file to store
+    if not message.text or not message.text.startswith("/"):
+        if not admin(client, message):
+            await message.reply_text(USER_REPLY_TEXT)

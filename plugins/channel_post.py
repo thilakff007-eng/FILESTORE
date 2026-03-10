@@ -21,10 +21,10 @@ from helper_func import encode, admin, get_random_button_style
 
 @Bot.on_message(filters.private & admin & ~filters.command(['start', 'commands', 'help', 'about', 'users','broadcast','batch', 'custom_batch', 'genlink','stats', 'dlt_time', 'check_dlt_time', 'dbroadcast', 'ban', 'unban', 'banlist', 'addchnl', 'delchnl', 'listchnl', 'fsub_mode', 'pbroadcast', 'add_admin', 'deladmin', 'admins', 'addpremium', 'premium_users', 'remove_premium', 'myplan', 'count', 'delreq', 'hash']))
 async def channel_post(client: Client, message: Message):
+    # Only reply if it's NOT a command. Admins often send files to store.
     if message.text and message.text.startswith("/"):
-        return await message.reply_text(USER_REPLY_TEXT)
+        return
 
-    reply_text = await message.reply_text("Please Wait...!")
     try:
         post_message = await message.copy(chat_id = client.db_channel.id, disable_notification=True)
     except FloodWait as e:
@@ -42,7 +42,7 @@ async def channel_post(client: Client, message: Message):
     s, e = get_random_button_style()
     reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton("🔁 Share URL", url=f'https://telegram.me/share/url?url={link}', icon_custom_emoji_id=e, style=s)]])
 
-    await reply_text.edit(f"<b>Here is your link</b>\n\n{link}", reply_markup=reply_markup, link_preview_options=LinkPreviewOptions(is_disabled=True))
+    await message.reply_text(f"<b>Here is your link</b>\n\n{link}", reply_markup=reply_markup, link_preview_options=LinkPreviewOptions(is_disabled=True))
 
     if not DISABLE_CHANNEL_BUTTON:
         await post_message.edit_reply_markup(reply_markup)

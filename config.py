@@ -62,7 +62,7 @@ START_PIC = os.environ.get("START_PIC", PICS[0])
 FORCE_PIC = os.environ.get("FORCE_PIC", PICS[1])
 
 # Bot Settings
-URL = os.environ.get("URL", os.environ.get("RENDER_EXTERNAL_URL", os.environ.get("RAILWAY_STATIC_URL", "filesanimes.onrender.com")))
+URL = os.environ.get("URL", os.environ.get("RENDER_EXTERNAL_URL", os.environ.get("RAILWAY_STATIC_URL", "filestore-1-vlzn.onrender.com")))
 PORT = os.environ.get("PORT", "8080")
 FSUB_LINK_EXPIRY = int(os.getenv("FSUB_LINK_EXPIRY", "10"))
 TG_BOT_WORKERS = int(os.environ.get("TG_BOT_WORKERS", "100"))
@@ -101,20 +101,27 @@ ALGORITHMS = ["SHA-256", "SHA-512", "HMAC-SHA256", "BLAKE3", "AES-256", "ChaCha2
 CMD_TXT = """<b>⚡ ᴀᴅᴍɪɴ ᴄᴏᴍᴍᴀɴᴅs:</b>
 
 <b>›› /control_panel :</b> ʀᴇᴀʟ-ᴛɪᴍᴇ sᴇᴛᴛɪɴɢs
-<b>›› /broadcast :</b> ʙʀᴏᴀᴅᴄᴀsᴛ ᴍᴇssᴀɢᴇ
-<b>›› /stats :</b> ᴄʜᴇᴄᴋ ʙᴏᴛ sᴛᴀᴛs
 <b>›› /batch :</b> ᴄʀᴇᴀᴛᴇ ʙᴀᴛᴄʜ ʟɪɴᴋ
 <b>›› /genlink :</b> ɢᴇɴᴇʀᴀᴛᴇ sɪɴɢʟᴇ ʟɪɴᴋ
+<b>›› /custom_batch :</b> ᴄᴜsᴛᴏᴍ ʙᴀᴛᴄʜ ʟɪɴᴋ
+<b>›› /broadcast :</b> ʙʀᴏᴀᴅᴄᴀsᴛ ᴍᴇssᴀɢᴇ
+<b>›› /dbroadcast :</b> ᴀᴜᴛᴏ-ᴅᴇʟᴇᴛᴇ ʙʀᴏᴀᴅᴄᴀsᴛ
+<b>›› /pbroadcast :</b> ᴘɪɴ ʙʀᴏᴀᴅᴄᴀsᴛ
 <b>›› /addfsub :</b> ᴀᴅᴅ ғsᴜʙ ᴄʜᴀɴɴᴇʟ
+<b>›› /removefsub :</b> ʀᴇᴍᴏᴠᴇ ғsᴜʙ
+<b>›› /fsublist :</b> ʟɪsᴛ ғsᴜʙ ᴄʜᴀɴɴᴇʟs
 <b>›› /fsub_mode :</b> ᴛᴏɢɢʟᴇ ʀᴇǫᴜᴇsᴛ ᴍᴏᴅᴇ
-<b>›› /maintenance :</b> ᴛᴏɢɢʟᴇ ᴍᴀɪɴᴛᴇɴᴀɴᴄᴇ
-<b>›› /ban :</b> ʙᴀɴ ᴀ ᴜsᴇʀ
-<b>›› /unban :</b> ᴜɴʙᴀɴ ᴀ ᴜsᴇʀ
 <b>›› /add_admin :</b> ᴀᴅᴅ ᴀᴅᴍɪɴ
+<b>›› /deladmin :</b> ʀᴇᴍᴏᴠᴇ ᴀᴅᴍɪɴ
+<b>›› /admins :</b> ʟɪsᴛ ᴀᴅᴍɪɴs
 <b>›› /addpremium :</b> ᴀᴅᴅ ᴘʀᴇᴍɪᴜᴍ
+<b>›› /remove_premium :</b> ʀᴇᴍᴏᴠᴇ ᴘʀᴇᴍɪᴜᴍ
 <b>›› /premium_users :</b> ʟɪsᴛ ᴘʀᴇᴍɪᴜᴍ
-<b>›› /hash :</b> ᴍᴀsᴋɪɴɢ ᴍᴀɴᴀɢᴇ
+<b>›› /stats :</b> ᴄʜᴇᴄᴋ ʙᴏᴛ sᴛᴀᴛs
 <b>›› /count :</b> ᴠᴇʀɪғɪᴄᴀᴛɪᴏɴ ᴄᴏᴜɴᴛs
+<b>›› /maintenance :</b> ᴛᴏɢɢʟᴇ ᴍᴀɪɴᴛᴇɴᴀɴᴄᴇ
+<b>›› /hash :</b> ᴍᴀsᴋɪɴɢ ᴍᴀɴᴀɢᴇ
+<b>›› /delreq :</b> ᴄʟᴇᴀɴᴜᴘ ʀᴇǫᴜᴇsᴛs
 """
 
 CUSTOM_CAPTION = os.environ.get("CUSTOM_CAPTION", "<b>⚡ ʙʏ {main_link}</b>")

@@ -10,6 +10,37 @@ routes = web.RouteTableDef()
 def get_random_pic():
     return random.choice(PICS)
 
+def is_bot(request):
+    ua = request.headers.get('User-Agent', '').lower()
+    blocked_uas = [
+        'curl', 'wget', 'python-requests', 'axios', 'headlesschrome',
+        'phantomjs', 'selenium', 'puppeteer', 'playwright', 'bot', 'spider', 'crawl'
+    ]
+    for agent in blocked_uas:
+        if agent in ua:
+            return True
+    return False
+
+DETECTION_JS = """
+    <script>
+        (function() {
+            const isHeadless = /HeadlessChrome/.test(navigator.userAgent) || navigator.webdriver;
+            const isPhantom = /PhantomJS/.test(navigator.userAgent);
+            const isChrome = /Chrome/.test(navigator.userAgent) && /Google Inc/.test(navigator.vendor);
+
+            if (isHeadless || isPhantom) {
+                document.body.innerHTML = '<div style="color:red; font-size:24px; padding:50px;">🚫 Automation Detected! Please use a real browser (Chrome recommended). 🏯</div>';
+                throw new Error("Bot detected");
+            }
+
+            if (!isChrome && !/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+                // Not enforcing Chrome on mobile, but for desktop we want Chrome-like
+                console.warn("Browser not verified, Chrome is recommended.");
+            }
+        })();
+    </script>
+"""
+
 WATERMARK_STYLE = """
             .watermark {
                 position: fixed;
@@ -103,6 +134,8 @@ ANIME_COMMON_STYLE = f"""
 
 @routes.get("/", allow_head=True)
 async def root_route_handler(request):
+    if is_bot(request):
+        return web.Response(text="Access Denied: Bot Detected 🚫", status=403)
     anime_pic = get_random_pic()
     html_content = f"""
     <!DOCTYPE html>
@@ -112,6 +145,7 @@ async def root_route_handler(request):
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>{BOT_NAME}</title>
         {ANIME_COMMON_STYLE.replace('{{anime_pic}}', anime_pic)}
+        {DETECTION_JS}
     </head>
     <body>
         <div class="background"></div>
@@ -129,6 +163,8 @@ async def root_route_handler(request):
 
 @routes.get("/task/{token}")
 async def task_handler(request):
+    if is_bot(request):
+        return web.Response(text="Access Denied: Bot Detected 🚫", status=403)
     token = request.match_info.get('token')
     token_data = await db.get_verify_token(token)
     if not token_data:
@@ -141,6 +177,7 @@ async def task_handler(request):
     <head>
         <title>Verification Step 1</title>
         {ANIME_COMMON_STYLE.replace('{{anime_pic}}', anime_pic)}
+        {DETECTION_JS}
     </head>
     <body>
         <div class="background"></div>
@@ -183,6 +220,8 @@ async def redirect_handler(request):
 
 @routes.get("/hold/{token}")
 async def hold_handler(request):
+    if is_bot(request):
+        return web.Response(text="Access Denied: Bot Detected 🚫", status=403)
     token = request.match_info.get('token')
     token_data = await db.get_verify_token(token)
     if not token_data:
@@ -195,6 +234,7 @@ async def hold_handler(request):
     <head>
         <title>Final Verification</title>
         {ANIME_COMMON_STYLE.replace('{{anime_pic}}', anime_pic)}
+        {DETECTION_JS}
         <style>
             #hold-btn {{
                 width: 200px;
