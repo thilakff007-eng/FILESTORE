@@ -59,7 +59,7 @@ An advanced, high-performance Telegram File Store Bot with a secure, multi-stage
 | `CHANNEL_ID` | Database Channel ID (Bot must be Admin) |
 | `SHORTLINK_URL` | Shortener domain (e.g., mdiskshort.in/) |
 | `SHORTLINK_API` | Shortener API Key |
-| `URL` | Your App's public URL (without https://) |
+| `URL` | Your App's public URL (without https://) (e.g., filesanimes.onrender.com) |
 | `TUTORIAL` | Tutorial video link for users. |
 
 ## 🌸 Credits

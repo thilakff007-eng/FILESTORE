@@ -19,7 +19,7 @@ from bot import Bot
 from config import *
 from helper_func import encode, admin, get_random_button_style
 
-@Bot.on_message(filters.private & admin & ~filters.command(['start', 'commands', 'help', 'about', 'users','broadcast','batch', 'custom_batch', 'genlink','stats', 'dlt_time', 'check_dlt_time', 'dbroadcast', 'ban', 'unban', 'banlist', 'addchnl', 'delchnl', 'listchnl', 'fsub_mode', 'pbroadcast', 'add_admin', 'deladmin', 'admins', 'addpremium', 'premium_users', 'remove_premium', 'myplan', 'count', 'delreq']))
+@Bot.on_message(filters.private & admin & ~filters.command(['start', 'commands', 'help', 'about', 'users','broadcast','batch', 'custom_batch', 'genlink','stats', 'dlt_time', 'check_dlt_time', 'dbroadcast', 'ban', 'unban', 'banlist', 'addchnl', 'delchnl', 'listchnl', 'fsub_mode', 'pbroadcast', 'add_admin', 'deladmin', 'admins', 'addpremium', 'premium_users', 'remove_premium', 'myplan', 'count', 'delreq', 'hash']))
 async def channel_post(client: Client, message: Message):
     if message.text and message.text.startswith("/"):
         return await message.reply_text(USER_REPLY_TEXT)

@@ -165,14 +165,9 @@ async def start_command(client: Client, message: Message):
                     is_direct = False
 
             if not is_premium and user_id != OWNER_ID and not is_direct:
-                # Check for 24h verification persistence
-                verify_status = await db.get_verify_status(user_id)
-                last_verified = verify_status.get('verified_time', 0)
-                if time.time() - last_verified < 86400: # 24 hours
-                    is_direct = True
-                else:
-                    await short_url(client, message, base64_string)
-                    return
+                # Removed 24h verification persistence - users must verify every time
+                await short_url(client, message, base64_string)
+                return
 
         except Exception as e:
             print(f"Error processing start payload: {e}")
