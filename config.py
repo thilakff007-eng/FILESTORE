@@ -62,7 +62,7 @@ START_PIC = os.environ.get("START_PIC", PICS[0])
 FORCE_PIC = os.environ.get("FORCE_PIC", PICS[1])
 
 # Bot Settings
-URL = os.environ.get("URL", os.environ.get("RENDER_EXTERNAL_URL", os.environ.get("RAILWAY_STATIC_URL", "filestore-1-vlzn.onrender.com")))
+URL = os.environ.get("URL", os.environ.get("RENDER_EXTERNAL_URL", os.environ.get("RAILWAY_STATIC_URL", "filestore-2-di0v.onrender.com")))
 PORT = os.environ.get("PORT", "8080")
 FSUB_LINK_EXPIRY = int(os.getenv("FSUB_LINK_EXPIRY", "10"))
 TG_BOT_WORKERS = int(os.environ.get("TG_BOT_WORKERS", "100"))
