@@ -6,13 +6,14 @@ An advanced, high-performance Telegram File Store Bot with a secure, multi-stage
 - **Unlimited Force Subscribe (FSUB):** Support for multiple channels/groups with interactive management.
 - **Request Mode FSUB:** Automatically handles and verifies join requests for private channels.
 - **Advanced Verification Flow:**
-  - **Step 1:** Frontend Human Check (Anime Task Page).
-  - **Step 2:** Premium Shortlink (mdiskshort.in/).
-  - **Step 3:** Secure "Hold to Verify" (5-second interaction to prevent automated scripts).
+  - **Step 1:** SecureLink Gateway (Google reCAPTCHA v2 with Premium Neon Anime UI).
+  - **Step 2:** Browser Integrity & Bot Detection (Checks for Chrome, navigator.webdriver, and more).
+  - **Step 3:** Premium Shortlink (mdiskshort.in/).
+  - **Step 4:** Secure "Hold to Verify" (5-second interaction to prevent automated scripts).
 - **Premium Management System:** Interactive UI for adding/listing/managing premium users with expiry tracking.
 - **Branding:** Fully rebranded as ⚡𝗛𝗘𝗠𝗔𝗡𝗧𝗛⚡ (@ALONEKINGSTAR77).
 - **Performance:** Async handlers, non-blocking DB operations, and optimized caching with batch broadcasting.
-- **UI:** Modern Anime-themed web UI with neon effects, loading animations, and lightning-fast callback responses (Zero Lag).
+- **UI:** Premium Neon Anime-themed web UI with neon glow effects, anime backgrounds, loading animations, and lightning-fast callback responses (Zero Lag). Optimized for Chrome.
 - **Auto-Delete:** Files automatically delete after a set time to ensure privacy.
 - **Maintenance Mode:** Admin can toggle maintenance to perform updates safely.
 

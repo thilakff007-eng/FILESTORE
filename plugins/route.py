@@ -172,54 +172,101 @@ async def task_handler(request):
     if not token_data:
         return web.Response(text="Invalid or expired token", status=403)
 
+    anime_pic = get_random_pic()
     html_content = f"""
     <!DOCTYPE html>
     <html>
     <head>
         <title>SecureLink Verification</title>
         <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;900&display=swap" rel="stylesheet">
         <style>
             body {{
-                font-family: sans-serif;
-                background: linear-gradient(135deg, #2c7be5, #2ecc71);
-                height: 100vh;
+                margin: 0; padding: 0;
+                font-family: 'Poppins', sans-serif;
+                background: radial-gradient(circle, #1a1a2e, #16213e, #0f3460);
+                color: white;
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                margin: 0;
+                height: 100vh;
+                overflow: hidden;
+            }}
+            .background {{
+                position: fixed;
+                top: 0; left: 0; width: 100%; height: 100%;
+                background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('{anime_pic}') no-repeat center center;
+                background-size: cover;
+                z-index: -1;
+                filter: blur(8px);
+                transform: scale(1.1);
             }}
             .card {{
-                background: white;
-                padding: 30px;
-                border-radius: 12px;
-                width: 320px;
+                background: rgba(0, 0, 0, 0.7);
+                padding: 40px;
+                border-radius: 20px;
+                width: 350px;
                 text-align: center;
-                box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+                box-shadow: 0 0 25px #e94560, inset 0 0 10px #e94560;
+                backdrop-filter: blur(15px);
+                border: 2px solid #e94560;
+                animation: neonPulse 2s infinite alternate;
             }}
-            h2 {{ color: #333; }}
-            p {{ color: #666; }}
+            @keyframes neonPulse {{
+                from {{ box-shadow: 0 0 20px #e94560; }}
+                to {{ box-shadow: 0 0 40px #e94560, 0 0 10px #e94560; }}
+            }}
+            h2 {{
+                color: #e94560;
+                text-shadow: 0 0 10px #e94560, 0 0 20px #e94560;
+                font-weight: 900;
+                font-size: 2em;
+                margin-top: 0;
+            }}
+            p {{ color: #ccc; margin-bottom: 25px; }}
+            .chrome-notice {{
+                font-size: 0.8em;
+                color: #ffcc00;
+                margin-top: 15px;
+                font-weight: bold;
+                text-shadow: 0 0 5px rgba(255, 204, 0, 0.5);
+            }}
             button {{
-                background: #2c7be5;
+                background: #e94560;
                 color: white;
                 border: none;
-                padding: 10px 20px;
-                border-radius: 5px;
+                padding: 12px 30px;
+                border-radius: 30px;
                 cursor: pointer;
                 font-size: 16px;
+                font-weight: bold;
                 margin-top: 20px;
+                transition: 0.3s;
+                box-shadow: 0 0 15px #e94560;
+                text-transform: uppercase;
+                letter-spacing: 1px;
             }}
-            button:hover {{ background: #1a68d1; }}
+            button:hover {{
+                transform: scale(1.05);
+                box-shadow: 0 0 25px #e94560;
+            }}
+            .g-recaptcha {{
+                display: inline-block;
+                margin-bottom: 10px;
+            }}
         </style>
     </head>
     <body>
+        <div class="background"></div>
         <div class="card">
             <h2>SecureLink</h2>
-            <p>Verify to continue</p>
+            <p>Verify to continue, Senpai! 🌸</p>
             <form method="POST" action="/verify/{token}">
                 <div class="g-recaptcha" data-sitekey="{RECAPTCHA_SITE_KEY}"></div>
                 <br>
-                <button type="submit">Continue</button>
+                <button type="submit">Continue 🚀</button>
             </form>
+            <div class="chrome-notice">⚠️ Verification works in Chrome browser only!</div>
         </div>
     </body>
     </html>
@@ -272,70 +319,105 @@ async def verify_handler(request):
 
     await db.update_token_status(token, 'captcha_verified')
 
+    anime_pic = get_random_pic()
     html_content = f"""
     <!DOCTYPE html>
     <html>
     <head>
         <title>Checking Security</title>
+        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;900&display=swap" rel="stylesheet">
         <style>
             body {{
-                font-family: sans-serif;
-                background: linear-gradient(135deg, #2c7be5, #2ecc71);
-                height: 100vh;
+                margin: 0; padding: 0;
+                font-family: 'Poppins', sans-serif;
+                background: radial-gradient(circle, #1a1a2e, #16213e, #0f3460);
+                color: white;
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                margin: 0;
+                height: 100vh;
+                overflow: hidden;
+            }}
+            .background {{
+                position: fixed;
+                top: 0; left: 0; width: 100%; height: 100%;
+                background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('{anime_pic}') no-repeat center center;
+                background-size: cover;
+                z-index: -1;
+                filter: blur(8px);
+                transform: scale(1.1);
             }}
             .card {{
-                background: white;
-                padding: 30px;
-                border-radius: 12px;
-                width: 320px;
+                background: rgba(0, 0, 0, 0.7);
+                padding: 40px;
+                border-radius: 20px;
+                width: 350px;
                 text-align: center;
-                box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+                box-shadow: 0 0 25px #00d2ff, inset 0 0 10px #00d2ff;
+                backdrop-filter: blur(15px);
+                border: 2px solid #00d2ff;
+                animation: neonPulseBlue 2s infinite alternate;
+            }}
+            @keyframes neonPulseBlue {{
+                from {{ box-shadow: 0 0 20px #00d2ff; }}
+                to {{ box-shadow: 0 0 40px #00d2ff, 0 0 10px #00d2ff; }}
             }}
             .progress {{
-                height: 6px;
-                background: #ddd;
+                height: 8px;
+                background: rgba(255, 255, 255, 0.1);
                 border-radius: 10px;
                 overflow: hidden;
-                margin-top: 15px;
+                margin-top: 25px;
+                border: 1px solid rgba(0, 210, 255, 0.3);
             }}
             .progress-bar {{
-                height: 6px;
+                height: 100%;
                 width: 0%;
-                background: #2c7be5;
+                background: linear-gradient(90deg, #00d2ff, #3a7bd5);
                 animation: load 4s linear forwards;
+                box-shadow: 0 0 15px #00d2ff;
             }}
             @keyframes load {{
                 0% {{ width: 0% }}
                 100% {{ width: 100% }}
             }}
-            h2 {{ color: #333; margin-bottom: 5px; }}
-            p {{ color: #666; margin: 5px 0; }}
-            .subtitle {{ font-size: 0.9em; color: #888; }}
+            h2 {{
+                color: #00d2ff;
+                text-shadow: 0 0 10px #00d2ff, 0 0 20px #00d2ff;
+                font-weight: 900;
+                margin-bottom: 10px;
+            }}
+            p {{ color: #ccc; margin: 5px 0; }}
+            .subtitle {{ font-size: 0.9em; color: #3a7bd5; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }}
+            .chrome-notice {{
+                font-size: 0.8em;
+                color: #ffcc00;
+                margin-top: 20px;
+                font-weight: bold;
+            }}
         </style>
     </head>
     <body>
+        <div class="background"></div>
         <div class="card">
             <h2>Checking Security</h2>
-            <p>Please wait…</p>
+            <p>Please wait, Senpai… 🌸</p>
             <p class="subtitle">Verifying Browser Integrity</p>
             <div class="progress">
                 <div class="progress-bar"></div>
             </div>
+            <div class="chrome-notice">⚠️ Chrome Browser required for this step!</div>
         </div>
         <script>
             if(navigator.webdriver){{
-                document.body.innerHTML="<div style='color:white; text-align:center; padding:50px;'>Bot access denied</div>";
+                document.body.innerHTML="<div style='color:white; text-align:center; padding:50px; font-family:Poppins;'><h1>🚫 Bot Access Denied</h1><p>Please use a real Chrome browser.</p></div>";
                 throw new Error("Bot detected");
             }}
             if(!navigator.cookieEnabled){{
                 alert("Enable cookies to continue");
             }}
             if(window.outerWidth===0){{
-                document.body.innerHTML="<div style='color:white; text-align:center; padding:50px;'>Suspicious browser detected</div>";
+                document.body.innerHTML="<div style='color:white; text-align:center; padding:50px; font-family:Poppins;'><h1>⚠️ Suspicious Browser</h1><p>Verification failed.</p></div>";
                 throw new Error("Suspicious browser");
             }}
 
