@@ -2,10 +2,12 @@ from aiohttp import web
 import random
 import logging
 import time
-from config import BOT_NAME, PICS, MAIN_LINK, OWNER_ID, BOT_USERNAME, SHORTLINK_URL, SHORTLINK_API, URL
+from config import BOT_NAME, PICS, MAIN_LINK, OWNER_ID, BOT_USERNAME, SHORTLINK_URL, SHORTLINK_API, URL, RECAPTCHA_SITE_KEY, RECAPTCHA_SECRET_KEY
 from database.database import db
+import aiohttp
 
 routes = web.RouteTableDef()
+verification_attempts = {}
 
 def get_random_pic():
     return random.choice(PICS)
@@ -170,22 +172,53 @@ async def task_handler(request):
     if not token_data:
         return web.Response(text="Invalid or expired token", status=403)
 
-    anime_pic = get_random_pic()
     html_content = f"""
     <!DOCTYPE html>
     <html>
     <head>
-        <title>Verification Step 1</title>
-        {ANIME_COMMON_STYLE.replace('{{anime_pic}}', anime_pic)}
-        {DETECTION_JS}
+        <title>SecureLink Verification</title>
+        <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+        <style>
+            body {{
+                font-family: sans-serif;
+                background: linear-gradient(135deg, #2c7be5, #2ecc71);
+                height: 100vh;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin: 0;
+            }}
+            .card {{
+                background: white;
+                padding: 30px;
+                border-radius: 12px;
+                width: 320px;
+                text-align: center;
+                box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            }}
+            h2 {{ color: #333; }}
+            p {{ color: #666; }}
+            button {{
+                background: #2c7be5;
+                color: white;
+                border: none;
+                padding: 10px 20px;
+                border-radius: 5px;
+                cursor: pointer;
+                font-size: 16px;
+                margin-top: 20px;
+            }}
+            button:hover {{ background: #1a68d1; }}
+        </style>
     </head>
     <body>
-        <div class="background"></div>
-        <div class="container">
-            <h1>Step 1: Human Check</h1>
-            <p>Click the button below to prove you are human, Senpai! 🏯</p>
-            <form action="/task_done/{token}" method="POST">
-                <button type="submit" class="btn">Continue to Link</button>
+        <div class="card">
+            <h2>SecureLink</h2>
+            <p>Verify to continue</p>
+            <form method="POST" action="/verify/{token}">
+                <div class="g-recaptcha" data-sitekey="{RECAPTCHA_SITE_KEY}"></div>
+                <br>
+                <button type="submit">Continue</button>
             </form>
         </div>
     </body>
@@ -193,9 +226,136 @@ async def task_handler(request):
     """
     return web.Response(text=html_content, content_type='text/html')
 
-@routes.post("/task_done/{token}")
+@routes.post("/verify/{token}")
+async def verify_handler(request):
+    if is_bot(request):
+        return web.Response(text="Access Denied: Bot Detected 🚫", status=403)
+
+    user_ip = request.remote
+    now = time.time()
+    # Simple Rate Limiting: 5 attempts per minute per IP
+    attempts = verification_attempts.get(user_ip, [])
+    attempts = [t for t in attempts if now - t < 60]
+    if len(attempts) >= 5:
+        return web.Response(text="Too many attempts. Please wait a minute.", status=429)
+    attempts.append(now)
+    verification_attempts[user_ip] = attempts
+
+    # Periodically clean up old entries to prevent memory leak
+    if random.random() < 0.05:
+        expired_cutoff = now - 60
+        for ip in list(verification_attempts.keys()):
+            verification_attempts[ip] = [t for t in verification_attempts[ip] if t > expired_cutoff]
+            if not verification_attempts[ip]:
+                del verification_attempts[ip]
+
+    token = request.match_info.get('token')
+    data = await request.post()
+    captcha_token = data.get('g-recaptcha-response')
+    user_ip = request.remote
+
+    logging.info(f"Visitor IP: {user_ip} attempting verification for token {token}")
+
+    if not captcha_token:
+        return web.Response(text="reCAPTCHA is required", status=403)
+
+    async with aiohttp.ClientSession() as session:
+        async with session.post('https://www.google.com/recaptcha/api/siteverify', data={
+            'secret': RECAPTCHA_SECRET_KEY,
+            'response': captcha_token,
+            'remoteip': user_ip
+        }) as resp:
+            result = await resp.json()
+
+    if not result.get('success'):
+        return web.Response(text="reCAPTCHA verification failed", status=403)
+
+    await db.update_token_status(token, 'captcha_verified')
+
+    html_content = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Checking Security</title>
+        <style>
+            body {{
+                font-family: sans-serif;
+                background: linear-gradient(135deg, #2c7be5, #2ecc71);
+                height: 100vh;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin: 0;
+            }}
+            .card {{
+                background: white;
+                padding: 30px;
+                border-radius: 12px;
+                width: 320px;
+                text-align: center;
+                box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            }}
+            .progress {{
+                height: 6px;
+                background: #ddd;
+                border-radius: 10px;
+                overflow: hidden;
+                margin-top: 15px;
+            }}
+            .progress-bar {{
+                height: 6px;
+                width: 0%;
+                background: #2c7be5;
+                animation: load 4s linear forwards;
+            }}
+            @keyframes load {{
+                0% {{ width: 0% }}
+                100% {{ width: 100% }}
+            }}
+            h2 {{ color: #333; margin-bottom: 5px; }}
+            p {{ color: #666; margin: 5px 0; }}
+            .subtitle {{ font-size: 0.9em; color: #888; }}
+        </style>
+    </head>
+    <body>
+        <div class="card">
+            <h2>Checking Security</h2>
+            <p>Please wait…</p>
+            <p class="subtitle">Verifying Browser Integrity</p>
+            <div class="progress">
+                <div class="progress-bar"></div>
+            </div>
+        </div>
+        <script>
+            if(navigator.webdriver){{
+                document.body.innerHTML="<div style='color:white; text-align:center; padding:50px;'>Bot access denied</div>";
+                throw new Error("Bot detected");
+            }}
+            if(!navigator.cookieEnabled){{
+                alert("Enable cookies to continue");
+            }}
+            if(window.outerWidth===0){{
+                document.body.innerHTML="<div style='color:white; text-align:center; padding:50px;'>Suspicious browser detected</div>";
+                throw new Error("Suspicious browser");
+            }}
+
+            setTimeout(function(){{
+                window.location.href="/task_done/{token}";
+            }}, 4000);
+        </script>
+    </body>
+    </html>
+    """
+    return web.Response(text=html_content, content_type='text/html')
+
+@routes.get("/task_done/{token}")
 async def task_done_handler(request):
     token = request.match_info.get('token')
+    token_data = await db.get_verify_token(token)
+
+    if not token_data or token_data.get('status') != 'captcha_verified':
+        return web.Response(text="Access denied. Please complete verification.", status=403)
+
     await db.update_token_status(token, 'task_done')
     base_url = f"https://{URL}" if not URL.startswith("http") else URL
     return web.HTTPFound(location=f"{base_url}/link/__{OWNER_ID}__/{token}")

@@ -76,6 +76,10 @@ SHORTLINK_API = os.environ.get("SHORTLINK_API", "7166158eb1d2cd04d15d274c891d47d
 TUT_VID = os.environ.get("TUT_VID","https://t.me/otakustartelugu")
 SHORT_MSG = "<b>⚡ Here is Your Download Link, Senpai! Must Watch Tutorial Before Clicking...</b>"
 
+# reCAPTCHA Configuration
+RECAPTCHA_SITE_KEY = os.environ.get("RECAPTCHA_SITE_KEY", "6LdPIocsAAAAAHr8FBwP9YcKdsCcQDGSJA1xqpSO")
+RECAPTCHA_SECRET_KEY = os.environ.get("RECAPTCHA_SECRET_KEY", "6LdPIocsAAAAAMdhQTXqXbxgcqc2DVgUW1Ftq1WK")
+
 # Texts
 USER_REPLY_TEXT = "<b>⚡ Please use the bot commands! 🏯</b>"
 HELP_TXT = "<b>⚡ ʜᴇʟʟᴏ {mention}, I am {bot_name}!\n\nI can store files for you and provide links for them. 🏯\n\n<blockquote>◈ ᴄᴏᴍᴍᴀɴᴅs:\n├ /start - ᴄʜᴇᴄᴋ ɪғ ɪ ᴀᴍ ᴀʟɪᴠᴇ\n├ /about - ᴀʙᴏᴜᴛ ᴍᴇ\n└ /help - ᴛʜɪs ᴍᴇssᴀɢᴇ</blockquote>\n\nJoin our community: {main_link} ⭐</b>"
