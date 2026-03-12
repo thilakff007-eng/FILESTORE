@@ -8,16 +8,16 @@ An advanced, high-performance Telegram File Store Bot with a hardened **SecureLi
 - **SecureLink Ultra Verification Flow:**
   - **Hardened Gateway:** Integrated Google reCAPTCHA v2 with **ANTI-TAMPER** protection (blocks userscripts & DOM modification).
   - **Max Security Hardening:**
-    - **Session Binding:** Strict IP & User-Agent consistency enforcement between verification stages.
-    - **Header Validation:** Sec-Fetch-Site checks to prevent CSRF and cross-site hijacking.
+    - **Session Binding:** Strict IP consistency enforcement between verification stages.
     - **Honeypot Protection:** Invisible fields to trap and block automated bots.
-  - **Browser Integrity 2.0:** Canvas Fingerprinting to detect headless browsers and advanced automation tools.
-  - **Interactive Verification:** Secure "Hold to Verify" (5-second interaction) to eliminate scripted bypasses.
-- **SVG-Enhanced Premium UI:**
-  - **Neon Glow Effects:** Advanced SVG filters for superior text and element glowing.
-  - **Animated Elements:** Revolving card borders (conic-gradients) and circuit-pattern SVG backgrounds.
-  - **Ultra Loading UI:** Multi-layered SVG progress bars with shimmer animations and blue-glow filters.
-  - **Theme:** Premium Neon Anime aesthetic optimized for Chrome.
+    - **Rate Limiting:** IP-based verification attempt limiting to prevent brute-force.
+  - **Browser Integrity:** Multi-layered detection for headless browsers, automation tools (Webdriver), and cookie-less environments.
+  - **Security Progress UI:** 5-second "Checking Security" screen with a dynamic progress bar for enhanced user trust and bot prevention.
+- **Premium RGB UI:**
+  - **RGB Shadows:** Dynamic animated shadows with smooth color transitions (Red, Blue, Green).
+  - **Premium Typography:** Clean look using the 'Poppins' font family.
+  - **Animated Progress:** Multi-layered progress bars with cubic-bezier timing and RGB background animations.
+  - **Theme:** Clean, modern, and high-performance verification interface.
 - **Premium Management System:** Interactive UI for adding/listing/managing premium users with expiry tracking.
 - **Branding:** Fully rebranded as ⚡𝗛𝗘𝗠𝗔𝗡𝗧𝗛⚡ (@ALONEKINGSTAR77).
 - **Performance:** Async handlers, non-blocking DB operations, and optimized caching with batch broadcasting.

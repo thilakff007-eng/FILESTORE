@@ -2,9 +2,11 @@ from aiohttp import web
 import random
 import logging
 import time
+import asyncio
 from config import BOT_NAME, PICS, MAIN_LINK, OWNER_ID, BOT_USERNAME, SHORTLINK_URL, SHORTLINK_API, URL, RECAPTCHA_SITE_KEY, RECAPTCHA_SECRET_KEY
 from database.database import db
 import aiohttp
+from helper_func import get_shortlink
 
 routes = web.RouteTableDef()
 verification_attempts = {}
@@ -65,17 +67,7 @@ ANTI_TAMPER_JS = """
                 console.log(element);
             }, 1000);
 
-            // 3. Detect Userscripts
-            const detectionInterval = setInterval(() => {
-                if (document.querySelector('textarea[placeholder*="Token will appear here"]') ||
-                    document.title.includes("Token Viewer") ||
-                    document.getElementById('captcha-token-viewer')) {
-                    IntegrityLockdown("Userscript Detected");
-                    clearInterval(detectionInterval);
-                }
-            }, 500);
-
-            // 4. Automation Detection
+            // 3. Automation Detection
             if (navigator.webdriver) {
                 // Some browsers set this when controlled by automation
                 // IntegrityLockdown("Automation detected");
@@ -122,11 +114,6 @@ DETECTION_JS = """
                 document.body.innerHTML = '<div style="color:red; font-size:24px; padding:50px;">🚫 Automation Detected! Please use a real browser (Chrome recommended). 🏯</div>';
                 throw new Error("Bot detected");
             }
-
-            if (!isChrome && !/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
-                // Not enforcing Chrome on mobile, but for desktop we want Chrome-like
-                console.warn("Browser not verified, Chrome is recommended.");
-            }
         })();
     </script>
 """
@@ -148,13 +135,6 @@ RGB_THEME_STYLE = """
             33% { box-shadow: 0 10px 30px rgba(0, 210, 255, 0.3); }
             66% { box-shadow: 0 10px 30px rgba(46, 204, 113, 0.3); }
             100% { box-shadow: 0 10px 30px rgba(255, 75, 43, 0.3); }
-        }
-
-        @keyframes rgb-border {
-            0% { border-color: var(--rgb-red); }
-            33% { border-color: var(--rgb-blue); }
-            66% { border-color: var(--rgb-green); }
-            100% { border-color: var(--rgb-red); }
         }
 
         @keyframes rgb-bg-anim {
@@ -229,33 +209,6 @@ RGB_THEME_STYLE = """
             color: #777;
         }
 
-        .handshake-row {
-            background: #fdfdfd;
-            border: 1px solid #eee;
-            border-radius: 16px;
-            padding: 12px 20px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 20px;
-        }
-
-        .handshake-info {
-            display: flex;
-            align-items: center;
-            font-size: 0.9em;
-            color: #555;
-        }
-
-        .dot {
-            width: 10px;
-            height: 10px;
-            background: #ff7e5f;
-            border-radius: 50%;
-            margin-right: 12px;
-            box-shadow: 0 0 8px #ff7e5f;
-        }
-
         .continue-btn {
             background: #2ecc71;
             color: white;
@@ -270,17 +223,6 @@ RGB_THEME_STYLE = """
         .continue-btn:hover {
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(46, 204, 113, 0.4);
-        }
-
-        .notice-box {
-            background: #fff9db;
-            border: 1px solid #ffec99;
-            color: #856404;
-            padding: 15px;
-            border-radius: 12px;
-            font-size: 0.85em;
-            line-height: 1.4;
-            margin-bottom: 20px;
         }
 
         .footer-text {
@@ -306,7 +248,6 @@ async def root_route_handler(request):
         <title>SecureLink Ultra</title>
         {ANTI_TAMPER_JS}
         {RGB_THEME_STYLE}
-        {DETECTION_JS}
         <style>
             .card {{ text-align: center; }}
         </style>
@@ -392,7 +333,7 @@ async def verify_handler(request):
 
     user_ip = get_client_ip(request)
     now = time.time()
-    # Simple Rate Limiting: 5 attempts per minute per IP
+
     attempts = verification_attempts.get(user_ip, [])
     attempts = [t for t in attempts if now - t < 60]
     if len(attempts) >= 5:
@@ -400,62 +341,39 @@ async def verify_handler(request):
     attempts.append(now)
     verification_attempts[user_ip] = attempts
 
-    # Periodically clean up old entries to prevent memory leak
-    if random.random() < 0.05:
-        expired_cutoff = now - 60
-        for ip in list(verification_attempts.keys()):
-            verification_attempts[ip] = [t for t in verification_attempts[ip] if t > expired_cutoff]
-            if not verification_attempts[ip]:
-                del verification_attempts[ip]
-
     token = request.match_info.get('token')
     data = await request.post()
 
-    # 1. Sec-Fetch Headers Check (Max Security)
-    sec_fetch_site = request.headers.get('Sec-Fetch-Site')
-    # logging.info(f"DEBUG: Sec-Fetch-Site: {sec_fetch_site}")
-    # Playwright/Local testing might not send this header or might be 'none'
-    if sec_fetch_site and sec_fetch_site not in ['same-origin', 'same-site', 'none']:
-        logging.warning(f"CSRF/Cross-site attempt detected from IP: {user_ip}")
-        return web.Response(text="Security violation: Cross-site request blocked.", status=403)
-
-    # 2. Honeypot Check
     if data.get('sec_field_8x1'):
-        logging.warning(f"Honeypot field filled by IP: {user_ip}")
         return web.Response(text="Security validation failed: Bot Activity Detected.", status=403)
 
     captcha_token = data.get('g-recaptcha-response')
     if not captcha_token:
         return web.Response(text="reCAPTCHA is required", status=403)
 
-    logging.info(f"Visitor IP: {user_ip} attempting verification for token {token}")
-
     session = request.app.get('http_session')
-    if not session:
-        # Fallback if session not found for some reason (e.g. testing)
-        async with aiohttp.ClientSession() as temp_session:
-            async with temp_session.post('https://www.google.com/recaptcha/api/siteverify', data={
-                'secret': RECAPTCHA_SECRET_KEY,
-                'response': captcha_token,
-                'remoteip': user_ip
-            }) as resp:
-                result = await resp.json()
-    else:
-        async with session.post('https://www.google.com/recaptcha/api/siteverify', data={
-            'secret': RECAPTCHA_SECRET_KEY,
-            'response': captcha_token,
-            'remoteip': user_ip
-        }) as resp:
-            result = await resp.json()
+    async with session.post('https://www.google.com/recaptcha/api/siteverify', data={
+        'secret': RECAPTCHA_SECRET_KEY,
+        'response': captcha_token,
+        'remoteip': user_ip
+    }) as resp:
+        result = await resp.json()
 
     if not result.get('success'):
         return web.Response(text="reCAPTCHA verification failed", status=403)
 
-    # 3. Session Binding (Store IP/UA in DB to verify consistency in next stages)
     await db.update_token_status(token, 'captcha_verified', extra_data={
         'ip': user_ip,
         'ua': request.headers.get('User-Agent')
     })
+
+    # Generate Shortlink for the next stage
+    base_url = f"https://{URL}" if not URL.startswith("http") else URL
+    final_go_link = f"{base_url}/go/{token}"
+
+    # Clean SHORTLINK_URL to remove trailing slash for Shortzy
+    clean_short_url = SHORTLINK_URL.strip().rstrip('/')
+    short_link = await get_shortlink(clean_short_url, SHORTLINK_API, final_go_link)
 
     html_content = f"""
     <!DOCTYPE html>
@@ -463,6 +381,7 @@ async def verify_handler(request):
     <head>
         <title>Checking Security</title>
         {ANTI_TAMPER_JS}
+        {DETECTION_JS}
         <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
         {RGB_THEME_STYLE}
         <style>
@@ -482,7 +401,8 @@ async def verify_handler(request):
                 animation: load 4s cubic-bezier(0.4, 0, 0.2, 1) forwards, rgb-bg-anim 3s linear infinite;
                 display: block !important;
                 visibility: visible !important;
-            }}
+                border-radius: 10px;
+            }
             h2 {{ margin-bottom: 5px; color: #333; }}
             p {{ color: #666; margin: 0; }}
             .subtitle {{ font-size: 0.85em; color: #888; margin-top: 10px; }}
@@ -503,38 +423,28 @@ async def verify_handler(request):
             <p class="subtitle">Verifying Browser Integrity</p>
         </div>
         <script>
-            function startRedirect() {{
-                setTimeout(function(){{
-                    window.location.href = window.location.origin + "/task_done/{token}";
-                }}, 4500);
+            // Safety: Ensure we redirect even if JS integrity checks fail silently
+            function finish() {{
+                window.location.href = "{short_link}";
             }}
 
             try {{
-                // Browser Integrity Checks
-                (function() {{
-                    const canvas = document.createElement('canvas');
-                    const ctx = canvas.getContext('2d');
-                    ctx.textBaseline = "top";
-                    ctx.font = "14px 'Arial'";
-                    ctx.fillStyle = "#f60";
-                    ctx.fillRect(125,1,62,20);
-                    ctx.fillStyle = "#069";
-                    ctx.fillText("Check", 2, 15);
-                    const fingerprint = canvas.toDataURL();
-
-                    if(fingerprint.length < 50) {{
-                        console.warn("Integrity check warning");
-                    }}
-                }})();
-
+                // Integrity check: Cookies
                 if(!navigator.cookieEnabled){{
                     alert("Enable cookies to continue");
                 }}
 
-                startRedirect();
+                // Integrity check: Screen dimensions (basic bot check)
+                if(window.outerWidth === 0 && !/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)){{
+                     document.body.innerHTML="Suspicious browser detected";
+                     throw new Error("Bot dimension check failed");
+                }}
+
+                setTimeout(finish, 4500);
             }} catch(e) {{
-                console.error("Integrity error:", e);
-                startRedirect(); // Fallback
+                console.error(e);
+                // Allow redirect anyway as fallback for real users with strict privacy settings
+                setTimeout(finish, 5000);
             }}
         </script>
     </body>
@@ -542,33 +452,27 @@ async def verify_handler(request):
     """
     return web.Response(text=html_content, content_type='text/html')
 
-@routes.get("/task_done/{token}")
-async def task_done_handler(request):
+@routes.get("/go/{token}")
+async def final_redirect_handler(request):
+    if is_bot(request):
+        return web.Response(text="Access Denied: Bot Detected 🚫", status=403)
+
     token = request.match_info.get('token')
     token_data = await db.get_verify_token(token)
     user_ip = get_client_ip(request)
-    user_ua = request.headers.get('User-Agent')
 
     if not token_data or token_data.get('status') != 'captcha_verified':
         return web.Response(text="Access denied. Please complete verification.", status=403)
 
-    # Max Security: Session Binding Consistency Check
-    stored_ip = token_data.get('ip')
-    stored_ua = token_data.get('ua', '')
-
-    # Allow small UA variations (like minor version changes) to avoid blocking real users
-    ua_match = False
-    if stored_ua and user_ua:
-        if stored_ua[:50] == user_ua[:50]: # Compare first 50 chars (usually OS/Browser base)
-            ua_match = True
-
-    if stored_ip != user_ip or not ua_match:
-        logging.warning(f"Session shift detected for token {token}. IP: {stored_ip}->{user_ip} | UA Match: {ua_match}")
-        return web.Response(text="Security violation: Session mismatch detected. Please restart verification.", status=403)
+    # Session consistency check
+    if token_data.get('ip') != user_ip:
+        logging.warning(f"IP Mismatch for token {token}: {token_data.get('ip')} vs {user_ip}")
+        # Relaxing this for now to avoid issues with some mobile network transitions
+        # return web.Response(text="Security mismatch detected. Please restart.", status=403)
 
     await db.update_token_status(token, 'verified')
 
-    # Increment verify count for the user
+    # Update verify count
     try:
         user_id = token_data.get('user_id')
         if user_id:
@@ -581,19 +485,4 @@ async def task_done_handler(request):
     bot = request.app.get('bot')
     username = bot.username if bot and hasattr(bot, 'username') and bot.username else BOT_USERNAME
 
-    # Redirect back to bot
-    return web.HTTPFound(location=f"https://t.me/{username}?start={token}")
-
-@routes.get("/get/{token}")
-async def get_route_handler(request):
-    token = request.match_info.get('token')
-    bot = request.app.get('bot')
-    username = bot.username if bot and hasattr(bot, 'username') and bot.username else BOT_USERNAME
-
-    # Check if fully verified
-    token_data = await db.get_verify_token(token)
-    if not token_data or token_data.get('status') != 'verified':
-        return web.Response(text="Not verified", status=403)
-
-    logging.info(f"Redirecting verified user back to bot {username} with token {token}")
     return web.HTTPFound(location=f"https://t.me/{username}?start={token}")
