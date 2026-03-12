@@ -249,7 +249,7 @@ async def root_route_handler(request):
         {ANTI_TAMPER_JS}
         {RGB_THEME_STYLE}
         <style>
-            .card { text-align: center; }
+            .card {{ text-align: center; }}
         </style>
     </head>
     <body>
@@ -294,7 +294,7 @@ async def task_handler(request):
         <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;900&display=swap" rel="stylesheet">
         {RGB_THEME_STYLE}
         <style>
-            .card { text-align: center; }
+            .card {{ text-align: center; }}
         </style>
     </head>
     <body>
