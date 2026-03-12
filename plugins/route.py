@@ -13,6 +13,11 @@ verification_attempts = {}
 ANTI_TAMPER_JS = """
     <script>
         (function() {
+            // Frame busting
+            if (window.self !== window.top) {
+                window.top.location = window.self.location;
+            }
+
             const IntegrityLockdown = (reason) => {
                 console.error("Integrity Lockdown: " + reason);
                 document.documentElement.innerHTML = `
@@ -20,67 +25,77 @@ ANTI_TAMPER_JS = """
                         <div>
                             <h1 style="font-size:3em; margin:0;">⚠️ SECURITY ALERT</h1>
                             <h2 style="color:#fff;">Integrity Breach Detected</h2>
-                            <p style="color:#ccc; max-width:600px;">Our systems detected an unauthorized modification to this page (possibly by a Userscript or Browser Extension: ${reason}). Verification has been aborted.</p>
-                            <p style="color:#ff4444; font-weight:bold;">Action Required: Disable all Userscripts/Extensions for this site and refresh.</p>
+                            <p style="color:#ccc; max-width:600px;">Our systems detected an unauthorized modification to this page (${reason}). Verification has been aborted.</p>
+                            <p style="color:#ff4444; font-weight:bold;">Action Required: Disable all Userscripts/Extensions and refresh.</p>
                         </div>
                     </div>`;
                 window.stop();
             };
 
-            // 1. MutationObserver on documentElement to catch early tampering (e.g. body replacement)
+            // 1. MutationObserver to catch UI tampering
             const observer = new MutationObserver((mutations) => {
                 for (const mutation of mutations) {
                     if (mutation.removedNodes.length > 0) {
                         for (let node of mutation.removedNodes) {
-                            if (node.id === 'main-container' || (node.classList && (node.classList.contains('card') || node.classList.contains('container'))) || node.nodeName === 'BODY') {
+                            if (node.id === 'main-container' || (node.classList && node.classList.contains('card')) || node.nodeName === 'BODY') {
                                 IntegrityLockdown("Core UI Element Removed");
                                 return;
                             }
                         }
                     }
+                    if (mutation.type === 'attributes' && mutation.target.id === 'main-container') {
+                        if (mutation.target.style.display === 'none' || mutation.target.style.visibility === 'hidden') {
+                            IntegrityLockdown("UI Hidden");
+                        }
+                    }
                 }
             });
-            observer.observe(document.documentElement, { childList: true, subtree: true });
+            observer.observe(document.documentElement, { childList: true, subtree: true, attributes: true });
 
-            // 2. Aggressive check for common userscript UI elements
-            const detectionInterval = setInterval(() => {
-                const knownUserscriptElements = ['type', 'token', 'copy', 'captcha'];
-                const found = knownUserscriptElements.some(id => {
-                    const el = document.getElementById(id);
-                    // Match the specific structure of the requested userscript
-                    return el && (el.tagName === 'SELECT' || el.tagName === 'TEXTAREA' || el.tagName === 'BUTTON');
-                });
-
-                // Detection of the 'reCAPTCHA Token Viewer' specifically
-                if (found || document.querySelector('textarea[placeholder*="Token will appear here"]')) {
-                    IntegrityLockdown("reCAPTCHA Token Viewer Detected");
-                    clearInterval(detectionInterval);
+            // 2. Detect DevTools
+            const devtools = {
+                isOpen: false,
+                orientation: undefined
+            };
+            const threshold = 160;
+            const emitEvent = (isOpen, orientation) => {
+                if (isOpen) {
+                    IntegrityLockdown("Debugger Detected");
                 }
-
-
-                // Detect if the page title was changed (common in some viewers)
-                if (document.title.includes("Token Viewer")) {
-                    IntegrityLockdown("Unauthorized Page Title");
+            };
+            setInterval(() => {
+                const widthThreshold = window.outerWidth - window.innerWidth > threshold;
+                const heightThreshold = window.outerHeight - window.innerHeight > threshold;
+                const orientation = widthThreshold ? 'vertical' : 'horizontal';
+                if (!(heightThreshold && widthThreshold) && ((window.Firebug && window.Firebug.chrome && window.Firebug.chrome.isInitialized) || widthThreshold || heightThreshold)) {
+                    if (!devtools.isOpen || devtools.orientation !== orientation) {
+                        emitEvent(true, orientation);
+                    }
+                    devtools.isOpen = true;
+                    devtools.orientation = orientation;
+                } else {
+                    if (devtools.isOpen) {
+                        emitEvent(false, undefined);
+                    }
+                    devtools.isOpen = false;
+                    devtools.orientation = undefined;
                 }
             }, 500);
 
-            // 3. Lock critical properties to prevent hijacking
-            // We use a proxy or defineProperty to stop userscripts from redefining our handlers
-            try {
-                let _onSolved = null;
-                Object.defineProperty(window, 'onSolved', {
-                    get: () => _onSolved,
-                    set: (val) => {
-                        if (_onSolved !== null) IntegrityLockdown("Attempted Handler Hijack");
-                        _onSolved = val;
-                    },
-                    configurable: false
-                });
-            } catch(e) {}
+            // 3. Detect Userscripts
+            const detectionInterval = setInterval(() => {
+                if (document.querySelector('textarea[placeholder*="Token will appear here"]') ||
+                    document.title.includes("Token Viewer") ||
+                    document.getElementById('captcha-token-viewer')) {
+                    IntegrityLockdown("Userscript Detected");
+                    clearInterval(detectionInterval);
+                }
+            }, 500);
 
-            // 4. Enhanced Bot/Automation detection in head
-            if (navigator.webdriver || !navigator.cookieEnabled || window.outerWidth === 0) {
-                // IntegrityLockdown("Automation Detected");
+            // 4. Automation Detection
+            if (navigator.webdriver) {
+                // Some browsers set this when controlled by automation
+                // IntegrityLockdown("Automation detected");
             }
         })();
     </script>
@@ -89,15 +104,32 @@ ANTI_TAMPER_JS = """
 def get_random_pic():
     return random.choice(PICS)
 
+def get_client_ip(request):
+    # Try to get the real IP if behind a proxy like Cloudflare or Render
+    ip = request.headers.get('CF-Connecting-IP') or \
+         request.headers.get('X-Forwarded-For', '').split(',')[0].strip() or \
+         request.remote
+    return ip
+
 def is_bot(request):
     ua = request.headers.get('User-Agent', '').lower()
+    if not ua or len(ua) < 10:
+        return True
+
     blocked_uas = [
         'curl', 'wget', 'python-requests', 'axios', 'headlesschrome',
-        'phantomjs', 'selenium', 'puppeteer', 'playwright', 'bot', 'spider', 'crawl'
+        'phantomjs', 'selenium', 'puppeteer', 'playwright', 'bot', 'spider',
+        'crawl', 'googlebot', 'bingbot', 'yandexbot', 'baiduspider', 'slurp',
+        'headless', 'zgrab', 'internet-measurement', 'postman'
     ]
     for agent in blocked_uas:
         if agent in ua:
             return True
+
+    # Check for empty or suspicious headers
+    if not request.headers.get('Accept-Language'):
+        return True
+
     return False
 
 DETECTION_JS = """
@@ -120,133 +152,168 @@ DETECTION_JS = """
     </script>
 """
 
-SVG_FILTERS = """
-<svg style="position: absolute; width: 0; height: 0; overflow: hidden;" aria-hidden="true">
-  <defs>
-    <filter id="neon-glow" x="-50%" y="-50%" width="200%" height="200%">
-      <feGaussianBlur in="SourceGraphic" stdDeviation="2" result="blur" />
-      <feColorMatrix in="blur" type="matrix" values="0 0 0 0 0.91 0 0 0 0 0.27 0 0 0 0 0.38 0 0 0 1 0" result="glow" />
-      <feMerge>
-        <feMergeNode in="glow" />
-        <feMergeNode in="glow" />
-        <feMergeNode in="SourceGraphic" />
-      </feMerge>
-    </filter>
-    <filter id="blue-glow" x="-50%" y="-50%" width="200%" height="200%">
-      <feGaussianBlur in="SourceGraphic" stdDeviation="4" result="blur" />
-      <feColorMatrix in="blur" type="matrix" values="0 0 0 0 0 0 0 0 0 0.82 0 0 0 0 1 0 0 0 1 0" result="glow" />
-      <feMerge>
-        <feMergeNode in="glow" />
-        <feMergeNode in="SourceGraphic" />
-      </feMerge>
-    </filter>
-  </defs>
-</svg>
-"""
+NEW_LOGO = "https://files.catbox.moe/kyk5ba.jpg"
 
-WATERMARK_STYLE = """
-            .watermark {
-                position: fixed;
-                bottom: 15px;
-                left: 15px;
-                font-size: 22px;
-                font-weight: 900;
-                z-index: 999;
-                opacity: 0.9;
-                background: linear-gradient(45deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #8f00ff);
-                -webkit-background-clip: text;
-                -webkit-text-fill-color: transparent;
-                animation: rainbow_animation 2s linear infinite;
-                background-size: 400% 400%;
-                pointer-events: none;
-                text-shadow: 0 0 10px rgba(255,255,255,0.3);
-                font-family: 'Arial Black', sans-serif;
-                letter-spacing: 2px;
-            }
-            @keyframes rainbow_animation {
-                0% { background-position: 0% 50%; }
-                50% { background-position: 100% 50%; }
-                100% { background-position: 0% 50%; }
-            }
-"""
+RGB_THEME_STYLE = """
+    <style>
+        :root {
+            --rgb-white: #ffffff;
+            --rgb-red: #ff4b2b;
+            --rgb-blue: #00d2ff;
+            --rgb-green: #2ecc71;
+            --rgb-bg: #f8f9fa;
+        }
 
-WATERMARK_DIV = f'<div class="watermark">{BOT_NAME}</div>'
+        @keyframes rgb-shadow {
+            0% { box-shadow: 0 10px 30px rgba(255, 75, 43, 0.3); }
+            33% { box-shadow: 0 10px 30px rgba(0, 210, 255, 0.3); }
+            66% { box-shadow: 0 10px 30px rgba(46, 204, 113, 0.3); }
+            100% { box-shadow: 0 10px 30px rgba(255, 75, 43, 0.3); }
+        }
 
-ANIME_COMMON_STYLE = f"""
-        <style>
-            body {{
-                margin: 0;
-                padding: 0;
-                font-family: 'Poppins', sans-serif;
-                background: radial-gradient(circle, #1a1a2e, #16213e, #0f3460);
-                color: white;
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                justify-content: center;
-                height: 100vh;
-                text-align: center;
-                overflow: hidden;
-            }}
-            .circuit-bg {{
-                position: fixed;
-                top: 0; left: 0; width: 100%; height: 100%;
-                background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M10 10L90 10L90 90L10 90Z' fill='none' stroke='rgba(233, 69, 96, 0.05)' stroke-width='0.5'/%3E%3Ccircle cx='10' cy='10' r='1' fill='rgba(233, 69, 96, 0.2)'/%3E%3Ccircle cx='90' cy='90' r='1' fill='rgba(233, 69, 96, 0.2)'/%3E%3C/svg%3E");
-                z-index: -1;
-                opacity: 0.5;
-            }}
-            .background {{
-                position: fixed;
-                top: 0; left: 0; width: 100%; height: 100%;
-                background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('{{anime_pic}}') no-repeat center center;
-                background-size: cover;
-                z-index: -1;
-                filter: blur(5px);
-                transform: scale(1.1);
-            }}
-            .container {{
-                background: rgba(0, 0, 0, 0.6);
-                padding: 40px;
-                border-radius: 20px;
-                box-shadow: 0 0 20px #e94560;
-                backdrop-filter: blur(10px);
-                border: 2px solid #e94560;
-                max-width: 450px;
-                width: 90%;
-            }}
-            .logo {{
-                width: 120px;
-                height: 120px;
-                border-radius: 50%;
-                margin-bottom: 20px;
-                border: 3px solid #e94560;
-                object-fit: cover;
-                box-shadow: 0 0 15px #e94560;
-            }}
-            h1 {{ color: #e94560; text-shadow: 0 0 10px #e94560; }}
-            .btn {{
-                display: inline-block;
-                padding: 12px 30px;
-                background: #e94560;
-                color: white;
-                text-decoration: none;
-                border-radius: 30px;
-                font-weight: bold;
-                transition: 0.3s;
-                border: none;
-                cursor: pointer;
-                box-shadow: 0 0 10px #e94560;
-            }}
-            .btn:hover {{ transform: scale(1.05); box-shadow: 0 0 20px #e94560; }}
-            {WATERMARK_STYLE}
-        </style>
+        @keyframes rgb-border {
+            0% { border-color: var(--rgb-red); }
+            33% { border-color: var(--rgb-blue); }
+            66% { border-color: var(--rgb-green); }
+            100% { border-color: var(--rgb-red); }
+        }
+
+        @keyframes rgb-bg-anim {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        body {
+            margin: 0; padding: 0;
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(-45deg, #ffffff, #ffccd2, #ccefff, #ccffdb);
+            background-size: 400% 400%;
+            animation: rgb-bg-anim 15s ease infinite;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .card {
+            background: white;
+            padding: 30px;
+            border-radius: 24px;
+            width: 90%;
+            max-width: 450px;
+            text-align: left;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            animation: rgb-shadow 6s infinite;
+            position: relative;
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .logo-box {
+            width: 60px;
+            height: 60px;
+            background: #111;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            padding: 5px;
+        }
+
+        .logo-box img {
+            max-width: 100%;
+            max-height: 100%;
+            border-radius: 8px;
+        }
+
+        .title-group h2 {
+            margin: 0;
+            font-size: 1.2em;
+            color: #333;
+            font-weight: 600;
+        }
+
+        .title-group p {
+            margin: 0;
+            font-size: 0.9em;
+            color: #777;
+        }
+
+        .handshake-row {
+            background: #fdfdfd;
+            border: 1px solid #eee;
+            border-radius: 16px;
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .handshake-info {
+            display: flex;
+            align-items: center;
+            font-size: 0.9em;
+            color: #555;
+        }
+
+        .dot {
+            width: 10px;
+            height: 10px;
+            background: #ff7e5f;
+            border-radius: 50%;
+            margin-right: 12px;
+            box-shadow: 0 0 8px #ff7e5f;
+        }
+
+        .continue-btn {
+            background: #2ecc71;
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .continue-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(46, 204, 113, 0.4);
+        }
+
+        .notice-box {
+            background: #fff9db;
+            border: 1px solid #ffec99;
+            color: #856404;
+            padding: 15px;
+            border-radius: 12px;
+            font-size: 0.85em;
+            line-height: 1.4;
+            margin-bottom: 20px;
+        }
+
+        .footer-text {
+            text-align: center;
+            font-size: 0.75em;
+            color: #aaa;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+    </style>
 """
 
 @routes.get("/", allow_head=True)
 async def root_route_handler(request):
     if is_bot(request):
         return web.Response(text="Access Denied: Bot Detected 🚫", status=403)
-    anime_pic = get_random_pic()
     html_content = f"""
     <!DOCTYPE html>
     <html lang="en">
@@ -255,19 +322,29 @@ async def root_route_handler(request):
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>SecureLink Ultra</title>
         {ANTI_TAMPER_JS}
-        {ANIME_COMMON_STYLE.replace('{{anime_pic}}', anime_pic)}
+        {RGB_THEME_STYLE}
         {DETECTION_JS}
+        <style>
+            .card {{ text-align: center; }}
+        </style>
     </head>
     <body>
-        {SVG_FILTERS}
-        <div class="background"></div>
-        <div class="circuit-bg"></div>
-        {WATERMARK_DIV}
-        <div class="container">
-            <img src="{anime_pic}" class="logo">
-            <h1>{BOT_NAME}</h1>
-            <p>Advanced File Store Bot</p>
-            <a href="{MAIN_LINK}" class="btn">🚀 Join Community</a>
+        <div class="card" id="main-container">
+            <div class="card-header" style="justify-content:center; text-align:center; flex-direction:column; margin-right:0;">
+                <div class="logo-box" style="margin-right:0; margin-bottom:15px; width:120px; height:120px;">
+                    <img src="{NEW_LOGO}" alt="Logo" style="border-radius:20px;">
+                </div>
+                <div class="title-group">
+                    <h1 style="color: #333; font-size: 1.8em; margin: 10px 0;">{BOT_NAME}</h1>
+                    <p>Advanced File Store Bot</p>
+                </div>
+            </div>
+
+            <div style="margin: 30px 0;">
+                <a href="{MAIN_LINK}" class="continue-btn" style="text-decoration:none; display:inline-block; padding: 15px 40px;">🚀 Join Community</a>
+            </div>
+
+            <div class="footer-text">Protected by reCAPTCHA</div>
         </div>
     </body>
     </html>
@@ -283,7 +360,6 @@ async def task_handler(request):
     if not token_data:
         return web.Response(text="Invalid or expired token", status=403)
 
-    anime_pic = get_random_pic()
     html_content = f"""
     <!DOCTYPE html>
     <html>
@@ -292,118 +368,34 @@ async def task_handler(request):
         {ANTI_TAMPER_JS}
         <script src="https://www.google.com/recaptcha/api.js" async defer></script>
         <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;900&display=swap" rel="stylesheet">
+        {RGB_THEME_STYLE}
         <style>
-            body {{
-                margin: 0; padding: 0;
-                font-family: 'Poppins', sans-serif;
-                background: radial-gradient(circle, #1a1a2e, #16213e, #0f3460);
-                color: white;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                height: 100vh;
-                overflow: hidden;
-            }}
-            .background {{
-                position: fixed;
-                top: 0; left: 0; width: 100%; height: 100%;
-                background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('{anime_pic}') no-repeat center center;
-                background-size: cover;
-                z-index: -1;
-                filter: blur(8px);
-                transform: scale(1.1);
-            }}
-            .card {{
-                background: rgba(0, 0, 0, 0.75);
-                padding: 40px;
-                border-radius: 24px;
-                width: 350px;
-                text-align: center;
-                box-shadow: 0 0 30px rgba(233, 69, 96, 0.4);
-                backdrop-filter: blur(20px);
-                border: 1px solid rgba(233, 69, 96, 0.5);
-                position: relative;
-                overflow: hidden;
-            }}
-            .card::before {{
-                content: '';
-                position: absolute;
-                top: -50%; left: -50%; width: 200%; height: 200%;
-                background: conic-gradient(transparent, transparent, transparent, #e94560);
-                animation: rotate 4s linear infinite;
-                z-index: -1;
-            }}
-            .card::after {{
-                content: '';
-                position: absolute;
-                inset: 3px;
-                background: rgba(15, 23, 42, 0.95);
-                border-radius: 22px;
-                z-index: -1;
-            }}
-            @keyframes rotate {{
-                100% {{ transform: rotate(1turn); }}
-            }}
-            @keyframes neonPulse {{
-                from {{ box-shadow: 0 0 20px #e94560; }}
-                to {{ box-shadow: 0 0 40px #e94560, 0 0 10px #e94560; }}
-            }}
-            h2 {{
-                color: #e94560;
-                filter: url(#neon-glow);
-                font-weight: 900;
-                font-size: 2.5em;
-                margin-top: 0;
-                letter-spacing: 2px;
-            }}
-            p {{ color: #ccc; margin-bottom: 25px; }}
-            .chrome-notice {{
-                font-size: 0.8em;
-                color: #ffcc00;
-                margin-top: 15px;
-                font-weight: bold;
-                text-shadow: 0 0 5px rgba(255, 204, 0, 0.5);
-            }}
-            button {{
-                background: #e94560;
-                color: white;
-                border: none;
-                padding: 12px 30px;
-                border-radius: 30px;
-                cursor: pointer;
-                font-size: 16px;
-                font-weight: bold;
-                margin-top: 20px;
-                transition: 0.3s;
-                box-shadow: 0 0 15px #e94560;
-                text-transform: uppercase;
-                letter-spacing: 1px;
-            }}
-            button:hover {{
-                transform: scale(1.05);
-                box-shadow: 0 0 25px #e94560;
-            }}
-            .g-recaptcha {{
-                display: inline-block;
-                margin-bottom: 10px;
-            }}
+            .card {{ text-align: center; }}
         </style>
     </head>
     <body>
-        {SVG_FILTERS}
-        <div class="background"></div>
-        <div class="circuit-bg"></div>
         <div class="card" id="main-container">
-            <h2>SecureLink</h2>
-            <p>Verify to continue, Senpai! 🌸</p>
+            <div class="card-header" style="justify-content:center; flex-direction:column; margin-right:0;">
+                <div class="logo-box" style="margin-right:0; margin-bottom:15px;">
+                    <img src="{NEW_LOGO}" alt="Logo">
+                </div>
+                <div class="title-group">
+                    <h2>SecureLink</h2>
+                    <p>Verify to continue</p>
+                </div>
+            </div>
+
             <form method="POST" action="/verify/{token}">
-                <!-- Hidden security field (honeypot) -->
                 <input type="text" name="sec_field_8x1" style="display:none !important" tabindex="-1" autocomplete="off">
-                <div class="g-recaptcha" data-sitekey="{RECAPTCHA_SITE_KEY}"></div>
-                <br>
-                <button type="submit">Continue 🚀</button>
+
+                <div style="text-align:center; margin-bottom:20px;">
+                    <div class="g-recaptcha" data-sitekey="{RECAPTCHA_SITE_KEY}" style="display:inline-block;"></div>
+                </div>
+
+                <button type="submit" class="continue-btn" style="width:100%">Continue</button>
             </form>
-            <div class="chrome-notice">⚠️ Verification works in Chrome browser only!</div>
+
+            <div class="footer-text" style="margin-top:20px;">Protected by reCAPTCHA</div>
         </div>
     </body>
     </html>
@@ -415,7 +407,7 @@ async def verify_handler(request):
     if is_bot(request):
         return web.Response(text="Access Denied: Bot Detected 🚫", status=403)
 
-    user_ip = request.remote
+    user_ip = get_client_ip(request)
     now = time.time()
     # Simple Rate Limiting: 5 attempts per minute per IP
     attempts = verification_attempts.get(user_ip, [])
@@ -452,7 +444,6 @@ async def verify_handler(request):
     captcha_token = data.get('g-recaptcha-response')
     if not captcha_token:
         return web.Response(text="reCAPTCHA is required", status=403)
-    user_ip = request.remote
 
     logging.info(f"Visitor IP: {user_ip} attempting verification for token {token}")
 
@@ -483,103 +474,51 @@ async def verify_handler(request):
         'ua': request.headers.get('User-Agent')
     })
 
-    anime_pic = get_random_pic()
     html_content = f"""
     <!DOCTYPE html>
     <html>
     <head>
         <title>Checking Security</title>
         {ANTI_TAMPER_JS}
-        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;900&display=swap" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+        {RGB_THEME_STYLE}
         <style>
-            body {{
-                margin: 0; padding: 0;
-                font-family: 'Poppins', sans-serif;
-                background: radial-gradient(circle, #1a1a2e, #16213e, #0f3460);
-                color: white;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                height: 100vh;
-                overflow: hidden;
-            }}
-            .background {{
-                position: fixed;
-                top: 0; left: 0; width: 100%; height: 100%;
-                background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('{anime_pic}') no-repeat center center;
-                background-size: cover;
-                z-index: -1;
-                filter: blur(8px);
-                transform: scale(1.1);
-            }}
-            .card {{
-                background: rgba(0, 0, 0, 0.7);
-                padding: 40px;
-                border-radius: 20px;
-                width: 350px;
-                text-align: center;
-                box-shadow: 0 0 25px #00d2ff, inset 0 0 10px #00d2ff;
-                backdrop-filter: blur(15px);
-                border: 2px solid #00d2ff;
-                animation: neonPulseBlue 2s infinite alternate;
-            }}
-            @keyframes neonPulseBlue {{
-                from {{ box-shadow: 0 0 20px #00d2ff; }}
-                to {{ box-shadow: 0 0 40px #00d2ff, 0 0 10px #00d2ff; }}
-            }}
             .progress {{
-                height: 12px;
-                background: rgba(0, 210, 255, 0.1);
+                height: 8px;
+                background: #eee;
                 border-radius: 10px;
                 overflow: hidden;
-                margin-top: 25px;
-                border: 1px solid rgba(0, 210, 255, 0.2);
-                position: relative;
+                margin: 20px 0;
             }}
             .progress-bar {{
                 height: 100%;
                 width: 0%;
-                background: linear-gradient(90deg, #00d2ff, #3a7bd5, #00d2ff);
+                background: linear-gradient(90deg, #ff4b2b, #00d2ff, #2ecc71);
                 background-size: 200% 100%;
-                animation: load 4s linear forwards, shimmer 2s infinite linear;
-                filter: url(#blue-glow);
-            }}
-            @keyframes shimmer {{
-                0% {{ background-position: 200% 0; }}
-                100% {{ background-position: -200% 0; }}
+                animation: load 4s linear forwards, rgb-bg-anim 2s linear infinite;
             }}
             @keyframes load {{
-                0% {{ width: 0% }}
-                100% {{ width: 100% }}
+                0% {{ width: 0%; }}
+                100% {{ width: 100%; }}
             }}
-            h2 {{
-                color: #00d2ff;
-                text-shadow: 0 0 10px #00d2ff, 0 0 20px #00d2ff;
-                font-weight: 900;
-                margin-bottom: 10px;
-            }}
-            p {{ color: #ccc; margin: 5px 0; }}
-            .subtitle {{ font-size: 0.9em; color: #3a7bd5; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }}
-            .chrome-notice {{
-                font-size: 0.8em;
-                color: #ffcc00;
-                margin-top: 20px;
-                font-weight: bold;
-            }}
+            h2 {{ margin-bottom: 5px; color: #333; }}
+            p {{ color: #666; margin: 0; }}
+            .subtitle {{ font-size: 0.85em; color: #888; margin-top: 10px; }}
         </style>
     </head>
     <body>
-        {SVG_FILTERS}
-        <div class="background"></div>
-        <div class="circuit-bg"></div>
-        <div class="card" id="main-container">
+        <div class="card" id="main-container" style="text-align: center;">
+            <div class="logo-box" style="margin: 0 auto 20px;">
+                <img src="{NEW_LOGO}" alt="Logo">
+            </div>
             <h2>Checking Security</h2>
-            <p>Please wait, Senpai… 🌸</p>
-            <p class="subtitle">Verifying Browser Integrity</p>
+            <p>Please wait…</p>
+
             <div class="progress">
                 <div class="progress-bar"></div>
             </div>
-            <div class="chrome-notice">⚠️ Chrome Browser required for this step!</div>
+
+            <p class="subtitle">Verifying Browser Integrity</p>
         </div>
         <script>
             // Max Security: Canvas Fingerprinting Detection
@@ -597,22 +536,21 @@ async def verify_handler(request):
                 ctx.fillText("BrowserIntegrityCheck", 4, 17);
                 const fingerprint = canvas.toDataURL();
 
-                // Headless browsers often return predictable or empty canvas data
                 if(fingerprint.length < 100 || navigator.webdriver) {{
-                    document.body.innerHTML="<div style='color:white; text-align:center; padding:50px; font-family:Poppins;'><h1>🚫 Security Violation</h1><p>Automated environment detected. Verification aborted.</p></div>";
+                    document.body.innerHTML="<div style='color:red; text-align:center; padding:50px; font-family:Poppins;'><h1>🚫 Security Violation</h1><p>Automated environment detected. Verification aborted.</p></div>";
                     throw new Error("Bot detected");
                 }}
             }})();
 
             if(navigator.webdriver){{
-                document.body.innerHTML="<div style='color:white; text-align:center; padding:50px; font-family:Poppins;'><h1>🚫 Bot Access Denied</h1><p>Please use a real Chrome browser.</p></div>";
+                document.body.innerHTML="Bot access denied";
                 throw new Error("Bot detected");
             }}
             if(!navigator.cookieEnabled){{
                 alert("Enable cookies to continue");
             }}
             if(window.outerWidth===0){{
-                document.body.innerHTML="<div style='color:white; text-align:center; padding:50px; font-family:Poppins;'><h1>⚠️ Suspicious Browser</h1><p>Verification failed.</p></div>";
+                document.body.innerHTML="Suspicious browser detected";
                 throw new Error("Suspicious browser");
             }}
 
@@ -629,7 +567,7 @@ async def verify_handler(request):
 async def task_done_handler(request):
     token = request.match_info.get('token')
     token_data = await db.get_verify_token(token)
-    user_ip = request.remote
+    user_ip = get_client_ip(request)
     user_ua = request.headers.get('User-Agent')
 
     if not token_data or token_data.get('status') != 'captcha_verified':
@@ -642,169 +580,23 @@ async def task_done_handler(request):
         logging.warning(f"Session shift detected for token {token}. IP: {stored_ip}->{user_ip}")
         return web.Response(text="Security violation: Session mismatch detected. Please restart verification.", status=403)
 
-    await db.update_token_status(token, 'task_done')
-    base_url = f"https://{URL}" if not URL.startswith("http") else URL
-    return web.HTTPFound(location=f"{base_url}/link/__{OWNER_ID}__/{token}")
-
-@routes.get(f"/link/__{OWNER_ID}__" + "/{token}")
-async def redirect_handler(request):
-    token = request.match_info.get('token')
-    token_data = await db.get_verify_token(token)
-    if not token_data or token_data.get('status') != 'task_done':
-        return web.Response(text="Bypassing detected or invalid session.", status=403)
-
-    from helper_func import get_shortlink
-    base_url = f"https://{URL}" if not URL.startswith("http") else URL
-    bridge_link = f"{base_url}/hold/{token}"
-
-    try:
-        short_link = await get_shortlink(SHORTLINK_URL, SHORTLINK_API, bridge_link)
-        return web.HTTPFound(location=short_link)
-    except Exception as e:
-        logging.error(f"Shortlink error: {e}")
-        return web.HTTPFound(location=bridge_link)
-
-@routes.get("/hold/{token}")
-async def hold_handler(request):
-    if is_bot(request):
-        return web.Response(text="Access Denied: Bot Detected 🚫", status=403)
-    token = request.match_info.get('token')
-    token_data = await db.get_verify_token(token)
-    if not token_data:
-        return web.Response(text="Invalid token", status=403)
-
-    anime_pic = get_random_pic()
-    html_content = f"""
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <title>Final Verification</title>
-        {ANTI_TAMPER_JS}
-        {ANIME_COMMON_STYLE.replace('{{anime_pic}}', anime_pic)}
-        {DETECTION_JS}
-        <style>
-            #hold-btn {{
-                width: 200px;
-                height: 200px;
-                border-radius: 50%;
-                background: #e94560;
-                border: 10px solid rgba(255, 255, 255, 0.1);
-                color: white;
-                font-size: 20px;
-                font-weight: bold;
-                cursor: pointer;
-                user-select: none;
-                transition: transform 0.2s, box-shadow 0.2s;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                margin: 20px auto;
-                position: relative;
-            }}
-            #hold-btn:active {{ transform: scale(0.95); }}
-            #progress-ring {{
-                position: absolute;
-                top: -10px; left: -10px;
-                width: 200px; height: 200px;
-            }}
-            .loading-dots:after {{
-                content: ' .';
-                animation: dots 1s steps(5, end) infinite;
-            }}
-            @keyframes dots {{
-                0%, 20% {{ color: rgba(0,0,0,0); text-shadow: .25em 0 0 rgba(0,0,0,0), .5em 0 0 rgba(0,0,0,0); }}
-                40% {{ color: white; text-shadow: .25em 0 0 rgba(0,0,0,0), .5em 0 0 rgba(0,0,0,0); }}
-                60% {{ text-shadow: .25em 0 0 white, .5em 0 0 rgba(0,0,0,0); }}
-                80%, 100% {{ text-shadow: .25em 0 0 white, .5em 0 0 white; }}
-            }}
-        </style>
-    </head>
-    <body>
-        {SVG_FILTERS}
-        <div class="background"></div>
-        <div class="circuit-bg"></div>
-        <div class="container">
-            <h1>Hold to Verify</h1>
-            <p>Almost there! Hold the button for 5 seconds to get your files. 🌸</p>
-            <div id="hold-btn">Hold Me</div>
-            <p id="timer-text">Wait: 5.0s</p>
-        </div>
-
-        <script>
-            let btn = document.getElementById('hold-btn');
-            let text = document.getElementById('timer-text');
-            let timer = null;
-            let startTime = 0;
-            let duration = 5000;
-
-            function startHold(e) {{
-                e.preventDefault();
-                startTime = Date.now();
-                btn.style.boxShadow = "0 0 50px #e94560";
-                timer = setInterval(updateTimer, 100);
-            }}
-
-            function endHold() {{
-                clearInterval(timer);
-                btn.style.boxShadow = "0 0 10px #e94560";
-                text.innerText = "Wait: 5.0s";
-            }}
-
-            function updateTimer() {{
-                let elapsed = Date.now() - startTime;
-                let remaining = Math.max(0, (duration - elapsed) / 1000);
-                text.innerText = "Wait: " + remaining.toFixed(1) + "s";
-
-                if (elapsed >= duration) {{
-                    clearInterval(timer);
-                    verify();
-                }}
-            }}
-
-            async function verify() {{
-                btn.innerText = "Verifying...";
-                btn.disabled = true;
-                let res = await fetch('/complete_hold/{token}', {{method: 'POST'}});
-                if (res.ok) {{
-                    window.location.href = '/get/{token}';
-                }} else {{
-                    alert("Verification Failed! Try Again.");
-                    location.reload();
-                }}
-            }}
-
-            btn.addEventListener('mousedown', startHold);
-            btn.addEventListener('touchstart', startHold);
-            window.addEventListener('mouseup', endHold);
-            window.addEventListener('touchend', endHold);
-        </script>
-    </body>
-    </html>
-    """
-    return web.Response(text=html_content, content_type='text/html')
-
-@routes.post("/complete_hold/{token}")
-async def complete_hold_handler(request):
-    token = request.match_info.get('token')
-    token_data = await db.get_verify_token(token)
-    if not token_data:
-        return web.Response(status=403)
-
     await db.update_token_status(token, 'verified')
 
-    # Increment verify count for the user (for /stats and daily reporting)
+    # Increment verify count for the user
     try:
         user_id = token_data.get('user_id')
         if user_id:
             count = await db.get_verify_count(user_id)
             await db.set_verify_count(user_id, count + 1)
-
-            # Update user's verified status for 24h persistence
             await db.update_verify_status(user_id, is_verified=True, verified_time=time.time())
     except Exception as e:
         logging.error(f"Error updating verify status: {e}")
 
-    return web.Response(status=200)
+    bot = request.app.get('bot')
+    username = bot.username if bot and hasattr(bot, 'username') and bot.username else BOT_USERNAME
+
+    # Redirect back to bot
+    return web.HTTPFound(location=f"https://t.me/{username}?start={token}")
 
 @routes.get("/get/{token}")
 async def get_route_handler(request):
