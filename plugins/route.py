@@ -9,6 +9,83 @@ import aiohttp
 routes = web.RouteTableDef()
 verification_attempts = {}
 
+# Advanced Anti-Tamper & Userscript Detection
+ANTI_TAMPER_JS = """
+    <script>
+        (function() {
+            const IntegrityLockdown = (reason) => {
+                console.error("Integrity Lockdown: " + reason);
+                document.documentElement.innerHTML = `
+                    <div style="background:#000; color:#ff4444; height:100vh; display:flex; align-items:center; justify-content:center; font-family:sans-serif; text-align:center; padding:20px;">
+                        <div>
+                            <h1 style="font-size:3em; margin:0;">⚠️ SECURITY ALERT</h1>
+                            <h2 style="color:#fff;">Integrity Breach Detected</h2>
+                            <p style="color:#ccc; max-width:600px;">Our systems detected an unauthorized modification to this page (possibly by a Userscript or Browser Extension: ${reason}). Verification has been aborted.</p>
+                            <p style="color:#ff4444; font-weight:bold;">Action Required: Disable all Userscripts/Extensions for this site and refresh.</p>
+                        </div>
+                    </div>`;
+                window.stop();
+            };
+
+            // 1. MutationObserver on documentElement to catch early tampering (e.g. body replacement)
+            const observer = new MutationObserver((mutations) => {
+                for (const mutation of mutations) {
+                    if (mutation.removedNodes.length > 0) {
+                        for (let node of mutation.removedNodes) {
+                            if (node.id === 'main-container' || (node.classList && (node.classList.contains('card') || node.classList.contains('container'))) || node.nodeName === 'BODY') {
+                                IntegrityLockdown("Core UI Element Removed");
+                                return;
+                            }
+                        }
+                    }
+                }
+            });
+            observer.observe(document.documentElement, { childList: true, subtree: true });
+
+            // 2. Aggressive check for common userscript UI elements
+            const detectionInterval = setInterval(() => {
+                const knownUserscriptElements = ['type', 'token', 'copy', 'captcha'];
+                const found = knownUserscriptElements.some(id => {
+                    const el = document.getElementById(id);
+                    // Match the specific structure of the requested userscript
+                    return el && (el.tagName === 'SELECT' || el.tagName === 'TEXTAREA' || el.tagName === 'BUTTON');
+                });
+
+                // Detection of the 'reCAPTCHA Token Viewer' specifically
+                if (found || document.querySelector('textarea[placeholder*="Token will appear here"]')) {
+                    IntegrityLockdown("reCAPTCHA Token Viewer Detected");
+                    clearInterval(detectionInterval);
+                }
+
+
+                // Detect if the page title was changed (common in some viewers)
+                if (document.title.includes("Token Viewer")) {
+                    IntegrityLockdown("Unauthorized Page Title");
+                }
+            }, 500);
+
+            // 3. Lock critical properties to prevent hijacking
+            // We use a proxy or defineProperty to stop userscripts from redefining our handlers
+            try {
+                let _onSolved = null;
+                Object.defineProperty(window, 'onSolved', {
+                    get: () => _onSolved,
+                    set: (val) => {
+                        if (_onSolved !== null) IntegrityLockdown("Attempted Handler Hijack");
+                        _onSolved = val;
+                    },
+                    configurable: false
+                });
+            } catch(e) {}
+
+            // 4. Enhanced Bot/Automation detection in head
+            if (navigator.webdriver || !navigator.cookieEnabled || window.outerWidth === 0) {
+                // IntegrityLockdown("Automation Detected");
+            }
+        })();
+    </script>
+"""
+
 def get_random_pic():
     return random.choice(PICS)
 
@@ -146,6 +223,7 @@ async def root_route_handler(request):
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>{BOT_NAME}</title>
+        {ANTI_TAMPER_JS}
         {ANIME_COMMON_STYLE.replace('{{anime_pic}}', anime_pic)}
         {DETECTION_JS}
     </head>
@@ -178,6 +256,7 @@ async def task_handler(request):
     <html>
     <head>
         <title>SecureLink Verification</title>
+        {ANTI_TAMPER_JS}
         <script src="https://www.google.com/recaptcha/api.js" async defer></script>
         <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;900&display=swap" rel="stylesheet">
         <style>
@@ -258,10 +337,12 @@ async def task_handler(request):
     </head>
     <body>
         <div class="background"></div>
-        <div class="card">
+        <div class="card" id="main-container">
             <h2>SecureLink</h2>
             <p>Verify to continue, Senpai! 🌸</p>
             <form method="POST" action="/verify/{token}">
+                <!-- Hidden security field (honeypot) -->
+                <input type="text" name="sec_field_8x1" style="display:none !important" tabindex="-1" autocomplete="off">
                 <div class="g-recaptcha" data-sitekey="{RECAPTCHA_SITE_KEY}"></div>
                 <br>
                 <button type="submit">Continue 🚀</button>
@@ -298,6 +379,12 @@ async def verify_handler(request):
 
     token = request.match_info.get('token')
     data = await request.post()
+
+    # Honeypot Check
+    if data.get('sec_field_8x1'):
+        logging.warning(f"Honeypot field filled by IP: {user_ip}")
+        return web.Response(text="Security validation failed: Bot Activity Detected.", status=403)
+
     captcha_token = data.get('g-recaptcha-response')
     user_ip = request.remote
 
@@ -325,6 +412,7 @@ async def verify_handler(request):
     <html>
     <head>
         <title>Checking Security</title>
+        {ANTI_TAMPER_JS}
         <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;900&display=swap" rel="stylesheet">
         <style>
             body {{
@@ -399,7 +487,7 @@ async def verify_handler(request):
     </head>
     <body>
         <div class="background"></div>
-        <div class="card">
+        <div class="card" id="main-container">
             <h2>Checking Security</h2>
             <p>Please wait, Senpai… 🌸</p>
             <p class="subtitle">Verifying Browser Integrity</p>
@@ -475,6 +563,7 @@ async def hold_handler(request):
     <html>
     <head>
         <title>Final Verification</title>
+        {ANTI_TAMPER_JS}
         {ANIME_COMMON_STYLE.replace('{{anime_pic}}', anime_pic)}
         {DETECTION_JS}
         <style>
