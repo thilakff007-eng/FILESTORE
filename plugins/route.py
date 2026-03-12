@@ -52,35 +52,18 @@ ANTI_TAMPER_JS = """
             });
             observer.observe(document.documentElement, { childList: true, subtree: true, attributes: true });
 
-            // 2. Detect DevTools
-            const devtools = {
-                isOpen: false,
-                orientation: undefined
-            };
-            const threshold = 160;
-            const emitEvent = (isOpen, orientation) => {
-                if (isOpen) {
-                    IntegrityLockdown("Debugger Detected");
+            // 2. Detect DevTools (Simple console-based check)
+            let devtoolsOpen = false;
+            const element = new Image();
+            Object.defineProperty(element, 'id', {
+                get: function() {
+                    devtoolsOpen = true;
+                    IntegrityLockdown("Console Open");
                 }
-            };
+            });
             setInterval(() => {
-                const widthThreshold = window.outerWidth - window.innerWidth > threshold;
-                const heightThreshold = window.outerHeight - window.innerHeight > threshold;
-                const orientation = widthThreshold ? 'vertical' : 'horizontal';
-                if (!(heightThreshold && widthThreshold) && ((window.Firebug && window.Firebug.chrome && window.Firebug.chrome.isInitialized) || widthThreshold || heightThreshold)) {
-                    if (!devtools.isOpen || devtools.orientation !== orientation) {
-                        emitEvent(true, orientation);
-                    }
-                    devtools.isOpen = true;
-                    devtools.orientation = orientation;
-                } else {
-                    if (devtools.isOpen) {
-                        emitEvent(false, undefined);
-                    }
-                    devtools.isOpen = false;
-                    devtools.orientation = undefined;
-                }
-            }, 500);
+                console.log(element);
+            }, 1000);
 
             // 3. Detect Userscripts
             const detectionInterval = setInterval(() => {
@@ -125,10 +108,6 @@ def is_bot(request):
     for agent in blocked_uas:
         if agent in ua:
             return True
-
-    # Check for empty or suspicious headers
-    if not request.headers.get('Accept-Language'):
-        return True
 
     return False
 
@@ -193,8 +172,12 @@ RGB_THEME_STYLE = """
             display: flex;
             align-items: center;
             justify-content: center;
-            height: 100vh;
-            overflow: hidden;
+            min-height: 100vh;
+        }
+
+        @keyframes load {
+            0% { width: 0%; }
+            100% { width: 100%; }
         }
 
         .card {
@@ -484,22 +467,21 @@ async def verify_handler(request):
         {RGB_THEME_STYLE}
         <style>
             .progress {{
-                height: 8px;
-                background: #eee;
+                height: 12px;
+                background: #f0f0f0;
                 border-radius: 10px;
                 overflow: hidden;
-                margin: 20px 0;
+                margin: 25px 0;
+                border: 1px solid #eee;
             }}
             .progress-bar {{
                 height: 100%;
                 width: 0%;
                 background: linear-gradient(90deg, #ff4b2b, #00d2ff, #2ecc71);
                 background-size: 200% 100%;
-                animation: load 4s linear forwards, rgb-bg-anim 2s linear infinite;
-            }}
-            @keyframes load {{
-                0% {{ width: 0%; }}
-                100% {{ width: 100%; }}
+                animation: load 4s cubic-bezier(0.4, 0, 0.2, 1) forwards, rgb-bg-anim 3s linear infinite;
+                display: block !important;
+                visibility: visible !important;
             }}
             h2 {{ margin-bottom: 5px; color: #333; }}
             p {{ color: #666; margin: 0; }}
@@ -521,42 +503,39 @@ async def verify_handler(request):
             <p class="subtitle">Verifying Browser Integrity</p>
         </div>
         <script>
-            // Max Security: Canvas Fingerprinting Detection
-            (function() {{
-                const canvas = document.createElement('canvas');
-                const ctx = canvas.getContext('2d');
-                ctx.textBaseline = "top";
-                ctx.font = "14px 'Arial'";
-                ctx.textBaseline = "alphabetic";
-                ctx.fillStyle = "#f60";
-                ctx.fillRect(125,1,62,20);
-                ctx.fillStyle = "#069";
-                ctx.fillText("BrowserIntegrityCheck", 2, 15);
-                ctx.fillStyle = "rgba(102, 204, 0, 0.7)";
-                ctx.fillText("BrowserIntegrityCheck", 4, 17);
-                const fingerprint = canvas.toDataURL();
+            function startRedirect() {{
+                setTimeout(function(){{
+                    window.location.href = window.location.origin + "/task_done/{token}";
+                }}, 4500);
+            }}
 
-                if(fingerprint.length < 100 || navigator.webdriver) {{
-                    document.body.innerHTML="<div style='color:red; text-align:center; padding:50px; font-family:Poppins;'><h1>🚫 Security Violation</h1><p>Automated environment detected. Verification aborted.</p></div>";
-                    throw new Error("Bot detected");
+            try {{
+                // Browser Integrity Checks
+                (function() {{
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    ctx.textBaseline = "top";
+                    ctx.font = "14px 'Arial'";
+                    ctx.fillStyle = "#f60";
+                    ctx.fillRect(125,1,62,20);
+                    ctx.fillStyle = "#069";
+                    ctx.fillText("Check", 2, 15);
+                    const fingerprint = canvas.toDataURL();
+
+                    if(fingerprint.length < 50) {{
+                        console.warn("Integrity check warning");
+                    }}
+                }})();
+
+                if(!navigator.cookieEnabled){{
+                    alert("Enable cookies to continue");
                 }}
-            }})();
 
-            if(navigator.webdriver){{
-                document.body.innerHTML="Bot access denied";
-                throw new Error("Bot detected");
+                startRedirect();
+            }} catch(e) {{
+                console.error("Integrity error:", e);
+                startRedirect(); // Fallback
             }}
-            if(!navigator.cookieEnabled){{
-                alert("Enable cookies to continue");
-            }}
-            if(window.outerWidth===0){{
-                document.body.innerHTML="Suspicious browser detected";
-                throw new Error("Suspicious browser");
-            }}
-
-            setTimeout(function(){{
-                window.location.href="/task_done/{token}";
-            }}, 4000);
         </script>
     </body>
     </html>
@@ -575,9 +554,16 @@ async def task_done_handler(request):
 
     # Max Security: Session Binding Consistency Check
     stored_ip = token_data.get('ip')
-    stored_ua = token_data.get('ua')
-    if stored_ip != user_ip or stored_ua != user_ua:
-        logging.warning(f"Session shift detected for token {token}. IP: {stored_ip}->{user_ip}")
+    stored_ua = token_data.get('ua', '')
+
+    # Allow small UA variations (like minor version changes) to avoid blocking real users
+    ua_match = False
+    if stored_ua and user_ua:
+        if stored_ua[:50] == user_ua[:50]: # Compare first 50 chars (usually OS/Browser base)
+            ua_match = True
+
+    if stored_ip != user_ip or not ua_match:
+        logging.warning(f"Session shift detected for token {token}. IP: {stored_ip}->{user_ip} | UA Match: {ua_match}")
         return web.Response(text="Security violation: Session mismatch detected. Please restart verification.", status=403)
 
     await db.update_token_status(token, 'verified')
