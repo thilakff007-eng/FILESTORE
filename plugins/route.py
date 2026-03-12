@@ -120,6 +120,30 @@ DETECTION_JS = """
     </script>
 """
 
+SVG_FILTERS = """
+<svg style="position: absolute; width: 0; height: 0; overflow: hidden;" aria-hidden="true">
+  <defs>
+    <filter id="neon-glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="2" result="blur" />
+      <feColorMatrix in="blur" type="matrix" values="0 0 0 0 0.91 0 0 0 0 0.27 0 0 0 0 0.38 0 0 0 1 0" result="glow" />
+      <feMerge>
+        <feMergeNode in="glow" />
+        <feMergeNode in="glow" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+    <filter id="blue-glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="4" result="blur" />
+      <feColorMatrix in="blur" type="matrix" values="0 0 0 0 0 0 0 0 0 0.82 0 0 0 0 1 0 0 0 1 0" result="glow" />
+      <feMerge>
+        <feMergeNode in="glow" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+  </defs>
+</svg>
+"""
+
 WATERMARK_STYLE = """
             .watermark {
                 position: fixed;
@@ -163,6 +187,13 @@ ANIME_COMMON_STYLE = f"""
                 height: 100vh;
                 text-align: center;
                 overflow: hidden;
+            }}
+            .circuit-bg {{
+                position: fixed;
+                top: 0; left: 0; width: 100%; height: 100%;
+                background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M10 10L90 10L90 90L10 90Z' fill='none' stroke='rgba(233, 69, 96, 0.05)' stroke-width='0.5'/%3E%3Ccircle cx='10' cy='10' r='1' fill='rgba(233, 69, 96, 0.2)'/%3E%3Ccircle cx='90' cy='90' r='1' fill='rgba(233, 69, 96, 0.2)'/%3E%3C/svg%3E");
+                z-index: -1;
+                opacity: 0.5;
             }}
             .background {{
                 position: fixed;
@@ -222,13 +253,15 @@ async def root_route_handler(request):
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>{BOT_NAME}</title>
+        <title>SecureLink Ultra</title>
         {ANTI_TAMPER_JS}
         {ANIME_COMMON_STYLE.replace('{{anime_pic}}', anime_pic)}
         {DETECTION_JS}
     </head>
     <body>
+        {SVG_FILTERS}
         <div class="background"></div>
+        <div class="circuit-bg"></div>
         {WATERMARK_DIV}
         <div class="container">
             <img src="{anime_pic}" class="logo">
@@ -281,15 +314,35 @@ async def task_handler(request):
                 transform: scale(1.1);
             }}
             .card {{
-                background: rgba(0, 0, 0, 0.7);
+                background: rgba(0, 0, 0, 0.75);
                 padding: 40px;
-                border-radius: 20px;
+                border-radius: 24px;
                 width: 350px;
                 text-align: center;
-                box-shadow: 0 0 25px #e94560, inset 0 0 10px #e94560;
-                backdrop-filter: blur(15px);
-                border: 2px solid #e94560;
-                animation: neonPulse 2s infinite alternate;
+                box-shadow: 0 0 30px rgba(233, 69, 96, 0.4);
+                backdrop-filter: blur(20px);
+                border: 1px solid rgba(233, 69, 96, 0.5);
+                position: relative;
+                overflow: hidden;
+            }}
+            .card::before {{
+                content: '';
+                position: absolute;
+                top: -50%; left: -50%; width: 200%; height: 200%;
+                background: conic-gradient(transparent, transparent, transparent, #e94560);
+                animation: rotate 4s linear infinite;
+                z-index: -1;
+            }}
+            .card::after {{
+                content: '';
+                position: absolute;
+                inset: 3px;
+                background: rgba(15, 23, 42, 0.95);
+                border-radius: 22px;
+                z-index: -1;
+            }}
+            @keyframes rotate {{
+                100% {{ transform: rotate(1turn); }}
             }}
             @keyframes neonPulse {{
                 from {{ box-shadow: 0 0 20px #e94560; }}
@@ -297,10 +350,11 @@ async def task_handler(request):
             }}
             h2 {{
                 color: #e94560;
-                text-shadow: 0 0 10px #e94560, 0 0 20px #e94560;
+                filter: url(#neon-glow);
                 font-weight: 900;
-                font-size: 2em;
+                font-size: 2.5em;
                 margin-top: 0;
+                letter-spacing: 2px;
             }}
             p {{ color: #ccc; margin-bottom: 25px; }}
             .chrome-notice {{
@@ -336,7 +390,9 @@ async def task_handler(request):
         </style>
     </head>
     <body>
+        {SVG_FILTERS}
         <div class="background"></div>
+        <div class="circuit-bg"></div>
         <div class="card" id="main-container">
             <h2>SecureLink</h2>
             <p>Verify to continue, Senpai! 🌸</p>
@@ -380,20 +436,37 @@ async def verify_handler(request):
     token = request.match_info.get('token')
     data = await request.post()
 
-    # Honeypot Check
+    # 1. Sec-Fetch Headers Check (Max Security)
+    sec_fetch_site = request.headers.get('Sec-Fetch-Site')
+    # logging.info(f"DEBUG: Sec-Fetch-Site: {sec_fetch_site}")
+    # Playwright/Local testing might not send this header or might be 'none'
+    if sec_fetch_site and sec_fetch_site not in ['same-origin', 'same-site', 'none']:
+        logging.warning(f"CSRF/Cross-site attempt detected from IP: {user_ip}")
+        return web.Response(text="Security violation: Cross-site request blocked.", status=403)
+
+    # 2. Honeypot Check
     if data.get('sec_field_8x1'):
         logging.warning(f"Honeypot field filled by IP: {user_ip}")
         return web.Response(text="Security validation failed: Bot Activity Detected.", status=403)
 
     captcha_token = data.get('g-recaptcha-response')
+    if not captcha_token:
+        return web.Response(text="reCAPTCHA is required", status=403)
     user_ip = request.remote
 
     logging.info(f"Visitor IP: {user_ip} attempting verification for token {token}")
 
-    if not captcha_token:
-        return web.Response(text="reCAPTCHA is required", status=403)
-
-    async with aiohttp.ClientSession() as session:
+    session = request.app.get('http_session')
+    if not session:
+        # Fallback if session not found for some reason (e.g. testing)
+        async with aiohttp.ClientSession() as temp_session:
+            async with temp_session.post('https://www.google.com/recaptcha/api/siteverify', data={
+                'secret': RECAPTCHA_SECRET_KEY,
+                'response': captcha_token,
+                'remoteip': user_ip
+            }) as resp:
+                result = await resp.json()
+    else:
         async with session.post('https://www.google.com/recaptcha/api/siteverify', data={
             'secret': RECAPTCHA_SECRET_KEY,
             'response': captcha_token,
@@ -404,7 +477,11 @@ async def verify_handler(request):
     if not result.get('success'):
         return web.Response(text="reCAPTCHA verification failed", status=403)
 
-    await db.update_token_status(token, 'captcha_verified')
+    # 3. Session Binding (Store IP/UA in DB to verify consistency in next stages)
+    await db.update_token_status(token, 'captcha_verified', extra_data={
+        'ip': user_ip,
+        'ua': request.headers.get('User-Agent')
+    })
 
     anime_pic = get_random_pic()
     html_content = f"""
@@ -451,19 +528,25 @@ async def verify_handler(request):
                 to {{ box-shadow: 0 0 40px #00d2ff, 0 0 10px #00d2ff; }}
             }}
             .progress {{
-                height: 8px;
-                background: rgba(255, 255, 255, 0.1);
+                height: 12px;
+                background: rgba(0, 210, 255, 0.1);
                 border-radius: 10px;
                 overflow: hidden;
                 margin-top: 25px;
-                border: 1px solid rgba(0, 210, 255, 0.3);
+                border: 1px solid rgba(0, 210, 255, 0.2);
+                position: relative;
             }}
             .progress-bar {{
                 height: 100%;
                 width: 0%;
-                background: linear-gradient(90deg, #00d2ff, #3a7bd5);
-                animation: load 4s linear forwards;
-                box-shadow: 0 0 15px #00d2ff;
+                background: linear-gradient(90deg, #00d2ff, #3a7bd5, #00d2ff);
+                background-size: 200% 100%;
+                animation: load 4s linear forwards, shimmer 2s infinite linear;
+                filter: url(#blue-glow);
+            }}
+            @keyframes shimmer {{
+                0% {{ background-position: 200% 0; }}
+                100% {{ background-position: -200% 0; }}
             }}
             @keyframes load {{
                 0% {{ width: 0% }}
@@ -486,7 +569,9 @@ async def verify_handler(request):
         </style>
     </head>
     <body>
+        {SVG_FILTERS}
         <div class="background"></div>
+        <div class="circuit-bg"></div>
         <div class="card" id="main-container">
             <h2>Checking Security</h2>
             <p>Please wait, Senpai… 🌸</p>
@@ -497,6 +582,28 @@ async def verify_handler(request):
             <div class="chrome-notice">⚠️ Chrome Browser required for this step!</div>
         </div>
         <script>
+            // Max Security: Canvas Fingerprinting Detection
+            (function() {{
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                ctx.textBaseline = "top";
+                ctx.font = "14px 'Arial'";
+                ctx.textBaseline = "alphabetic";
+                ctx.fillStyle = "#f60";
+                ctx.fillRect(125,1,62,20);
+                ctx.fillStyle = "#069";
+                ctx.fillText("BrowserIntegrityCheck", 2, 15);
+                ctx.fillStyle = "rgba(102, 204, 0, 0.7)";
+                ctx.fillText("BrowserIntegrityCheck", 4, 17);
+                const fingerprint = canvas.toDataURL();
+
+                // Headless browsers often return predictable or empty canvas data
+                if(fingerprint.length < 100 || navigator.webdriver) {{
+                    document.body.innerHTML="<div style='color:white; text-align:center; padding:50px; font-family:Poppins;'><h1>🚫 Security Violation</h1><p>Automated environment detected. Verification aborted.</p></div>";
+                    throw new Error("Bot detected");
+                }}
+            }})();
+
             if(navigator.webdriver){{
                 document.body.innerHTML="<div style='color:white; text-align:center; padding:50px; font-family:Poppins;'><h1>🚫 Bot Access Denied</h1><p>Please use a real Chrome browser.</p></div>";
                 throw new Error("Bot detected");
@@ -522,9 +629,18 @@ async def verify_handler(request):
 async def task_done_handler(request):
     token = request.match_info.get('token')
     token_data = await db.get_verify_token(token)
+    user_ip = request.remote
+    user_ua = request.headers.get('User-Agent')
 
     if not token_data or token_data.get('status') != 'captcha_verified':
         return web.Response(text="Access denied. Please complete verification.", status=403)
+
+    # Max Security: Session Binding Consistency Check
+    stored_ip = token_data.get('ip')
+    stored_ua = token_data.get('ua')
+    if stored_ip != user_ip or stored_ua != user_ua:
+        logging.warning(f"Session shift detected for token {token}. IP: {stored_ip}->{user_ip}")
+        return web.Response(text="Security violation: Session mismatch detected. Please restart verification.", status=403)
 
     await db.update_token_status(token, 'task_done')
     base_url = f"https://{URL}" if not URL.startswith("http") else URL
@@ -604,7 +720,9 @@ async def hold_handler(request):
         </style>
     </head>
     <body>
+        {SVG_FILTERS}
         <div class="background"></div>
+        <div class="circuit-bg"></div>
         <div class="container">
             <h1>Hold to Verify</h1>
             <p>Almost there! Hold the button for 5 seconds to get your files. 🌸</p>

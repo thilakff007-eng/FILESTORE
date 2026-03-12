@@ -420,8 +420,11 @@ class Database:
     async def get_verify_token(self, token: str):
         return await self.antibot_data.find_one({'token': token})
 
-    async def update_token_status(self, token: str, status: str):
-        await self.antibot_data.update_one({'token': token}, {'$set': {'status': status}})
+    async def update_token_status(self, token: str, status: str, extra_data: dict = None):
+        update_doc = {'$set': {'status': status}}
+        if extra_data:
+            update_doc['$set'].update(extra_data)
+        await self.antibot_data.update_one({'token': token}, update_doc)
 
     async def delete_verify_token(self, token: str):
         await self.antibot_data.delete_one({'token': token})
