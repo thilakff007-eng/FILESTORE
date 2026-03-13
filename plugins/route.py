@@ -95,11 +95,19 @@ def is_bot(request):
         'curl', 'wget', 'python-requests', 'axios', 'headlesschrome',
         'phantomjs', 'selenium', 'puppeteer', 'playwright', 'bot', 'spider',
         'crawl', 'googlebot', 'bingbot', 'yandexbot', 'baiduspider', 'slurp',
-        'headless', 'zgrab', 'internet-measurement', 'postman'
+        'headless', 'zgrab', 'internet-measurement', 'postman', 'python',
+        'aiohttp', 'go-http-client'
     ]
     for agent in blocked_uas:
         if agent in ua:
+            logging.warning(f"Bot blocked (UA): {ua} from {get_client_ip(request)}")
             return True
+
+    # Advanced Sec-Fetch checks (if present)
+    fetch_site = request.headers.get('Sec-Fetch-Site')
+    if fetch_site and fetch_site not in ['same-origin', 'same-site', 'none']:
+         logging.warning(f"Bot blocked (Sec-Fetch-Site): {fetch_site} from {get_client_ip(request)}")
+         return True
 
     return False
 
@@ -111,7 +119,7 @@ DETECTION_JS = """
             const isChrome = /Chrome/.test(navigator.userAgent) && /Google Inc/.test(navigator.vendor);
 
             if (isHeadless || isPhantom) {
-                document.body.innerHTML = '<div style="color:red; font-size:24px; padding:50px;">🚫 Automation Detected! Please use a real browser (Chrome recommended). 🏯</div>';
+                document.body.innerHTML = '<div style="color:red; font-size:24px; padding:50px; text-align:center;">🚫 Automation Detected! Please use a real browser (Chrome recommended). 🏯</div>';
                 throw new Error("Bot detected");
             }
         })();
@@ -364,16 +372,9 @@ async def verify_handler(request):
 
     await db.update_token_status(token, 'captcha_verified', extra_data={
         'ip': user_ip,
-        'ua': request.headers.get('User-Agent')
+        'ua': request.headers.get('User-Agent'),
+        'solved_at': time.time()
     })
-
-    # Generate Shortlink for the next stage
-    base_url = f"https://{URL}" if not URL.startswith("http") else URL
-    final_go_link = f"{base_url}/go/{token}"
-
-    # Clean SHORTLINK_URL to remove trailing slash for Shortzy
-    clean_short_url = SHORTLINK_URL.strip().rstrip('/')
-    short_link = await get_shortlink(clean_short_url, SHORTLINK_API, final_go_link)
 
     html_content = f"""
     <!DOCTYPE html>
@@ -423,34 +424,95 @@ async def verify_handler(request):
             <p class="subtitle">Verifying Browser Integrity</p>
         </div>
         <script>
-            // Safety: Ensure we redirect even if JS integrity checks fail silently
-            function finish() {{
-                window.location.href = "{short_link}";
+            async function verifyIntegrity() {{
+                const signals = {{
+                    webdriver: navigator.webdriver,
+                    cookies: navigator.cookieEnabled,
+                    width: window.outerWidth,
+                    platform: navigator.platform
+                }};
+
+                try {{
+                    const response = await fetch('/api/verify-integrity/{token}', {{
+                        method: 'POST',
+                        headers: {{ 'Content-Type': 'application/json' }},
+                        body: JSON.stringify(signals)
+                    }});
+
+                    const data = await response.json();
+                    if (data.status === 'success' && data.link) {{
+                        window.location.href = data.link;
+                    }} else {{
+                        document.body.innerHTML = `<div style="color:red; text-align:center; padding:50px;">
+                            <h2>Verification Failed</h2>
+                            <p>${{data.message || "Security integrity check failed. Please refresh."}}</p>
+                        </div>`;
+                    }}
+                }} catch(e) {{
+                    console.error(e);
+                    setTimeout(verifyIntegrity, 2000);
+                }}
             }}
 
-            try {{
-                // Integrity check: Cookies
-                if(!navigator.cookieEnabled){{
-                    alert("Enable cookies to continue");
-                }}
-
-                // Integrity check: Screen dimensions (basic bot check)
-                if(window.outerWidth === 0 && !/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)){{
-                     document.body.innerHTML="Suspicious browser detected";
-                     throw new Error("Bot dimension check failed");
-                }}
-
-                setTimeout(finish, 4500);
-            }} catch(e) {{
-                console.error(e);
-                // Allow redirect anyway as fallback for real users with strict privacy settings
-                setTimeout(finish, 5000);
-            }}
+            // Start verification after the animation is nearly complete
+            setTimeout(verifyIntegrity, 4000);
         </script>
     </body>
     </html>
     """
     return web.Response(text=html_content, content_type='text/html')
+
+@routes.post("/api/verify-integrity/{token}")
+async def integrity_api_handler(request):
+    if is_bot(request):
+        return web.json_response({"status": "error", "message": "Bot detected"}, status=403)
+
+    token = request.match_info.get('token')
+    token_data = await db.get_verify_token(token)
+    user_ip = get_client_ip(request)
+    ua = request.headers.get('User-Agent')
+
+    if not token_data or token_data.get('status') != 'captcha_verified':
+        return web.json_response({"status": "error", "message": "Invalid session status"}, status=403)
+
+    # Strict Session Binding
+    if token_data.get('ip') != user_ip or token_data.get('ua') != ua:
+         return web.json_response({"status": "error", "message": "Session inconsistency detected"}, status=403)
+
+    # Mandatory Delay Check (4 seconds)
+    solved_at = token_data.get('solved_at', 0)
+    if time.time() - solved_at < 3.8: # Small buffer for network
+        return web.json_response({"status": "error", "message": "Verification too fast. Possible automation."}, status=403)
+
+    try:
+        signals = await request.json()
+    except:
+        return web.json_response({"status": "error", "message": "Invalid signals format"}, status=400)
+
+    # Integrity Signal Validation
+    if signals.get('webdriver') is True:
+        return web.json_response({"status": "error", "message": "Automation tool detected"}, status=403)
+
+    if signals.get('cookies') is False:
+        return web.json_response({"status": "error", "message": "Cookies must be enabled"}, status=403)
+
+    if signals.get('width') == 0:
+        return web.json_response({"status": "error", "message": "Suspicious browser dimensions"}, status=403)
+
+    # Generate the final shortlink only NOW
+    base_url = f"https://{URL}" if not URL.startswith("http") else URL
+    final_go_link = f"{base_url}/go/{token}"
+
+    clean_short_url = SHORTLINK_URL.strip().rstrip('/')
+    short_link = await get_shortlink(clean_short_url, SHORTLINK_API, final_go_link)
+
+    # Mark as integrity verified to allow final redirect
+    await db.update_token_status(token, 'integrity_verified')
+
+    return web.json_response({
+        "status": "success",
+        "link": short_link
+    })
 
 @routes.get("/go/{token}")
 async def final_redirect_handler(request):
@@ -460,15 +522,26 @@ async def final_redirect_handler(request):
     token = request.match_info.get('token')
     token_data = await db.get_verify_token(token)
     user_ip = get_client_ip(request)
+    ua = request.headers.get('User-Agent')
 
-    if not token_data or token_data.get('status') != 'captcha_verified':
-        return web.Response(text="Access denied. Please complete verification.", status=403)
+    if not token_data or token_data.get('status') != 'integrity_verified':
+        logging.warning(f"Final redirect denied for {token}: Status is {token_data.get('status') if token_data else 'None'}")
+        return web.Response(text="Access denied. Please complete full verification flow.", status=403)
 
-    # Session consistency check
+    # Strict Session Consistency
     if token_data.get('ip') != user_ip:
         logging.warning(f"IP Mismatch for token {token}: {token_data.get('ip')} vs {user_ip}")
-        # Relaxing this for now to avoid issues with some mobile network transitions
-        # return web.Response(text="Security mismatch detected. Please restart.", status=403)
+        return web.Response(text="Security Error: IP Mismatch. Please verify again.", status=403)
+
+    if token_data.get('ua') != ua:
+        logging.warning(f"UA Mismatch for token {token}")
+        return web.Response(text="Security Error: Browser Mismatch.", status=403)
+
+    # Referer Check (Optional but recommended)
+    referer = request.headers.get('Referer', '')
+    if SHORTLINK_URL.split('/')[0] not in referer and 't.me' not in referer:
+        # logging.warning(f"Unexpected referer for {token}: {referer}")
+        pass
 
     await db.update_token_status(token, 'verified')
 
