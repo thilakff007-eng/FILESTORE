@@ -104,10 +104,10 @@ class Bot(Client):
         except Exception as e:
             self.LOGGER(__name__).warning(e)
             self.LOGGER(__name__).warning(f"Make Sure bot is Admin in DB Channel, and Double check the CHANNEL_ID Value, Current Value {CHANNEL_ID}")
-            self.LOGGER(__name__).info("\nBot Stopped. Join https://t.me/otakustartelugu for support")
+            self.LOGGER(__name__).info("\nBot Stopped. Join https://t.me/Animeworld_07 for support")
             sys.exit()
 
-        self.LOGGER(__name__).info(f"Bot Running..!\n\nCreated by \nhttps://t.me/otakustartelugu")
+        self.LOGGER(__name__).info(f"Bot Running..!\n\nCreated by \nhttps://t.me/Animeworld_07")
         self.LOGGER(__name__).info(r"""
 
 
@@ -120,7 +120,7 @@ class Bot(Client):
                                           """)
 
         self.username = usr_bot_me.username
-        self.LOGGER(__name__).info(f"Bot Running..! Made by @ALONEKINGSTAR77")
+        self.LOGGER(__name__).info(f"Bot Running..! Made by @Thilakff")
 
         # Initial FSUB Setup (Request Mode)
         for ch_id in INITIAL_FSUB:
@@ -135,7 +135,7 @@ class Bot(Client):
         await web.TCPSite(app, "0.0.0.0", PORT).start()
 
 
-        try: await self.send_message(OWNER_ID, text = f"<b><blockquote> ⚡ Bᴏᴛ Rᴇsᴛᴀʀᴛᴇᴅ Successfully by @ALONEKINGSTAR77 🏯</blockquote></b>")
+        try: await self.send_message(OWNER_ID, text = f"<b><blockquote> ⚡ Bᴏᴛ Rᴇsᴛᴀʀᴛᴇᴅ Successfully by @Thilakff 💫</blockquote></b>")
         except: pass
 
     async def stop(self, *args):
@@ -146,7 +146,7 @@ class Bot(Client):
         """Run the bot."""
         loop = asyncio.get_event_loop()
         loop.run_until_complete(self.start())
-        self.LOGGER(__name__).info("Bot is now running. Thanks to @ALONEKINGSTAR77")
+        self.LOGGER(__name__).info("Bot is now running. Thanks to @Thilakff")
         try:
             loop.run_forever()
         except KeyboardInterrupt:
