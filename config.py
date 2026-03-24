@@ -1,6 +1,6 @@
-# (c) ⚡𝗛𝗘𝗠𝗔𝗡𝗧𝗛⚡
-# Username: @ALONEKINGSTAR77
-# Main Link: https://t.me/otakustartelugu
+# (c) ⚡𝗦𝗵𝗮𝗱𝗼𝘄⚡
+# Username: @Thilakff
+# Main Link: https://t.me/Animeworld_07
 
 import os
 import logging
@@ -28,9 +28,9 @@ INITIAL_FSUB = [int(x.strip()) for x in os.environ.get("INITIAL_FSUB", "-1003809
 CHANNEL_ID = int(os.environ.get("CHANNEL_ID", "-1003580590124")) # Your db channel Id
 
 # UI / Design Configuration
-BOT_NAME = "⚡Shadow⚡"
-BOT_USERNAME = "Thilakff"
-MAIN_LINK = "https://t.me/Animeworld"
+BOT_NAME = "⚡𝗦𝗵𝗮𝗱𝗼𝘄⚡"
+BOT_USERNAME = "Animeworld_07"
+MAIN_LINK = "https://t.me/Animeworld_07"
 
 PICS = [
     "https://freeimage.host/i/q94kIvp",
@@ -73,7 +73,7 @@ DISABLE_CHANNEL_BUTTON = os.environ.get("DISABLE_CHANNEL_BUTTON", "False").lower
 SHORTLINK_URL = os.environ.get("SHORTLINK_URL", "https://arolinks.com/")
 SHORTENER_PIC = os.environ.get("SHORTENER_PIC", "https://freeimage.host/i/q94kIvp")
 SHORTLINK_API = os.environ.get("SHORTLINK_API", "4134296f6ba51789996b73ae880bf798671b6d9b")
-TUT_VID = os.environ.get("TUT_VID","https://t.me/AnimeWorld_07")
+TUT_VID = os.environ.get("TUT_VID","https://t.me/AnimeWorld_07/18")
 SHORT_MSG = "<b>⚡ Here is Your Download Link, Senpai! Must Watch Tutorial Before Clicking...</b>"
 
 # reCAPTCHA Configuration
@@ -84,7 +84,7 @@ RECAPTCHA_SECRET_KEY = os.environ.get("RECAPTCHA_SECRET_KEY", "6LdPIocsAAAAAMdhQ
 USER_REPLY_TEXT = "<b>⚡ Please use the bot commands! 🏯</b>"
 HELP_TXT = "<b>⚡ ʜᴇʟʟᴏ {mention}, I am {bot_name}!\n\nI can store files for you and provide links for them. 🏯\n\n<blockquote>◈ ᴄᴏᴍᴍᴀɴᴅs:\n├ /start - ᴄʜᴇᴄᴋ ɪғ ɪ ᴀᴍ ᴀʟɪᴠᴇ\n├ /about - ᴀʙᴏᴜᴛ ᴍᴇ\n└ /help - ᴛʜɪs ᴍᴇssᴀɢᴇ</blockquote>\n\nJoin our community: {main_link} ⭐</b>"
 ABOUT_TXT = "<b><blockquote>⚡ ʙᴏᴛ ɴᴀᴍᴇ: {bot_name}\n🏯 ᴄʀᴇᴀᴛᴏʀ: {owner_name}\n⭐ ᴜsᴇʀɴᴀᴍᴇ: @{bot_username}\n🌸 ᴄᴏᴍᴍᴜɴɪᴛʏ: {main_link}\n💎 ᴅᴇᴠᴇʟᴏᴘᴇʀ: @Thilakff</blockquote></b>"
-START_MSG = "<b>⚡ Kon'nichiwa {mention}!\n\n<blockquote>I am {bot_name}, a powerful File Store Bot. 🏯\n\nI can store files in a private channel and users can access them via special links. Fast and Secure! ⭐</blockquote>\n\n🌸 Join @Thilakff for more updates!</b>"
+START_MSG = "<b>⚡ Kon'nichiwa {mention}!\n\n<blockquote>I am {bot_name}, a powerful File Store Bot. 🏯\n\nI can store files in a private channel and users can access them via special links. Fast and Secure! ⭐</blockquote>\n\n🌸 Join @Animeworld_07 for more updates!</b>"
 
 FORCE_MSG = "<b>⚡ Kon'nichiwa {mention}!\n\n<blockquote>You must join our channels to access the requested file. 🏯</blockquote>\n\n🌸 Join the channels below and click on 'Reload' button. ⭐</b>"
 
@@ -132,7 +132,7 @@ CUSTOM_CAPTION = os.environ.get("CUSTOM_CAPTION", "<b>⚡ ʙʏ {main_link}</b>")
 if "{main_link}" in CUSTOM_CAPTION:
     CUSTOM_CAPTION = CUSTOM_CAPTION.format(main_link=MAIN_LINK)
 
-BAN_SUPPORT = "https://t.me/otakustartelugu"
+BAN_SUPPORT = "https://t.me/Animeworld_07"
 BOT_STATS_TEXT = "<b>⚡ BOT UPTIME</b>\n{uptime}"
 
 # Logging Configuration
