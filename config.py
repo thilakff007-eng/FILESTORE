@@ -10,22 +10,22 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Telegram API Configuration
-TG_BOT_TOKEN = os.environ.get("TG_BOT_TOKEN", "8448505270:AAFg2Kd78sJHy8RvA5vmlc9xN6fvEJ0CuLA")
-APP_ID = int(os.environ.get("APP_ID", "31355944"))
-API_HASH = os.environ.get("API_HASH", "167e960d46363e3098f9c1fc78496adb")
+TG_BOT_TOKEN = os.environ.get("TG_BOT_TOKEN", "8661191108:AAGdHuMvIsd1MpeC85xG4MnHhs_A31gBmws")
+APP_ID = int(os.environ.get("APP_ID", "34822566"))
+API_HASH = os.environ.get("API_HASH", "3ab7815d50c6baec0e564742eee75b33")
 
 # Database Configuration
-DB_URI = os.environ.get("DATABASE_URL", "mongodb+srv://Hemanthmyname:9550399779htr@cluster0.o3qxb7m.mongodb.net/?appName=Cluster0")
-DB_NAME = os.environ.get("DATABASE_NAME", "Cluster0")
+DB_URI = os.environ.get("DATABASE_URL", "mongodb+srv://thilakff007:0U8T4Aiaoqmje2UD@shadow.vetq4tn.mongodb.net/?appName=Shadow")
+DB_NAME = os.environ.get("DATABASE_NAME", "thilakff007")
 
 # Owner / Admin Configuration
-OWNER_ID = int(os.environ.get("OWNER_ID", "8557029592"))
-OWNER = os.environ.get("OWNER", "ALONEKINGSTAR77")
+OWNER_ID = int(os.environ.get("OWNER_ID", "7560349494"))
+OWNER = os.environ.get("OWNER", "Thilakff")
 ADMINS = [OWNER_ID]
 
 # Force Subscribe Configuration
-INITIAL_FSUB = [int(x.strip()) for x in os.environ.get("INITIAL_FSUB", "-1003376668245, -1003569023885").split(",") if x.strip()]
-CHANNEL_ID = int(os.environ.get("CHANNEL_ID", "-1003444768506")) # Your db channel Id
+INITIAL_FSUB = [int(x.strip()) for x in os.environ.get("INITIAL_FSUB", "-1003809869259, -1003487560660").split(",") if x.strip()]
+CHANNEL_ID = int(os.environ.get("CHANNEL_ID", "-1003809869259")) # Your db channel Id
 
 # UI / Design Configuration
 BOT_NAME = "⚡𝗛𝗘𝗠𝗔𝗡𝗧𝗛⚡"
@@ -55,7 +55,7 @@ PICS = [
     "https://freeimage.host/i/q94kmNI"
 ]
 
-LOG_CHANNEL = -1003562197365
+LOG_CHANNEL = -1003580590124
 
 # Random UI Images
 START_PIC = os.environ.get("START_PIC", PICS[0])
@@ -83,8 +83,8 @@ RECAPTCHA_SECRET_KEY = os.environ.get("RECAPTCHA_SECRET_KEY", "6LdPIocsAAAAAMdhQ
 # Texts
 USER_REPLY_TEXT = "<b>⚡ Please use the bot commands! 🏯</b>"
 HELP_TXT = "<b>⚡ ʜᴇʟʟᴏ {mention}, I am {bot_name}!\n\nI can store files for you and provide links for them. 🏯\n\n<blockquote>◈ ᴄᴏᴍᴍᴀɴᴅs:\n├ /start - ᴄʜᴇᴄᴋ ɪғ ɪ ᴀᴍ ᴀʟɪᴠᴇ\n├ /about - ᴀʙᴏᴜᴛ ᴍᴇ\n└ /help - ᴛʜɪs ᴍᴇssᴀɢᴇ</blockquote>\n\nJoin our community: {main_link} ⭐</b>"
-ABOUT_TXT = "<b><blockquote>⚡ ʙᴏᴛ ɴᴀᴍᴇ: {bot_name}\n🏯 ᴄʀᴇᴀᴛᴏʀ: {owner_name}\n⭐ ᴜsᴇʀɴᴀᴍᴇ: @{bot_username}\n🌸 ᴄᴏᴍᴍᴜɴɪᴛʏ: {main_link}\n💎 ᴅᴇᴠᴇʟᴏᴘᴇʀ: @ALONEKINGSTAR77</blockquote></b>"
-START_MSG = "<b>⚡ Kon'nichiwa {mention}!\n\n<blockquote>I am {bot_name}, a powerful File Store Bot. 🏯\n\nI can store files in a private channel and users can access them via special links. Fast and Secure! ⭐</blockquote>\n\n🌸 Join @ALONEKINGSTAR77 for more updates!</b>"
+ABOUT_TXT = "<b><blockquote>⚡ ʙᴏᴛ ɴᴀᴍᴇ: {bot_name}\n🏯 ᴄʀᴇᴀᴛᴏʀ: {owner_name}\n⭐ ᴜsᴇʀɴᴀᴍᴇ: @{bot_username}\n🌸 ᴄᴏᴍᴍᴜɴɪᴛʏ: {main_link}\n💎 ᴅᴇᴠᴇʟᴏᴘᴇʀ: @Thilakff</blockquote></b>"
+START_MSG = "<b>⚡ Kon'nichiwa {mention}!\n\n<blockquote>I am {bot_name}, a powerful File Store Bot. 🏯\n\nI can store files in a private channel and users can access them via special links. Fast and Secure! ⭐</blockquote>\n\n🌸 Join @Thilakff for more updates!</b>"
 
 FORCE_MSG = "<b>⚡ Kon'nichiwa {mention}!\n\n<blockquote>You must join our channels to access the requested file. 🏯</blockquote>\n\n🌸 Join the channels below and click on 'Reload' button. ⭐</b>"
 
