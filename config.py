@@ -70,10 +70,10 @@ PROTECT_CONTENT = os.environ.get('PROTECT_CONTENT', "False").lower() == "true"
 DISABLE_CHANNEL_BUTTON = os.environ.get("DISABLE_CHANNEL_BUTTON", "False").lower() == "true"
 
 # Shortlink Settings
-SHORTLINK_URL = os.environ.get("SHORTLINK_URL", "mdiskshort.in/")
+SHORTLINK_URL = os.environ.get("SHORTLINK_URL", "https://arolinks.com/")
 SHORTENER_PIC = os.environ.get("SHORTENER_PIC", "https://freeimage.host/i/q94kIvp")
-SHORTLINK_API = os.environ.get("SHORTLINK_API", "7166158eb1d2cd04d15d274c891d47de7999e57a")
-TUT_VID = os.environ.get("TUT_VID","https://t.me/otakustartelugu")
+SHORTLINK_API = os.environ.get("SHORTLINK_API", "4134296f6ba51789996b73ae880bf798671b6d9b")
+TUT_VID = os.environ.get("TUT_VID","https://t.me/AnimeWorld_07")
 SHORT_MSG = "<b>⚡ Here is Your Download Link, Senpai! Must Watch Tutorial Before Clicking...</b>"
 
 # reCAPTCHA Configuration
