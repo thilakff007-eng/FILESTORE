@@ -25,12 +25,12 @@ ADMINS = [OWNER_ID]
 
 # Force Subscribe Configuration
 INITIAL_FSUB = [int(x.strip()) for x in os.environ.get("INITIAL_FSUB", "-1003809869259, -1003487560660").split(",") if x.strip()]
-CHANNEL_ID = int(os.environ.get("CHANNEL_ID", "-1003809869259")) # Your db channel Id
+CHANNEL_ID = int(os.environ.get("CHANNEL_ID", "-1003580590124")) # Your db channel Id
 
 # UI / Design Configuration
-BOT_NAME = "⚡𝗛𝗘𝗠𝗔𝗡𝗧𝗛⚡"
-BOT_USERNAME = "ALONEKINGSTAR77"
-MAIN_LINK = "https://t.me/otakustartelugu"
+BOT_NAME = "⚡Shadow⚡"
+BOT_USERNAME = "Thilakff"
+MAIN_LINK = "https://t.me/Animeworld"
 
 PICS = [
     "https://freeimage.host/i/q94kIvp",
