@@ -77,8 +77,8 @@ TUT_VID = os.environ.get("TUT_VID","https://t.me/AnimeWorld_07/18")
 SHORT_MSG = "<b>⚡ Here is Your Download Link, Senpai! Must Watch Tutorial Before Clicking...</b>"
 
 # reCAPTCHA Configuration
-RECAPTCHA_SITE_KEY = os.environ.get("RECAPTCHA_SITE_KEY", "6LdPIocsAAAAAHr8FBwP9YcKdsCcQDGSJA1xqpSO")
-RECAPTCHA_SECRET_KEY = os.environ.get("RECAPTCHA_SECRET_KEY", "6LdPIocsAAAAAMdhQTXqXbxgcqc2DVgUW1Ftq1WK")
+RECAPTCHA_SITE_KEY = os.environ.get("RECAPTCHA_SITE_KEY", "6Lfvr5csAAAAAGoIourbIBvbrhHj-o4gGLKUjwOv")
+RECAPTCHA_SECRET_KEY = os.environ.get("RECAPTCHA_SECRET_KEY", "6Lfvr5csAAAAAF4fjIML7F8WlbKEjSrPsaCCQO6G")
 
 # Texts
 USER_REPLY_TEXT = "<b>⚡ Please use the bot commands! 🏯</b>"
