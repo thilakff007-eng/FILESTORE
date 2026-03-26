@@ -426,15 +426,16 @@ async def help_command(client: Client, message: Message):
     )
 
 
-@Bot.on_message(filters.command('about') & filters.private)
-async def about_command(client: Client, message: Message):
-    s, e = get_random_button_style()
-    await message.reply_text(
-        text=ABOUT_TXT.format(
-            bot_name=BOT_NAME,
-            owner_name=OWNER,
-            bot_username=client.username,
-            main_link=MAIN_LINK
-        ),
-        reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("• ᴄʟᴏsᴇ •", callback_data="close", icon_custom_emoji_id=e, style=s)]])
-    )
+@Bot.on_callback_query(filters.regex("^premium_menu$"))
+async def premium_menu(client, query: CallbackQuery):
+
+    text = f"""💎 Premium Plans
+
+7 Days: {PRICE2}
+30 Days: {PRICE4}
+
+UPI: {UPI_ID}
+"""
+
+    await query.answer()
+    await query.message.reply_text(text)
