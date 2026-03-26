@@ -96,7 +96,7 @@ async def start_command(client: Client, message: Message):
                 mention=message.from_user.mention,
                 time=get_readable_time(int(remaining))
             ),
-            reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("✨ ᴊᴏɪɴ ᴜᴘᴅᴀᴛᴇs ᴄʜᴀɴɴᴇʟ ✧", url="https://t.me/ALONEKINGSTAR77", icon_custom_emoji_id=e, style=s)]])
+            reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("✨ ᴊᴏɪɴ ᴜᴘᴅᴀᴛᴇs ᴄʜᴀɴɴᴇʟ ✧", url="https://t.me/Animeworld_07", icon_custom_emoji_id=e, style=s)]])
         )
 
     # Check if user is banned (Early exit)
@@ -210,7 +210,7 @@ async def start_command(client: Client, message: Message):
             if not msg or msg.empty:
                 continue
             original_caption = msg.caption.html if msg.caption else ""
-            prefix = "<b>@OTAKUSTARTELUGU</b>\n\n"
+            prefix = "<b>@Animeworld_07</b>\n\n"
             caption = f"{prefix}{original_caption}\n\n{CUSTOM_CAPTION}" if CUSTOM_CAPTION else f"{prefix}{original_caption}"
             reply_markup = msg.reply_markup if DISABLE_CHANNEL_BUTTON else None
             try:
@@ -278,7 +278,7 @@ async def start_command(client: Client, message: Message):
             [
                 [
                     InlineKeyboardButton("🏯 Community", url=MAIN_LINK, icon_custom_emoji_id=e1, style=s1),
-                    InlineKeyboardButton("⚡ Updates", url="https://t.me/ALONEKINGSTAR77", icon_custom_emoji_id=e2, style=s2)
+                    InlineKeyboardButton("⚡ Updates", url="https://t.me/Animeworld_07", icon_custom_emoji_id=e2, style=s2)
                 ],
                 [
                     InlineKeyboardButton("🌸 About", callback_data="about", icon_custom_emoji_id=e3, style=s3),
