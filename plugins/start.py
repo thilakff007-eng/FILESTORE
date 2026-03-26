@@ -275,16 +275,19 @@ async def start_command(client: Client, message: Message):
         s3, e3 = get_random_button_style()
         s4, e4 = get_random_button_style()
         reply_markup = InlineKeyboardMarkup(
-            [
-                [
-                    InlineKeyboardButton("🏯 Community", url=MAIN_LINK, icon_custom_emoji_id=e1, style=s1),
-                    InlineKeyboardButton("⚡ Updates", url="https://t.me/Animeworld_07", icon_custom_emoji_id=e2, style=s2)
-                ],
-                [
-                    InlineKeyboardButton("🌸 About", callback_data="about", icon_custom_emoji_id=e3, style=s3),
-                    InlineKeyboardButton("⭐ Help", callback_data="help", icon_custom_emoji_id=e4, style=s4)
-                ]
-            ]
+    [
+        [
+            InlineKeyboardButton("🏯 Community", url=MAIN_LINK, icon_custom_emoji_id=e1, style=s1),
+            InlineKeyboardButton("⚡ Updates", url="https://t.me/Animeworld_07", icon_custom_emoji_id=e2, style=s2)
+        ],
+        [
+            InlineKeyboardButton("🌸 About", callback_data="about", icon_custom_emoji_id=e3, style=s3),
+            InlineKeyboardButton("⭐ Help", callback_data="help", icon_custom_emoji_id=e4, style=s4)
+        ],
+        [
+            InlineKeyboardButton("💎 Premium", callback_data="premium_menu")
+        ]
+    ]
         )
         await send_media(
             message=message,
